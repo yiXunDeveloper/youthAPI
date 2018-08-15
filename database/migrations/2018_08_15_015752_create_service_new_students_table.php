@@ -17,6 +17,7 @@ class CreateServiceNewStudentsTable extends Migration
             $table->increments('id');
             $table->string('name','30')->nullable();
             $table->string('sdut_id',11)->nullable();
+            $table->string('sex',3)->nullable();
             $table->string('college',50)->nullable();
             $table->string('major',50)->nullable();
             $table->string('class',20)->nulable();
