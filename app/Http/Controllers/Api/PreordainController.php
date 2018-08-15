@@ -82,7 +82,6 @@ class PreordainController extends Controller
             //未找到该用户
             return $this->response->errorUnauthorized('未找到该用户');
         }
-
     }
     public function userinfo(){
         $user = Auth::guard('preordain')->user();
