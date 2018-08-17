@@ -22,10 +22,26 @@ $api->version('v1',[
     $api->get('question','FeatureController@question');
 
     $api->get('newstudent','FeatureController@newStudent');
-    //事务中心参观
+    //事务中心参观start
     $api->post('preordain/login','PreordainController@login');
     $api->post('preordain/adminlogin','PreordainController@adminlogin');
-    $api->group(['middleware'=>['auth:preordain']],function ($api){
+    //学院可以进行的操作
+    $api->group(['middleware'=>['auth:preordain','preordain.user']],function ($api){
+        //获取学院信息
        $api->get('preordain/userinfo','PreordainController@userinfo');
+       //获取最新已预约和可预约信息
+       $api->get('preordain/list','PreordainController@latestList');
+       //学院预约
+       $api->post('preordain/select','PreordainController@select');
+       //学院更新预约
+       $api->put('preordain/select','PreordainController@updateSelect');
+    });
+
+    //管理员可以进行的操作
+    $api->group([/*'middleware'=>['auth:preordain','preordain.admin']*/],function ($api){
+        //设置时间段
+        $api->post('preordain/time','PreordainController@setTime');
+        //更新时间段（只能更新开始预约时间和结束预约时间）
+        $api->put('preordain/time','PreordainController@updateTime');
     });
 });

@@ -17,7 +17,7 @@ class CreatePreordainUsersTable extends Migration
             $table->increments('id');
             $table->string('username');//学院和后台登录的用户名
             $table->string('password');//密码
-            $table->string('college')->nullable(); //学院名
+            $table->string('name')->nullable(); //学院名
             $table->string('admin')->default(0);//是否有管理员权限，0代表没有，1代表有
             $table->timestamps();
         });
