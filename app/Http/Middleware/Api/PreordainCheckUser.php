@@ -18,8 +18,7 @@ class PreordainCheckUser
         if(Auth::user()->admin==0){
             return $next($request);
         }else{
-            throw new \Symfony\Component\HttpKernel\Exception\ConflictHttpException('User was updated prior to your request.');
+            throw new \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException('您没有权限进行该操作');
         }
-        return $next($request);
     }
 }
