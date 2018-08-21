@@ -146,6 +146,15 @@ class PreordainController extends Controller
         }
         return $this->response->error('未找到该时间段！', 422);
     }
+    public function lastTime(){
+        $id = PreordainOpen::max('id');
+        if(!$id){
+            return $this->response->noContent();
+        }
+        $data = PreordainOpen::find($id);
+        return $this->response->array(['data'=>$data,'errCode'=>200]);
+
+    }
     public function setTime(Request $request){
         $open = PreordainOpen::create($request->except('options'));
         foreach ($request->options as $option){
