@@ -87,7 +87,7 @@ class PreordainController extends Controller
     }
     public function userinfo(){
         $user = Auth::guard('preordain')->user();
-        return $this->response->array(['name'=>$user->name]);
+        return $this->response->array(['data'=>['name'=>$user->name]]);
     }
     public function latestList(){
         $id = PreordainOpen::max('id');
