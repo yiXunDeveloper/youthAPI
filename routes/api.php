@@ -27,8 +27,6 @@ $api->version('v1',[
     $api->post('preordain/adminlogin','PreordainController@adminlogin');
     //学院可以进行的操作
     $api->group(['middleware'=>['auth:preordain','preordain.user']],function ($api){
-       //获取最新已预约和可预约信息
-       $api->get('preordain/list','PreordainController@latestList');
        //学院预约
        $api->post('preordain/select','PreordainController@select');
        //学院更新预约
@@ -37,6 +35,7 @@ $api->version('v1',[
     //获取学院信息
     $api->group(['middleware'=>['auth:preordain']],function ($api) {
         $api->get('preordain/userinfo','PreordainController@userinfo');
+        $api->get('preordain/list','PreordainController@latestList');
     });
     //管理员可以进行的操作
     $api->group([/*'middleware'=>['auth:preordain','preordain.admin']*/],function ($api){
