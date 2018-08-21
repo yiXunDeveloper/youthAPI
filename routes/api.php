@@ -38,11 +38,10 @@ $api->version('v1',[
     $api->group(['middleware'=>['auth:preordain']],function ($api) {
         $api->get('preordain/userinfo','PreordainController@userinfo');
     });
-    $api->get('preordain/time','PreordainController@lastTime');
     //管理员可以进行的操作
     $api->group([/*'middleware'=>['auth:preordain','preordain.admin']*/],function ($api){
         //获取上次设置的时间
-
+        $api->get('preordain/time','PreordainController@lastTime');
         //设置时间段
         $api->post('preordain/time','PreordainController@setTime');
         //更新时间段（只能更新开始预约时间和结束预约时间）
