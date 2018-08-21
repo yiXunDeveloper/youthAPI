@@ -38,7 +38,7 @@ $api->version('v1',[
         $api->get('preordain/list','PreordainController@latestList');
     });
     //管理员可以进行的操作
-    $api->group([/*'middleware'=>['auth:preordain','preordain.admin']*/],function ($api){
+    $api->group(['middleware'=>['auth:preordain','preordain.admin']],function ($api){
         //获取上次设置的时间
         $api->get('preordain/time','PreordainController@lastTime');
         //设置时间段
