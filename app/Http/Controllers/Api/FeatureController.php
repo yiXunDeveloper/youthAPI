@@ -36,15 +36,24 @@ class FeatureController extends Controller
     public function newStudent(Request $request)
     {
         $num = $request->num;
-        $new_student = ServiceNewStudent::where('kaohao',$num)->first();
+        if(strlen($num)==11){
+            $new_student = ServiceNewStudent::where('sdut_id',$num)->first();
+        }else{
+            $new_student = ServiceNewStudent::where('kaohao',$num)->first();
+        }
        if($new_student)
        {
+           $sheyou = ServiceNewStudent::where('dormitory',$new_student->dormitory)->where('room',$new_student->room)->where('bed','<>',$new_student->bed)->orderBy('bed','ASC')->get(['name','class','bed']);
            return $this->response->array([
                'name'=>$new_student->name,
                'sdut_id'=>$new_student->sdut_id,
                'college'=>$new_student->college,
                'major'=>$new_student->major,
                'class'=>$new_student->class,
+               'dormitory'=>$new_student->dormitory,
+               'room'=>$new_student->room,
+               'bed'=>$new_student->bed,
+               'roommate'=>$sheyou
            ])->setStatusCode(200);
        }else{
            return $this->response->errorNotFound('没有该学生信息');
