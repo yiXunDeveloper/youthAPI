@@ -122,8 +122,8 @@ class PreordainController extends Controller
         $user = Auth::user();
         $item = PreordainList::find($id);
         if($item){
-            if($item->name==$user->name){
-                $item->name = null;
+            if($item->college==$user->name){
+                $item->college = null;
                 $item->save();
                 return $this->response->array(['data'=>[],'errCode'=>'200',])->setStatusCode(200);
             }else{
