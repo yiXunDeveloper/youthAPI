@@ -32,10 +32,10 @@ $api->version('v1',[
        //学院删除预约
        $api->delete('preordain/select','PreordainController@deleteSelect');
     });
+    $api->get('preordain/list','PreordainController@latestList');
     //获取学院信息
     $api->group(['middleware'=>['auth:preordain']],function ($api) {
         $api->get('preordain/userinfo','PreordainController@userinfo');
-        $api->get('preordain/list','PreordainController@latestList');
     });
     //管理员可以进行的操作
     $api->group(['middleware'=>['auth:preordain','preordain.admin']],function ($api){
