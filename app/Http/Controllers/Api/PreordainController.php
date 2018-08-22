@@ -106,10 +106,10 @@ class PreordainController extends Controller
         $item = PreordainList::find($id);
         //找到该时间段
         if($item){
-            if($item->name){
+            if($item->college){
                 return $this->response->error('该时间段已经被预约了！', 422);
             }
-            $item->name = $user->name;
+            $item->college = $user->name;
             $item->save();
             return $this->response->array(['data'=>[],'errCode'=>'200',])->setStatusCode(200);
         }else{
