@@ -50,6 +50,7 @@ class FeatureController extends Controller
                'college'=>$new_student->college,
                'major'=>$new_student->major,
                'class'=>$new_student->class,
+               'school'=>$new_student->school,
                'dormitory'=>$new_student->dormitory,
                'room'=>$new_student->room,
                'bed'=>$new_student->bed,
