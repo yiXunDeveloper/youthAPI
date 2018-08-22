@@ -109,7 +109,7 @@ class PreordainController extends Controller
             if($item->name){
                 return $this->response->error('该时间段已经被预约了！', 422);
             }
-            $item->name = $user->name();
+            $item->name = $user->name;
             $item->save();
             return $this->response->array(['data'=>[],'errCode'=>'200',])->setStatusCode(200);
         }else{
