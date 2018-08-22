@@ -29,8 +29,8 @@ $api->version('v1',[
     $api->group(['middleware'=>['auth:preordain','preordain.user']],function ($api){
        //学院预约
        $api->post('preordain/select','PreordainController@select');
-       //学院更新预约
-       $api->put('preordain/select','PreordainController@updateSelect');
+       //学院删除预约
+       $api->put('preordain/select','PreordainController@deleteSelect');
     });
     //获取学院信息
     $api->group(['middleware'=>['auth:preordain']],function ($api) {

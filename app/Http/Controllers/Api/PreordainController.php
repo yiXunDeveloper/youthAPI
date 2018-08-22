@@ -102,49 +102,37 @@ class PreordainController extends Controller
     }
     public function select(Request $request){
         $user =  Auth::guard('preordain')->user();
-        $date = $request->date;
-        $time = $request->time;
-        $id = PreordainOpen::max('id');
-        //数据库中有数据
-        if ($id){
-            $old_item = PreordainList::where('order_id',$id)->where('college',$user->name)->first();
-            //已经预约过了
-            if($old_item){
-                return $this->response->error('您已经预约过了！',403);
+        $id = $request->id;
+        $item = PreordainList::find($id);
+        //找到该时间段
+        if($item){
+            if($item->name){
+                return $this->response->error('该时间段已经被预约了！', 422);
             }
-            $item = PreordainList::where('date',$date)->where('time',$time)->where('order_id',$id)->first();
-            //找到该时间段
-            if($item){
-                $item->name = $user->name();
+            $item->name = $user->name();
+            $item->save();
+            return $this->response->array(['data'=>[],'errCode'=>'200',])->setStatusCode(200);
+        }else{
+            //数据库中没有该数据
+            return $this->response->error('未找到该时间段！', 422);
+        }
+
+    }
+    public function deleteSelect(Request $request){
+        $user = Auth::user();
+        $id = $request->id;
+        $item = PreordainList::find($id);
+        if($item){
+            if($item->name==$user->name){
+                $item->name = null;
                 $item->save();
                 return $this->response->array(['data'=>[],'errCode'=>'200',])->setStatusCode(200);
+            }else{
+                return $this->response->error('您未预约该时间段！', 422);
             }
+        }else{
+            return $this->response->error('未找到该时间段！', 422);
         }
-        //数据库中没有该数据
-        return $this->response->error('未找到该时间段！', 422);
-    }
-    public function updateSelect(Request $request){
-        $user =  Auth::guard('preordain')->user();
-        $id = PreordainOpen::max('id');
-        //数据库中有数据
-        if ($id){
-            //找到以前的预约时间，将 college置空
-            $old_item = PreordainList::where('order_id',$id)->where('college',$user->name)->first();
-            if($old_item){
-                $old_item->college = null;
-                $old_item->save();
-            }
-            $date = $request->date;
-            $time = $request->time;
-            $new_item = PreordainList::where('date',$date)->where('time',$time)->where('order_id',$id)->first();
-            //找到新的预约时间，将college设置为用户的name
-            if($new_item){
-                $new_item->name = $user->name();
-                $new_item->save();
-                return $this->response->array(['data'=>[],'errCode'=>'200',])->setStatusCode(200);
-            }
-        }
-        return $this->response->error('未找到该时间段！', 422);
     }
     public function lastTime(){
         $id = PreordainOpen::max('id');
