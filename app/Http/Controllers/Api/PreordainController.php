@@ -118,9 +118,8 @@ class PreordainController extends Controller
         }
 
     }
-    public function deleteSelect(Request $request){
+    public function deleteSelect($id){
         $user = Auth::user();
-        $id = $request->id;
         $item = PreordainList::find($id);
         if($item){
             if($item->name==$user->name){
