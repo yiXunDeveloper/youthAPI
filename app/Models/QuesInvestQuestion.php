@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 class QuesInvestQuestion extends Model
 {
     //
-    public function input_options()
+    protected $guarded = [];
+
+    public function options()
     {
         return $this->hasMany('App\Models\QuesInvestOption','quesid','id');
     }

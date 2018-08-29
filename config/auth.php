@@ -48,6 +48,10 @@ return [
         'preordain' => [
             'driver' => 'jwt',
             'provider' => 'preordain_users'
+        ],
+        'ques'=>[
+            'driver' => 'jwt',
+            'provider' => 'ques_admins'
         ]
     ],
 
@@ -76,6 +80,10 @@ return [
         'preordain_users' => [
             'driver'=>'eloquent',
             'model'=>App\Models\PreordainUser::class,
+        ],
+        'ques_admins' => [
+            'driver'=>'eloquent',
+            'model'=>App\Models\QuesAdmin::class,
         ]
         // 'users' => [
         //     'driver' => 'database',

@@ -15,7 +15,8 @@ class CreateQuesLoginOptionsTable extends Migration
     {
         Schema::create('ques_login_options', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('fieldid');
+            $table->string('key',20)->unique();
+            $table->string('qkey',20)->nullable();
             $table->string('field_label')->nullable();
             $table->string('field_value')->nullable();
             $table->timestamps();

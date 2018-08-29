@@ -7,4 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 class QuesLoginOption extends Model
 {
     //
+    protected $guarded = [];
+
 }

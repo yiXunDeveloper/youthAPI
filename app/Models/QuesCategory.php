@@ -8,13 +8,16 @@ class QuesCategory extends Model
 {
     protected $table = 'ques_categorys';
     //
-    public $incrementing = false;
-    public function fields()
+    protected  $guarded = [];
+    public function login_questions()
     {
         return $this->hasMany('App\Models\QuesLoginQuestion','catid','id');
     }
-    public function questions()
+    public function invest_questions()
     {
         return $this->hasMany('App\Models\QuesInvestQuestion','catid','id');
+    }
+    public function user(){
+        return $this->belongsTo('App\Models\QuesAdmin','author','id');
     }
 }

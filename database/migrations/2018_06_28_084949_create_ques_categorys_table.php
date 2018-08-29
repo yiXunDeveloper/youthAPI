@@ -14,10 +14,11 @@ class CreateQuesCategorysTable extends Migration
     public function up()
     {
         Schema::create('ques_categorys', function (Blueprint $table) {
-            $table->string('id')->primary();
+            $table->increments('id');
             $table->string('title')->nullable();
             $table->string('description')->nullable();
             $table->boolean('user_required')->default(false);
+            $table->integer('author')->nullable();
             $table->dateTime('start_at')->nullable();
             $table->dateTime('end_at')->nullable();
             $table->timestamps();

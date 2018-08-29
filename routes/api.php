@@ -21,6 +21,13 @@ $api->version('v1',[
 ],function ($api){
 //问卷调查start
     $api->get('question','FeatureController@question');
+    $api->post('ques/register','QuesController@register');
+    $api->post('ques/login','QuesController@login');
+    $api->post('ques/create','QuesController@quesStore');
+    $api->get('ques/{id}','QuesController@quesDetail');
+    $api->group(['middleware'=>['auth:preordain','preordain.admin']],function ($api){
+        $api->get('ques','QuesController@quesGet');
+    });
 //问卷调查end
 
 
@@ -51,6 +58,7 @@ $api->version('v1',[
     $api->group(['middleware'=>['auth:preordain','preordain.admin']],function ($api){
         $api->post('preordain/time','PreordainController@setTime');//设置时间段
         $api->put('preordain/time','PreordainController@updateTime');//更新时间段（只能更新开始预约时间和结束预约时间）
+        $api->any('preordain/export/{id}','PreordainController@export');
     });
 //事务中心参观end
 
