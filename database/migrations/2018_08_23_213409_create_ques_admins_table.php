@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateQuesInvestOptionsTable extends Migration
+class CreateQuesAdminsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,12 +13,12 @@ class CreateQuesInvestOptionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('ques_invest_options', function (Blueprint $table) {
+        Schema::create('ques_admins', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('key',20)->unique();
-            $table->string('qkey',20)->nullable();
-           $table->string('field_label')->nullable();
-           $table->string('field_value')->nullable();
+            $table->string('username')->nullable();
+            $table->string('password')->nullable();
+            $table->string('name')->nullable();
+            $table->integer('admin')->default(0);
             $table->timestamps();
         });
     }
@@ -30,6 +30,6 @@ class CreateQuesInvestOptionsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('ques_invest_options');
+        Schema::dropIfExists('ques_admins');
     }
 }

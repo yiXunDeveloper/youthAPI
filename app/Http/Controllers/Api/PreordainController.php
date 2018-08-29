@@ -8,6 +8,7 @@ use App\Models\PreordainUser;
 use Illuminate\Http\Request;
 use Auth;
 use Illuminate\Support\Facades\Hash;
+use Excel;
 
 class PreordainController extends Controller
 {
@@ -170,5 +171,16 @@ class PreordainController extends Controller
             'token_type' => 'Bearer',
             'expires_in' => Auth::guard('preordain')->factory()->getTTL() * 60
         ],'errCode'=>200]);
+    }
+    public function export($id){
+        $preordainList = PreordainList::where('order_id',$id)->get();
+
+        Excel::create('excel',function($excel) use($preordainList){
+            $excel->sheet('预约信息', function($sheet) use ($preordainList){
+               foreach ($preordainList as $item){
+                   $sheet->appendRow([$item->date,$item->time,$item->college]);
+               }
+            });
+        })->export('xls');
     }
 }
