@@ -57,9 +57,9 @@ class QuesController extends Controller
             'category.user_required'=>[
                 Rule::in(['false', 'true']),
             ],
-            'start_at'=>'required|date|before:end_at',
-            'end_at'=>'required|date|after:start_at',
-            'questions'=>'array',
+            'category.start_at'=>'required|date|before:category.end_at',
+            'category.end_at'=>'required|date|after:category.start_at',
+            'questions'=>'required|array',
             'questions.*.key'=>'required|unique:ques_invest_questions,key',
             'questions.*.input_num'=>'required|numeric',
             'questions.*.input_title'=>'required|string',
@@ -67,8 +67,17 @@ class QuesController extends Controller
                 Rule::in([1,2,3]),
             ],
             'questions.*.is_required'=>[
+                Rule::in(['true','false']),
+            ],
+            'validate_field'=>'required_if:category.user_required,true',
+            'validate_field.*.key'=>'required_if:category.user_required,true|unique:ques_login_questions,key',
+            'validate_field.*.input_title'=>'required_if:category.user_required,true',
+            'validate_field.*.input_num'=>'required_if:category.user_required,true|numeric',
+            'validate_field.*.input_type'=>[
+                'required_if:category.user_required,true',
                 Rule::in([0,1]),
-            ]
+            ],
+            'validate_field.*.input_options'=>'nullable|array',
         ]);
 //        $user = Auth::guard('ques')->user;
         $category = $request->category;

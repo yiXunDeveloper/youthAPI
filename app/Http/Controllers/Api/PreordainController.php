@@ -174,7 +174,6 @@ class PreordainController extends Controller
     }
     public function export($id){
         $preordainList = PreordainList::where('order_id',$id)->get();
-
         Excel::create('excel',function($excel) use($preordainList){
             $excel->sheet('预约信息', function($sheet) use ($preordainList){
                foreach ($preordainList as $item){

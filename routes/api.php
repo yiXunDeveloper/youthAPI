@@ -21,12 +21,13 @@ $api->version('v1',[
 ],function ($api){
 //问卷调查start
     $api->get('question','FeatureController@question');
-    $api->post('ques/register','QuesController@register');
-    $api->post('ques/login','QuesController@login');
-    $api->post('ques/create','QuesController@quesStore');
-    $api->get('ques/{id}','QuesController@quesDetail');
-    $api->group(['middleware'=>['auth:preordain','preordain.admin']],function ($api){
-        $api->get('ques','QuesController@quesGet');
+
+    $api->post('ques/register','QuesController@register'); //管理员注册
+    $api->post('ques/login','QuesController@login');    //管理员登录
+    $api->post('ques/create','QuesController@quesStore');  //创建问卷
+    $api->get('ques/{id}','QuesController@quesDetail');//问卷详情
+    $api->group(['middleware'=>['auth:ques']],function ($api){
+        $api->get('ques','QuesController@quesGet');//问卷列表
     });
 //问卷调查end
 
@@ -42,6 +43,7 @@ $api->version('v1',[
     $api->post('preordain/adminlogin','PreordainController@adminlogin');//管理登录
     $api->get('preordain/time','PreordainController@lastTime');//获取上次设置的时间
     $api->get('preordain/list','PreordainController@latestList');//获取所有时间段
+    $api->any('preordain/export/{id}','PreordainController@export'); //导出数据
 
     //登陆后才可以进行的操作
     $api->group(['middleware'=>['auth:preordain']],function ($api) {
@@ -58,7 +60,6 @@ $api->version('v1',[
     $api->group(['middleware'=>['auth:preordain','preordain.admin']],function ($api){
         $api->post('preordain/time','PreordainController@setTime');//设置时间段
         $api->put('preordain/time','PreordainController@updateTime');//更新时间段（只能更新开始预约时间和结束预约时间）
-        $api->any('preordain/export/{id}','PreordainController@export');
     });
 //事务中心参观end
 
