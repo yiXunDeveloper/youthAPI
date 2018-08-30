@@ -10,6 +10,6 @@ class QuesLoginQuestion extends Model
 
     public function input_options()
     {
-        return $this->hasMany('App\Models\QuesLoginOption','fieldid','id');
+        return $this->hasMany('App\Models\QuesLoginOption','qkey','key');
     }
 }

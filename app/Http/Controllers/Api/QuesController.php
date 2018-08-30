@@ -143,7 +143,8 @@ class QuesController extends Controller
         }
         return $this->response->array(['data'=>$cats])->setStatusCode(200);
     }
-    public function quesDetail(Request $request,QuesCategory $category){
+    public function quesDetail($id){
+        $category = QuesCategory::find($id);
         $category->invest_questions;
         $category->login_questions;
         foreach ($category->invest_questions as $question){
@@ -152,7 +153,7 @@ class QuesController extends Controller
         foreach ($category->login_questions as $login_question){
             $login_question->input_options;
         }
-        return $this->response->array(['data'=>$category])->setStatus(200);
+        return $this->response->array(['data'=>$category])->setStatusCode(200);
     }
     protected function respondWithToken($token)
     {

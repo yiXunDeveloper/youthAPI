@@ -11,6 +11,6 @@ class QuesInvestQuestion extends Model
 
     public function options()
     {
-        return $this->hasMany('App\Models\QuesInvestOption','quesid','id');
+        return $this->hasMany('App\Models\QuesInvestOption','qkey','key');
     }
 }
