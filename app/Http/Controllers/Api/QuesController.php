@@ -78,10 +78,10 @@ class QuesController extends Controller
             ],
             'validate_field.*.input_options'=>'nullable|array',
         ]);
-//        $user = Auth::guard('ques')->user;
+        $user = Auth::guard('ques')->user;
         $category = $request->category;
 
-//        $category['author'] = $user->id;
+        $category['author'] = $user->id;
         $questions = $request->questions;
         $options = $request->options;
         $validate_fields = $request->validate_field;
@@ -136,10 +136,12 @@ class QuesController extends Controller
         }else{
             $categories = QuesCategory::where('author',$user->id)->get();
         }
+        $cats = array();
         foreach ($categories as $category){
-            $category->user;
+            $category->name = $category->user()->first()->name;
+            array_push($cats,$category);
         }
-        return $this->response->array(['data'=>$categories->toArray()])->setStatusCode(200);
+        return $this->response->array(['data'=>$cats])->setStatusCode(200);
     }
     public function quesDetail(Request $request,QuesCategory $category){
         $category->invest_questions;
