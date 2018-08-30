@@ -27,7 +27,6 @@ class QuesController extends Controller
             'password'=>$password,
             'admin'=>0,
         ]);
-        return '';
         return $this->response->noContent()->setStatusCode(201);
     }
     public function login(Request $request){
