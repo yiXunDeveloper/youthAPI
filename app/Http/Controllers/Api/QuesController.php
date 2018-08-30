@@ -122,7 +122,7 @@ class QuesController extends Controller
                 ]);
                 if($validate_field['input_type']){
                     foreach ($validate_field['input_options'] as $option){
-                        QuesLoginOption::created(array_add($option,'qkey',$validate_field['key']));
+                        QuesLoginOption::create(array_add($option,'qkey',$validate_field['key']));
                     }
                 }
             }
