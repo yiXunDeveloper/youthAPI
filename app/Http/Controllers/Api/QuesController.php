@@ -11,6 +11,7 @@ use App\Models\QuesLoginQuestion;
 use Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Validation\Rule;
 
 class QuesController extends Controller
 {
@@ -50,6 +51,25 @@ class QuesController extends Controller
     }
     //
     public function quesStore(Request $request){
+        $this->validate($request,[
+           'category'=>'array',
+           'category.title'=>'required',
+            'category.user_required'=>[
+                Rule::in(['false', 'true']),
+            ],
+            'start_at'=>'required|date|before:end_at',
+            'end_at'=>'required|date|after:start_at',
+            'questions'=>'array',
+            'questions.*.key'=>'required|unique:ques_invest_questions,key',
+            'questions.*.input_num'=>'required|numeric',
+            'questions.*.input_title'=>'required|string',
+            'questions.*.input_type'=>[
+                Rule::in([1,2,3]),
+            ],
+            'questions.*.is_required'=>[
+                Rule::in([0,1]),
+            ]
+        ]);
 //        $user = Auth::guard('ques')->user;
         $category = $request->category;
 
@@ -115,8 +135,12 @@ class QuesController extends Controller
     }
     public function quesDetail(Request $request,QuesCategory $category){
         $category->invest_questions;
+        $category->login_questions;
         foreach ($category->invest_questions as $question){
             $question->options;
+        }
+        foreach ($category->login_questions as $login_question){
+            $login_question->input_options;
         }
         return $this->response->array(['data'=>$category])->setStatus(200);
     }

@@ -17,7 +17,7 @@ class Cors
     {
         $response = $next($request);
         $response->header('Access-Control-Allow-Origin', '*');
-        $response->header('Access-Control-Allow-Headers', 'Origin, Content-Type, Cookie, Accept, multipart/form-data, application/json,Authorization');
+        $response->header('Access-Control-Allow-Headers', 'Origin, Content-Type, Cookie, Accept, multipart/form-data, application/json,Authorization,responseType');
         $response->header('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, OPTIONS, DELETE');
         $response->header('Access-Control-Allow-Credentials', 'false');
         return $response;
