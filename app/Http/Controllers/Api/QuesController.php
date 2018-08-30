@@ -78,7 +78,7 @@ class QuesController extends Controller
             ],
             'validate_field.*.input_options'=>'nullable|array',
         ]);
-        $user = Auth::guard('ques')->user;
+        $user = Auth::guard('ques')->user();
         $category = $request->category;
 
         $category['author'] = $user->id;
