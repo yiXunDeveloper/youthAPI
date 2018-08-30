@@ -145,6 +145,9 @@ class QuesController extends Controller
     }
     public function quesDetail($id){
         $category = QuesCategory::find($id);
+        if(!$category){
+            return $this->response->error('资源未找到',404);
+        }
         $category->invest_questions;
         $category->login_questions;
         foreach ($category->invest_questions as $question){
