@@ -161,7 +161,6 @@ class QuesController extends Controller
     }
 
     public function quesStore(Request $request,$id){
-        return $id;
         $category = QuesCategory::find($id);
         $userinfo = $request->userinfo;
         $answers = $request->answers;
