@@ -10,6 +10,8 @@ use App\Models\QuesInvestQuestion;
 use App\Models\QuesLoginOption;
 use App\Models\QuesLoginQuestion;
 use Auth;
+use Carbon\Carbon;
+use Faker\Provider\ka_GE\DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -162,9 +164,22 @@ class QuesController extends Controller
 
     public function quesStore(Request $request,$id){
         $category = QuesCategory::find($id);
+        $this->validate($request,[
+            'userinfo'=>'nullable|array',
+            'answers'=>'required|array',
+        ]);
         $userinfo = $request->userinfo;
         $answers = $request->answers;
         if($category){
+            $now = new \DateTime();
+            $start = new \DateTime($category->start_at);
+            $end = new \DateTime($category->end_at);
+            if($now<$start||$now>$end) {
+                return $this->response->error('不在开放时间内',403);
+            }
+            if(($category->user_required == 1 && count($userinfo) == 0)||count($answers)==0){
+                return $this->response->error('数据不合法',422);
+            }
             $user = QuesAnswer::create([
                 'catid'=>$id,
                 'userinfo'=>json_encode($userinfo),
