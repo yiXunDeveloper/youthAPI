@@ -166,6 +166,7 @@ class QuesController extends Controller
         $answers = $request->answers;
         if($category){
             $user = QuesAnswer::create([
+                'catid'=>$id,
                 'userinfo'=>json_encode($userinfo),
                 'answers'=>json_encode($answers),
             ]);
