@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\QuesAdmin;
+use App\Models\QuesAnswer;
 use App\Models\QuesCategory;
 use App\Models\QuesInvestOption;
 use App\Models\QuesInvestQuestion;
@@ -49,7 +50,7 @@ class QuesController extends Controller
         }
     }
     //
-    public function quesStore(Request $request){
+    public function quesCreate(Request $request){
         $this->validate($request,[
            'category'=>'array',
            'category.title'=>'required',
@@ -158,6 +159,21 @@ class QuesController extends Controller
         }
         return $this->response->array(['data'=>$category])->setStatusCode(200);
     }
+
+    public function quesStore(Request $request,$id){
+        $category = QuesCategory::find($id);
+        $userinfo = $request->userinfo;
+        $answer = $request->answer;
+        if($category){
+            $user = QuesAnswer::create([
+                'userinfo'=>json_encode($userinfo),
+                'answer'=>json_encode($answer),
+            ]);
+            return $this->response->noContent();
+        }
+       return $this->response->error('问卷未找到',404);
+    }
+
     protected function respondWithToken($token)
     {
         return $this->response->array(['data'=>[
