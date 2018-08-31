@@ -163,11 +163,11 @@ class QuesController extends Controller
     public function quesStore(Request $request,$id){
         $category = QuesCategory::find($id);
         $userinfo = $request->userinfo;
-        $answer = $request->answer;
+        $answers = $request->answers;
         if($category){
             $user = QuesAnswer::create([
                 'userinfo'=>json_encode($userinfo),
-                'answer'=>json_encode($answer),
+                'answers'=>json_encode($answers),
             ]);
             return $this->response->noContent();
         }
