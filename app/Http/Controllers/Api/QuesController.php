@@ -62,16 +62,16 @@ class QuesController extends Controller
             ],
             'category.start_at'=>'required|date|before:category.end_at',
             'category.end_at'=>'required|date|after:category.start_at',
-//            'questions'=>'required|array',
-//            'questions.*.key'=>'required|unique:ques_invest_questions,key',
-//            'questions.*.input_num'=>'required|numeric',
-//            'questions.*.input_title'=>'required|string',
-//            'questions.*.input_type'=>[
-//                Rule::in([1,2,3]),
-//            ],
-//            'questions.*.is_required'=>[
-//                Rule::in(['true','false']),
-//            ],
+            'questions'=>'required|array',
+            'questions.*.key'=>'required|unique:ques_invest_questions,key',
+            'questions.*.input_num'=>'required|numeric',
+            'questions.*.input_title'=>'required|string',
+            'questions.*.input_type'=>[
+                Rule::in([1,2,3]),
+            ],
+            'questions.*.is_required'=>[
+                Rule::in(['true','false']),
+            ],
             'validate_field'=>'required_if:category.user_required,true',
             'validate_field.*.key'=>'required_if:category.user_required,true|unique:ques_login_questions,key',
             'validate_field.*.input_title'=>'required_if:category.user_required,true',
@@ -84,9 +84,7 @@ class QuesController extends Controller
         ]);
 //        return $request->validate_field;
 
-//        $user = Auth::guard('ques')->user();
-        $user = new QuesAdmin();
-        $user->id = 2;
+        $user = Auth::guard('ques')->user();
         $category = $request->category;
 
         $category['author'] = $user->id;
@@ -201,7 +199,7 @@ class QuesController extends Controller
         return $this->response->array(['data'=>[
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'expires_in' => Auth::guard('preordain')->factory()->getTTL() * 60
+            'expires_in' => Auth::guard('preordain')->factory()->getTTL() * 60 * 12
         ],'errCode'=>200]);
     }
 }
