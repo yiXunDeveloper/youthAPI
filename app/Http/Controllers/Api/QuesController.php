@@ -90,11 +90,11 @@ class QuesController extends Controller
         $questions = $request->questions;
         $options = $request->options;
         $validate_fields = $request->validate_field;
-        if($category['user_required']=='false'){
-            $category['user_required']=0;
-        }else{
-            $category['user_required']=1;
-        }
+//        if($category['user_required']=='false'){
+//            $category['user_required']=0;
+//        }else{
+//            $category['user_required']=1;
+//        }
         $cat = QuesCategory::create($category);
         if($questions){
             foreach ($questions as $question){
@@ -116,7 +116,7 @@ class QuesController extends Controller
                 QuesInvestOption::create($option);
             }
         }
-        if($cat->user_required){
+        if($cat->user_required||true){
             foreach ($validate_fields as $validate_field){
                 QuesLoginQuestion::create([
                     'key'=>$validate_field['key'],
