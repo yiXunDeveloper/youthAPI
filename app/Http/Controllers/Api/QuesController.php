@@ -167,6 +167,7 @@ class QuesController extends Controller
         $this->validate($request,[
             'userinfo'=>'nullable|array',
             'answers'=>'required|array',
+            'userinfo.*'=>'sometimes|required|string'
         ]);
         $userinfo = $request->userinfo;
         $answers = $request->answers;
