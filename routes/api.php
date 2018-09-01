@@ -25,12 +25,12 @@ $api->version('v1',[
     $api->post('ques/register','QuesController@register'); //管理员注册
     $api->post('ques/login','QuesController@login');    //管理员登录
     $api->get('ques/{id}','QuesController@quesDetail');//问卷详情
-    $api->post('ques/{id}','QuesController@quesStore');
     //管理员进行的操作
     $api->group(['middleware'=>['auth:ques']],function ($api){
         $api->get('ques','QuesController@quesGet');//问卷列表
         $api->post('ques/create','QuesController@quesCreate');  //创建问卷
     });
+    $api->post('ques/{id}','QuesController@quesStore');
     $api->post('ques/submit','QuesController@quesSubmit');
 //问卷调查end
 
