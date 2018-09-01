@@ -53,14 +53,15 @@ class QuesController extends Controller
     }
     //
     public function quesCreate(Request $request){
+//        return $request;
         $this->validate($request,[
-//           'category'=>'array',
-//           'category.title'=>'required',
-//            'category.user_required'=>[
-//                Rule::in(['false', 'true']),
-//            ],
-//            'category.start_at'=>'required|date|before:category.end_at',
-//            'category.end_at'=>'required|date|after:category.start_at',
+           'category'=>'array',
+           'category.title'=>'required',
+            'category.user_required'=>[
+                Rule::in(['false', 'true']),
+            ],
+            'category.start_at'=>'required|date|before:category.end_at',
+            'category.end_at'=>'required|date|after:category.start_at',
             'questions'=>'required|array',
             'questions.*.key'=>'required|unique:ques_invest_questions,key',
             'questions.*.input_num'=>'required|numeric',
@@ -81,6 +82,8 @@ class QuesController extends Controller
             ],
             'validate_field.*.input_options'=>'nullable|array',
         ]);
+//        return $request->validate_field;
+
 //        $user = Auth::guard('ques')->user();
         $user = new QuesAdmin();
         $user->id = 2;
@@ -90,11 +93,11 @@ class QuesController extends Controller
         $questions = $request->questions;
         $options = $request->options;
         $validate_fields = $request->validate_field;
-//        if($category['user_required']=='false'){
-//            $category['user_required']=0;
-//        }else{
-//            $category['user_required']=1;
-//        }
+        if($category['user_required']=='false'){
+            $category['user_required']=0;
+        }else{
+            $category['user_required']=1;
+        }
         $cat = QuesCategory::create($category);
         if($questions){
             foreach ($questions as $question){
@@ -116,7 +119,7 @@ class QuesController extends Controller
                 QuesInvestOption::create($option);
             }
         }
-        if($cat->user_required||true){
+        if($cat->user_required){
             foreach ($validate_fields as $validate_field){
                 QuesLoginQuestion::create([
                     'key'=>$validate_field['key'],
