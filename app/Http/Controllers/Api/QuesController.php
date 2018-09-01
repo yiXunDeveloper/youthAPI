@@ -53,7 +53,7 @@ class QuesController extends Controller
     }
     //
     public function quesCreate(Request $request){
-        return $this->response->array($request)->setStatusCode(500);
+//        return $this->response->array($request)->setStatusCode(500);
         $this->validate($request,[
            'category'=>'array',
            'category.title'=>'required',
@@ -62,16 +62,16 @@ class QuesController extends Controller
             ],
             'category.start_at'=>'required|date|before:category.end_at',
             'category.end_at'=>'required|date|after:category.start_at',
-            'questions'=>'required|array',
-            'questions.*.key'=>'required|unique:ques_invest_questions,key',
-            'questions.*.input_num'=>'required|numeric',
-            'questions.*.input_title'=>'required|string',
-            'questions.*.input_type'=>[
-                Rule::in([1,2,3]),
-            ],
-            'questions.*.is_required'=>[
-                Rule::in(['true','false']),
-            ],
+//            'questions'=>'required|array',
+//            'questions.*.key'=>'required|unique:ques_invest_questions,key',
+//            'questions.*.input_num'=>'required|numeric',
+//            'questions.*.input_title'=>'required|string',
+//            'questions.*.input_type'=>[
+//                Rule::in([1,2,3]),
+//            ],
+//            'questions.*.is_required'=>[
+//                Rule::in(['true','false']),
+//            ],
             'validate_field'=>'required_if:category.user_required,true',
             'validate_field.*.key'=>'required_if:category.user_required,true|unique:ques_login_questions,key',
             'validate_field.*.input_title'=>'required_if:category.user_required,true',
