@@ -53,7 +53,7 @@ class QuesController extends Controller
     }
     //
     public function quesCreate(Request $request){
-//        return $request;
+        return $this->response->array($request)->setStatusCode(500);
         $this->validate($request,[
            'category'=>'array',
            'category.title'=>'required',
