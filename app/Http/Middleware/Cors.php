@@ -16,7 +16,7 @@ class Cors
     public function handle($request, Closure $next)
     {
         $response = $next($request);
-        $response->header('Access-Control-Allow-Origin', 'https://lab.youthol.cn');
+        $response->header('Access-Control-Allow-Origin', '*');
         $response->header('Access-Control-Allow-Headers', 'Origin, Content-Type, Cookie, Accept, multipart/form-data, application/json,Authorization,responseType');
         $response->header('Access-Control-Allow-Methods', 'GET, POST, PATCH, PUT, OPTIONS, DELETE');
         $response->header('Access-Control-Allow-Credentials', 'false');
