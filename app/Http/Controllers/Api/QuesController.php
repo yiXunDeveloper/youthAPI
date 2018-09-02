@@ -86,7 +86,6 @@ class QuesController extends Controller
 
         $user = Auth::guard('ques')->user();
         $category = $request->category;
-
         $category['author'] = $user->id;
         $questions = $request->questions;
         $options = $request->options;
@@ -155,7 +154,11 @@ class QuesController extends Controller
                 $category->login_questions()->delete();
                 $category->delete();
                 return $this->response->noContent();
+            }else{
+                return $this->response->error('您没有该权限',403);
             }
+        }else{
+            return $this->response->error('资源未找到',404);
         }
     }
     public function quesGet(){
