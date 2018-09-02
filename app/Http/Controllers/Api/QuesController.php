@@ -135,6 +135,29 @@ class QuesController extends Controller
         }
         return $this->response->noContent()->setStatusCode(201);
     }
+    public function quesDelete($id){
+        $category = QuesCategory::find($id);
+        $user = Auth::guard('ques')->user();
+        if($category){
+            if($user->admin == 1 || $user->id == $category->author){
+                $invest_questions = $category->invest_questions;
+                foreach ($invest_questions as $invest_question){
+                    $invest_question->options()->delete();
+                }
+                $category->invest_questions()->delete();
+
+                $login_questions = $category->login_questions;
+                if ($login_questions){
+                    foreach ($login_questions as $login_question){
+                        $login_question->input_options()->delete();
+                    }
+                }
+                $category->login_questions()->delete();
+                $category->delete();
+                return $this->response->noContent();
+            }
+        }
+    }
     public function quesGet(){
         $user = Auth::guard('ques')->user();
         if($user->admin==1){
@@ -181,8 +204,42 @@ class QuesController extends Controller
             if($now<$start||$now>$end) {
                 return $this->response->error('不在开放时间内',403);
             }
-            if(($category->user_required == 1 && count($userinfo) == 0)||count($answers)==0){
-                return $this->response->error('数据不合法',422);
+//            if(($category->user_required == 1 && count($userinfo) == 0)||count($answers)==0){
+//                return $this->response->error('数据不合法',422);
+//            }
+            //数据验证
+            $invest_questions = $category->invest_questions;
+            if ($category->user_required ==1 ){
+                $login_questions = $category->login_questions;
+                foreach ($login_questions as $login_question){
+                    if ($login_question->input_type == 1){
+                        $login_options = $login_question->input_options;
+                        $flag = 0;
+                        foreach ($login_options as $login_option){
+                            if ($login_option->field_value == $userinfo[$login_question->input_num]){
+                                $flag = 1;
+                                break;
+                            }
+                        }
+                        if ($flag == 0){
+                            return $this->response->error($login_question->input_title.'数据不合法',422);
+                        }
+                    }
+                 }
+            }
+            foreach ($invest_questions as $invest_question){
+                if ($invest_question->input_type == 1){
+                    $flag = 0;
+                    foreach ($invest_question->options as $invest_option){
+                        if ($answers[$invest_question->input_num] == $invest_option->field_value){
+                            $flag = 1;
+                            break;
+                        }
+                    }
+                    if($flag == 0){
+                        return $this->response->error($invest_question->input_title.'数据不合法',422);
+                    }
+                }
             }
             $user = QuesAnswer::create([
                 'catid'=>$id,

@@ -15,8 +15,8 @@ class CreateServiceExamGklsTable extends Migration
     {
         Schema::create('service_exam_gkls', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('course')->nullable();
-            $table->string('gkl',10)->nullable();
+            $table->string('course')->nullable();  //课程名称
+            $table->string('gkl',10)->nullable();  //挂科率
             $table->timestamps();
         });
     }

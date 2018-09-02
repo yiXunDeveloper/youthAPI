@@ -13,14 +13,15 @@ class CreateQuesInvestQuestionsTable extends Migration
      */
     public function up()
     {
+        //创建问卷调查问题表
         Schema::create('ques_invest_questions', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('key',20)->unique();
-            $table->integer('catid')->nullable();
-            $table->integer('input_num')->nullable();
-            $table->string('input_title')->nullable();
-            $table->integer('input_type')->nullable();
-            $table->boolean('is_required')->default(false);
+            $table->string('key',20)->unique();     //问卷调查问题的key，具有唯一性
+            $table->integer('catid')->nullable();   //所属问卷的id
+            $table->integer('input_num')->nullable(); //题号
+            $table->string('input_title')->nullable(); //标题
+            $table->integer('input_type')->nullable();  //类型，1单选，2多选，3填空
+            $table->boolean('is_required')->default(false);  //是否必填
             $table->timestamps();
         });
     }

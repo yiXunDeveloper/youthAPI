@@ -13,11 +13,12 @@ class CreateQuesAnswersTable extends Migration
      */
     public function up()
     {
+        //创建用户答案表
         Schema::create('ques_answers', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('catid')->nullable();
-            $table->longText('userinfo')->nullable();
-            $table->longText('answers')->nullable();
+            $table->integer('catid')->nullable();  //所属问卷id
+            $table->longText('userinfo')->nullable(); //用户信息 json格式
+            $table->longText('answers')->nullable();  //用户答案，json格式
             $table->timestamps();
         });
     }

@@ -13,12 +13,12 @@ class CreateQuesInvestOptionsTable extends Migration
      */
     public function up()
     {
+        //创建问卷调查选项
         Schema::create('ques_invest_options', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('key',20)->unique();
-            $table->string('qkey',20)->nullable();
-           $table->string('field_label')->nullable();
-           $table->string('field_value')->nullable();
+            $table->string('qkey',20)->nullable();   //问卷调查问题的key，用于关联问卷调查问题
+           $table->string('field_label')->nullable();  //问卷调查选项的显示值
+           $table->string('field_value')->nullable();   //传递值
             $table->timestamps();
         });
     }

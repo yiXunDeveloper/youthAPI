@@ -20,7 +20,6 @@ $api->version('v1',[
     'namespace' => 'App\Http\Controllers\Api',
 ],function ($api){
 //问卷调查start
-    $api->get('question','FeatureController@question');
 
     $api->post('ques/register','QuesController@register'); //管理员注册
     $api->post('ques/login','QuesController@login');    //管理员登录
@@ -28,10 +27,18 @@ $api->version('v1',[
     //管理员进行的操作
     $api->group(['middleware'=>['auth:ques']],function ($api){
         $api->get('ques','QuesController@quesGet');//问卷列表
+        $api->post('ques/create','QuesController@quesCreate');  //创建问卷
+        $api->delete('ques/{id}','QuesController@quesDelete');   //删除问卷及其关联
     });
-    $api->post('ques/create','QuesController@quesCreate');  //创建问卷
     $api->post('ques/{id}','QuesController@quesStore');
-    $api->post('ques/submit','QuesController@quesSubmit');
+    //限制访问频率  1分钟60次
+    $api->group([
+        'middleware' => 'api.throttle',
+        'limit' => config('api.rate_limits.sign.limit'),
+        'expires' => config('api.rate_limits.sign.expires'),
+    ],function ($api){
+
+    });
 //问卷调查end
 
 

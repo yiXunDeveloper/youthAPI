@@ -13,14 +13,15 @@ class CreateQuesCategorysTable extends Migration
      */
     public function up()
     {
+        //创建调查问卷表
         Schema::create('ques_categorys', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('title')->nullable();
-            $table->string('description')->nullable();
-            $table->boolean('user_required')->default(false);
-            $table->integer('author')->nullable();
-            $table->dateTime('start_at')->nullable();
-            $table->dateTime('end_at')->nullable();
+            $table->string('title')->nullable();  //问卷标题
+            $table->string('description')->nullable();  //问卷副标题/描述
+            $table->boolean('user_required')->default(false);  //是否需要填写用户信息0不填写，1填写
+            $table->integer('author')->nullable();  //创建问卷人的id
+            $table->dateTime('start_at')->nullable();  //问卷开始时间
+            $table->dateTime('end_at')->nullable();   //问卷结束时间
             $table->timestamps();
         });
     }
