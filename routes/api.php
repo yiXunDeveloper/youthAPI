@@ -30,14 +30,13 @@ $api->version('v1',[
         $api->post('ques/create','QuesController@quesCreate');  //创建问卷
         $api->delete('ques/{id}','QuesController@quesDelete');   //删除问卷及其关联
     });
-    $api->post('ques/{id}','QuesController@quesStore');
     //限制访问频率  1分钟60次
     $api->group([
         'middleware' => 'api.throttle',
         'limit' => config('api.rate_limits.sign.limit'),
         'expires' => config('api.rate_limits.sign.expires'),
     ],function ($api){
-
+        $api->post('ques/{id}','QuesController@quesStore');
     });
 //问卷调查end
 
