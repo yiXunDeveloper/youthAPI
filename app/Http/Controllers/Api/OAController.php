@@ -26,6 +26,7 @@ class OAController extends Controller
                 //需要判断用户角色
                 if(!$user->duty){
                     $status = 4;//无效值班
+                    return '没有值班任务，无效值班';
                 }else{
                     $arr = explode('|',$user->duty->duty_at);
                     $timer = 70;
@@ -46,10 +47,11 @@ class OAController extends Controller
                             case '2': $start_at = strtotime('10:10');$end_at= strtotime('12:00');break;
                             case '3': $start_at = strtotime('14:00');$end_at = strtotime('15:50');break;
                             case '4': $start_at = strtotime('16:00');$end_at = strtotime('17:50');break;
-                            case '5': $start_at = strtotime('21:00');$end_at = strtotime('23:00');break;
+                            case '5': $start_at = strtotime('19:00');$end_at = strtotime('21:00');break;
                             default:
                                  $start_at = strtotime('00:00');$end_at = strtotime('00:00');
                         }
+                        dd(date('Y-m-d H:i:s',$start_at));
                         if (strtotime($record->created_at) < $start_at && time() < $end_at && time() > $start_at) {
                             // 签到时间比规定时间早，签退时间比规定时间早
                             $duration = ceil((time() - $start_at) / 60);
