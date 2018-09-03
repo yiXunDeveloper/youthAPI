@@ -274,7 +274,12 @@ class QuesController extends Controller
                 foreach ($answers as $answer){
                     $a = json_decode($answer->userinfo,true);
                     $aa = array();
-                    $b = json_decode($answer->answers,true);
+                    $b = json_decode($answer->answers.true);
+                    foreach ($b as $k => $v){
+                        if (is_array($v)){
+                            $b[$k] = implode(' ',$v);
+                        }
+                    }
                     $bb = array_values($b);
                     foreach ($a as $k => $v){
 //                        dd($v);
@@ -299,6 +304,11 @@ class QuesController extends Controller
             }else{
                 foreach ($answers as $answer){
                     $b = json_decode($answer->answers.true);
+                    foreach ($b as $k => $v){
+                        if (is_array($v)){
+                            $b[$k] = implode(' ',$v);
+                        }
+                    }
                     $bb = array_values($b);
                     array_push($data,$bb);
                 }
@@ -310,7 +320,7 @@ class QuesController extends Controller
             Excel::create($category->title,function ($excel) use ($title,$data){
                 $excel->sheet('sheet1',function ($sheet) use ($title,$data){
                     $sheet->rows($data);
-//                    $sheet->prependRow($title);
+                    $sheet->prependRow($title);
                 });
             })->export('xls');
         }else{
