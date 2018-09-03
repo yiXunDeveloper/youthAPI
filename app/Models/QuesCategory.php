@@ -20,4 +20,7 @@ class QuesCategory extends Model
     public function user(){
         return $this->belongsTo('App\Models\QuesAdmin','author','id');
     }
+    public function answers(){
+        return $this->hasMany('App\Models\QuesAnswer','catid','id');
+    }
 }

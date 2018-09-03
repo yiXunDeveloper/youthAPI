@@ -15,7 +15,8 @@ use Faker\Provider\ka_GE\DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
-
+use Tymon\JWTAuth\JWTAuth;
+use Excel;
 class QuesController extends Controller
 {
     public function register(Request $request){
@@ -253,13 +254,74 @@ class QuesController extends Controller
         }
        return $this->response->error('问卷未找到',404);
     }
+    public function quesExport(Request $request,$id){
+        $user = Auth::guard('ques')->user();
+        $category = QuesCategory::find($id);
+        if(!$category){
+            return $this->response->error('资源未找到',404);
+        }
+        if($user && ($user->id ==$category->author || $user->admin ==1)){
+            $answers = $category->answers;
+            $invest_questions = $category->invest_questions;
+            $title = array();
+            $data =array();
+            if($category->user_required){
+                //验证用户信息
+                $login_questions = $category->login_questions;
+                foreach ($login_questions as $login_question){
+                    array_push($title,$login_question->input_title);
+                }
+                foreach ($answers as $answer){
+                    $a = json_decode($answer->userinfo,true);
+                    $aa = array();
+                    $b = json_decode($answer->answers,true);
+                    $bb = array_values($b);
+                    foreach ($a as $k => $v){
+//                        dd($v);
+                        if($login_questions[$k-1]->input_type == 1){
+                            foreach ($login_questions[$k-1]->input_options as $option){
+                                if($option->field_value == $v){
+//                                    dd(123);
+                                    array_push($aa,$option->field_label);
+//                                    dump($option);
+                                    break;
+                                }
+                            }
+                        }else{
+                            array_push($aa,$v);
+                        }
 
+                    }
+                    array_push($data,array_merge($aa,$bb));
+//                    dump($aa);
+//                    dd($data);
+                }
+            }else{
+                foreach ($answers as $answer){
+                    $b = json_decode($answer->answers.true);
+                    $bb = array_values($b);
+                    array_push($data,$bb);
+                }
+            }
+            foreach ($invest_questions as $invest_question){
+                array_push($title,$invest_question->input_num);
+            }
+            Excel::create($category->title,function ($excel) use ($title,$data){
+                $excel->sheet('sheet1',function ($sheet) use ($title,$data){
+                    $sheet->row($title);
+                    $sheet->rows($data);
+                });
+            })->export('xls');
+        }else{
+            return $this->response->error('401','您没有该权限');
+        }
+    }
     protected function respondWithToken($token)
     {
         return $this->response->array(['data'=>[
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'expires_in' => Auth::guard('preordain')->factory()->getTTL() * 60 * 12
+            'expires_in' => Auth::guard('ques')->factory()->getTTL() * 60 * 12
         ],'errCode'=>200]);
     }
 }

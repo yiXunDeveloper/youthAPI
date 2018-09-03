@@ -28,6 +28,8 @@ $api->version('v1',[
         $api->get('ques','QuesController@quesGet');//问卷列表
         $api->post('ques/create','QuesController@quesCreate');  //创建问卷
         $api->delete('ques/{id}','QuesController@quesDelete');   //删除问卷及其关联
+        $api->get('ques/{id}/export','QuesController@quesExport');   //导出调查问卷
+
     });
     $api->get('ques/{id}','QuesController@quesDetail');//问卷详情
     //限制访问频率  1分钟60次
