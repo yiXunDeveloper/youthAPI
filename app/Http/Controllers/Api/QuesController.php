@@ -310,7 +310,7 @@ class QuesController extends Controller
             Excel::create($category->title,function ($excel) use ($title,$data){
                 $excel->sheet('sheet1',function ($sheet) use ($title,$data){
                     $sheet->rows($data);
-                    $sheet->prependRow($title);
+//                    $sheet->prependRow($title);
                 });
             })->export('xls');
         }else{
