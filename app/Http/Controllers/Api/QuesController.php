@@ -306,6 +306,7 @@ class QuesController extends Controller
             foreach ($invest_questions as $invest_question){
                 array_push($title,$invest_question->input_num);
             }
+            dd($title);
             Excel::create($category->title,function ($excel) use ($title,$data){
                 $excel->sheet('sheet1',function ($sheet) use ($title,$data){
                     $sheet->rows($data);
