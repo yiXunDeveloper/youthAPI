@@ -276,9 +276,9 @@ class QuesController extends Controller
                     $aa = array();
 //                    dd($answer->answers);
                     $b = json_decode($answer->answers,true);
-                    dump('当前内存占用情况：'.memory_get_usage()/1024);
-                    unset($answer);
-                    dd('释放后内存占用情况：'.memory_get_usage()/1024);
+//                    dump('当前内存占用情况：'.memory_get_usage()/1024);
+//                    unset($answer);
+//                    dd('释放后内存占用情况：'.memory_get_usage()/1024);
                     foreach ($b as $k => $v){
                         if (is_array($v)){
                             $b[$k] = implode(' ',$v);
@@ -308,7 +308,7 @@ class QuesController extends Controller
             }else{
                 foreach ($answers as $answer){
                     $b = json_decode($answer->answers.true);
-                    unset($answer->answers);
+//                    unset($answer->answers);
                     foreach ($b as $k => $v){
                         if (is_array($v)){
                             $b[$k] = implode(' ',$v);
