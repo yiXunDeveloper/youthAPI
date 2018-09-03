@@ -20,7 +20,7 @@ class Cors
         $allow_origin = [
             'http://localhost:3000',
             'https://lab.youthol.cn',
-            'https://oa.youthol.cn',
+            'http://oa.youthol.cn',
         ];
         if(in_array($origin,$allow_origin)){
             $response->header('Access-Control-Allow-Origin', $origin);
