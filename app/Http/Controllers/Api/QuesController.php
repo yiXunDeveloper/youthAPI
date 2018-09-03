@@ -275,6 +275,7 @@ class QuesController extends Controller
                     $a = json_decode($answer->userinfo,true);
                     $aa = array();
                     $b = json_decode($answer->answers.true);
+                    dd($b);
                     foreach ($b as $k => $v){
                         if (is_array($v)){
                             $b[$k] = implode(' ',$v);

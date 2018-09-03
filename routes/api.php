@@ -32,7 +32,7 @@ $api->version('v1',[
 
     });
     $api->get('ques/{id}','QuesController@quesDetail');//问卷详情
-    //限制访问频率  1分钟60次
+    //限制访问频率  1分钟1次
     $api->group([
         'middleware' => 'api.throttle',
         'limit' => config('api.rate_limits.sign.limit'),
