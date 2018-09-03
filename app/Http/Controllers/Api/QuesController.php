@@ -274,8 +274,11 @@ class QuesController extends Controller
                 foreach ($answers as $answer){
                     $a = json_decode($answer->userinfo,true);
                     $aa = array();
-                    $b = json_decode($answer->answers.true);
-                    dd($b);
+//                    dd($answer->answers);
+                    $b = json_decode($answer->answers,true);
+                    dump('当前内存占用情况：'.memory_get_usage()/1024);
+                    unset($answer);
+                    dd('释放后内存占用情况：'.memory_get_usage()/1024);
                     foreach ($b as $k => $v){
                         if (is_array($v)){
                             $b[$k] = implode(' ',$v);
@@ -305,6 +308,7 @@ class QuesController extends Controller
             }else{
                 foreach ($answers as $answer){
                     $b = json_decode($answer->answers.true);
+                    unset($answer->answers);
                     foreach ($b as $k => $v){
                         if (is_array($v)){
                             $b[$k] = implode(' ',$v);
@@ -321,7 +325,16 @@ class QuesController extends Controller
             Excel::create($category->title,function ($excel) use ($title,$data){
                 $excel->sheet('sheet1',function ($sheet) use ($title,$data){
                     $sheet->rows($data);
-                    $sheet->prependRow($title);
+                    $sheet->prependRow($title)->
+                    row(1, function ($row) {
+                        /** @var CellWriter $row */
+                        $row->setFont(array(   //设置标题的样式
+                            'family' => 'Calibri',
+                            'size' => '16',
+                            'bold' => true
+                        ));
+                    });
+
                 });
             })->export('xls');
         }else{

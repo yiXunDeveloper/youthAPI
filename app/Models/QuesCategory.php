@@ -15,7 +15,7 @@ class QuesCategory extends Model
     }
     public function invest_questions()
     {
-        return $this->hasMany('App\Models\QuesInvestQuestion','catid','id');
+        return $this->hasMany('App\Models\QuesInvestQuestion','catid','id')->orderBy('input_num','ASC');
     }
     public function user(){
         return $this->belongsTo('App\Models\QuesAdmin','author','id');
