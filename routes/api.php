@@ -54,10 +54,9 @@ $api->version('v1',[
     $api->post('preordain/adminlogin','PreordainController@adminlogin');//管理登录
     $api->get('preordain/time','PreordainController@lastTime');//获取上次设置的时间
     $api->get('preordain/list','PreordainController@latestList');//获取所有时间段
-    $api->any('preordain/export/{id}','PreordainController@export'); //导出数据
-
     //登陆后才可以进行的操作
     $api->group(['middleware'=>['auth:preordain']],function ($api) {
+        $api->any('preordain/{id}/export','PreordainController@export'); //导出数据
         $api->get('preordain/userinfo','PreordainController@userinfo');//获取登录者的name
     });
 
