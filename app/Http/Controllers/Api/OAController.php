@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\OaEquipment;
+use App\Models\OaEquipmentRecord;
+use App\Models\OaSchedule;
 use App\Models\OaSigninDuty;
 use App\Models\OaSigninRecord;
 use App\Models\OaYouthUser;
@@ -9,7 +12,7 @@ use Illuminate\Http\Request;
 
 class OAController extends Controller
 {
-    //
+    //获取当日签到记录
     public function getSignInLists(){
         $lists = OaSigninRecord::whereDate('created_at',date('Y-m-d'))->orderBy('updated_at','DESC')->get();
         foreach ($lists as $list){
@@ -17,6 +20,7 @@ class OAController extends Controller
         }
         return $this->response->array(['data'=>$lists->toArray()])->setStatusCode(200);
     }
+    //   签到/签退
     public function updateSignRecord(Request $request){
         $sdut_id = $request->sdut_id;
         $user = OaYouthUser::where('sdut_id',$sdut_id)->first();
@@ -26,7 +30,6 @@ class OAController extends Controller
                 //需要判断用户角色
                 if(!$user->duty){
                     $status = 4;//无效值班
-                    return '没有值班任务，无效值班';
                 }else{
                     $arr = explode('|',$user->duty->duty_at);
                     $timer = 70;
@@ -92,4 +95,91 @@ class OAController extends Controller
             return $this->response->error('用户不存在',404);
         }
     }
+    public function getScheduleLists(){
+        $last = date('Y-m-d H:i:s',strtotime("-1 month"));
+        $lists = OaSchedule::whereTime('created_at','>',$last)->orderBy('updated_at','DESC')->get();
+        return $this->response->array(['data'=>$lists->toArray])->setStatusCode(200);
+    }
+    public function getSchedule(Request $request,$id){
+        $schedule = OaSchedule::find($id);
+        return $this->response->array(['data'=>$schedule])->setStatusCode(200);
+    }
+    public function scheduleStore(Request $request){
+        $this->validate($request,[
+            'event_name' => '',
+            'event_place' => '',
+            'event_date' => '',
+            'sponsor' => ''
+        ]);
+        //create
+        //return
+    }
+    public function scheduleUpdate(Request $request,$id){
+        $this->validate($request,[
+            'user'=>'required|exist:oa_youth_users,sdut_id'
+        ]);
+        $schedule = OaSchedule::find($id);
+        $schedule->status = 1;
+        $schedule->save();
+        return $this->response->array(['data'=>$schedule])->setStatusCode(200);
+    }
+    public function scheduleDelete($id){
+        $schedule = OaSchedule::find($id);
+        $schedule->delete();
+        return $this->response->noContent();
+    }
+
+
+    public function equipmentLists(){
+        //查所有
+    }
+    public function equipment($id){
+
+    }
+    public function equipmentStore(Request $request){
+        $this->validate($request,[
+            'device_name' => 'required',
+            'device_type' => 'required',
+        ]);
+        //store
+        //return
+    }
+    public function euqipmentDelete($id){
+        //有token
+        OaEquipment::find($id)->delete();
+        return $this->response->noContent();
+    }
+
+    public function equipmentRecordLists(){
+        //查一个月
+    }
+    public function equipmentRecordStore(Request $request){
+        $this->validate($request,[
+            'device'=>'required|exist:oa_equipment,id',
+            'activity'=>'required',
+            'lend_at' => 'datetime',
+            'lend_user' => '',        //站内学号，站外名称
+            'memo_user' => 'required|exist:oa_equipment,sdut_id'
+        ]);
+        //create
+        //return
+    }
+    public function equipmentRecordUpdate(Request $request,$id){
+        $this->validate($request,[
+            'remome_user' => 'required|exist:oa_equipment,sdut_id',
+        ]);
+        $equipment_record = OaEquipmentRecord::find($id);
+        if ($equipment_record){
+            $equipment_record->return_at = date('Y-m-d H:i:s');
+            $equipment_record->remome_user = $request->remome_user;
+            $equipment_record->save();
+        }
+    }
+    public function equipmentDelete($id){
+        //验证token
+        OaEquipmentRecord::find($id)->delete();
+        return $this->response->noContent();
+    }
+
+    
 }
