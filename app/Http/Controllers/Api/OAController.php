@@ -18,7 +18,7 @@ class OAController extends Controller
         foreach ($lists as $list){
             $list->user;
         }
-        return $this->response->array(['data'=>$lists->toArray()])->setStatusCode(200);
+        return $this->response->array(['data'=>count($lists) > 0 ? $lists->toArray() : $lists])->setStatusCode(200);
     }
     //   签到/签退
     public function updateSignRecord(Request $request){
@@ -98,7 +98,10 @@ class OAController extends Controller
     public function getScheduleLists(){
         $last = date('Y-m-d H:i:s',strtotime("-1 month"));
         $lists = OaSchedule::whereTime('created_at','>',$last)->orderBy('updated_at','DESC')->get();
-        return $this->response->array(['data'=>$lists->toArray])->setStatusCode(200);
+        foreach ($lists as $list){
+            $list->sponsor_user;
+        }
+        return $this->response->array(['data'=>count($lists) > 0 ? $lists->toArray() : $lists])->setStatusCode(200);
     }
     public function getSchedule($id){
         $schedule = OaSchedule::find($id);
@@ -109,7 +112,7 @@ class OAController extends Controller
             'event_name' => 'required',
             'event_place' => 'required',
             'event_date' => 'required|date',
-            'sponsor' => 'required|exist:oa_youth_users,sdut_id'
+            'sponsor' => 'required|exists:oa_youth_users,sdut_id'
         ]);
         $schedule = OaSchedule::create($request->all());
 
@@ -117,13 +120,13 @@ class OAController extends Controller
     }
     public function scheduleUpdate(Request $request,$id){
         $this->validate($request,[
-            'user'=>'required|exist:oa_youth_users,sdut_id'
+            'user'=>'required|exists:oa_youth_users,sdut_id'
         ]);
         $schedule = OaSchedule::find($id);
         if (!$schedule){
             return $this->response->errorNotFound('计划表未找到');
         }
-        $schedule->status = 1;
+        $schedule->event_status = 1;
         $schedule->save();
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
     }
@@ -167,16 +170,36 @@ class OAController extends Controller
         //查一个月
         $last = date('Y-m-d H:i:s',strtotime("-1 month"));
         $lists = OaEquipmentRecord::whereTime('created_at','>',$last)->orderBy('updated_at','DESC')->get();
+        foreach ($lists as $k =>$v){
+            $v->device;
+            $v->mome_user_name;
+            if (is_numeric($v->lend_user)){
+                //如果借用人事网站内部人员  通过模型关联获取信息
+                $v->lend_user_name;
+            }else{
+                //否则，获取其lend_user
+                $user = new OaYouthUser();
+                $user->name = $v->lend_user;
+                $lists[$k]->lend_user_name = $user;
+            }
+            if ($v->remome_user){
+                $v->remome_user_name;
+            }
+        }
         return $this->response->array(['data'=>$lists]);
     }
     public function equipmentRecordStore(Request $request){
         $this->validate($request,[
-            'device'=>'required|exist:oa_equipment,id',
+            'device'=>'required|exists:oa_equipments,id',
             'activity'=>'required',
-            'lend_at' => 'datetime',
+            'lend_at' => 'date',
             'lend_user' => 'required',        //站内学号，站外名称
-            'memo_user' => 'required|exist:oa_equipment,sdut_id'
+            'memo_user' => 'required|exists:oa_youth_users,sdut_id'
         ]);
+        if(OaEquipment::find($request->id)->status == 1){
+            //设备已经被借用
+            return $this->response->error('设备已被借用，不能重复借用',403);
+        }
         $sdut_id = $request->lend_user;
         if (strlen((int)$sdut_id) == strlen($sdut_id)){
             //全数字
@@ -188,7 +211,25 @@ class OAController extends Controller
             //不是全是字符串
             return $this->response->error('数据不合法',422);
         }
-        $record = OaEquipmentRecord::create($request->all());
+        $record = OaEquipmentRecord::create([
+            'device_id' => $request->device,
+            'activity' => $request->activity,
+            'lend_at' => $request->lend_at,
+            'lend_user' => $request->lend_user,
+            'memo_user' => $request->memo_user,
+        ]);
+        $record->device;
+        if (is_numeric($record->lend_user)){
+            $record->lend_user_name;
+        }else{
+            $user = new OaYouthUser();
+            $user->name = $record->lent_user;
+            $record->lend_user_name = $user;
+        }
+        $record->mome_user_name;
+        if ($record->remome_user){
+            $record->remome_user_name;
+        }
         return $this->response->array(['data'=>$record])->setStatusCode(201);
     }
     public function equipmentRecordUpdate(Request $request,$id){

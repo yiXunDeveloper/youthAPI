@@ -20,7 +20,7 @@ class CreateOaSchedulesTable extends Migration
             $table->string('event_place',90);    //活动地点
             $table->dateTIme('event_date');     //活动时间
             $table->integer('event_status')->default(0);  //活动状态 0未完成，1已完成
-            $table->string('sponser',11);     //发起人
+            $table->string('sponsor',11);     //发起人
             $table->timestamps();
         });
     }

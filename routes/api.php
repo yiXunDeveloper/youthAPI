@@ -79,9 +79,20 @@ $api->version('v1',[
 //OA办公系统start
     $api->get('oa/signin','OAController@getSigninLists');
     $api->post('oa/signin','OAController@updateSignRecord');
-    $api->get('oa/schedule','OAController@getScheduleLists');
+    $api->get('oa/schedules','OAController@getScheduleLists');
     $api->get('oa/schedule/{id}','OAController@getSchedule');
-
+    $api->post('oa/schedule','OAController@scheduleStore');
+    $api->put('oa/schedule/{id}','OAController@scheduleUpdate');
+    $api->delete('oa/schedule/{id}','OAController@ScheduleDelete');         //!!加权限验证
+    $api->get('oa/equipments','OAController@equipmentLists');
+    $api->get('oa/equipment/{id}','OAController@equipment');
+    $api->post('oa/equipment','OAController@equipmentStore');
+    $api->put('oa/equipment/{id}','OAController@equipmentUpdate');
+    $api->delete('oa/equipment/{id}','OAController@equipmentDelete');
+    $api->get('oa/devices','OAController@equipmentRecordLists');
+    $api->post('oa/device','OAController@equipmentRecordStore');  //增加借阅记录        bug
+    $api->put('oa/device/{id}','OAController@equipmentRecordUpdate');  //更新
+    $api->delete('oa/device/{id}','OAController@equipmentRecordDelete');  //删除
 
 
 
