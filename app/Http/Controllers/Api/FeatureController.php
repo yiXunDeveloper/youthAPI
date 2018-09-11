@@ -13,26 +13,6 @@ class FeatureController extends Controller
     {
 
     }
-    public function question()
-    {
-        $catid = \request('catid');
-        $question= QuesCategory::find($catid);
-        if(!count($question))
-        {
-            //   未找到该问卷
-        }
-        $logins = $question->fields;
-        foreach ($logins as $login)
-        {
-            $login->input_options;
-        }
-        $invests = $question->questions;
-        foreach ($invests as $invest)
-        {
-            $invest->input_options;
-        }
-        return $question;
-    }
     public function newStudent(Request $request)
     {
         $num = $request->num;
@@ -64,6 +44,80 @@ class FeatureController extends Controller
 //       $data = $this->http_request_post($url,['ticketNumber'=>'18371202151375'],1);
 //        return $data;
     }
+
+    public function index(Request $request){
+        $school = $request->school;
+        $dormitory = $request->dormitory;
+        $room = $request->room;
+
+        $school = 0;
+        $dormitory = 'E01#';
+        $room = 102;
+        $url_cookie='http://hqfw.sdut.edu.cn';
+        $this->cookie_file = public_path('cookie\cookie.txt');//选择cookie储存路径
+        $this->get_cookie($url_cookie);  //获取cookie
+        $url1 = 'http://hqfw.sdut.edu.cn/login.aspx';  //带着cookie获取input参数
+        $res1 = $this->http_request_post($url1,'',true);
+        preg_match_all('#<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="([^<>]+)" />#', $res1, $value1);
+        preg_match_all('#<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="([^<>]+)" />#', $res1, $value2);
+        $post1=array(
+            '__VIEWSTATE'=>$value1[1][0],
+            '__EVENTVALIDATION'=>$value2[1][0],
+            'ctl00$MainContent$txtName'=>'孙骞',
+            'ctl00$MainContent$txtID'=>'15110201098',
+            'ctl00$MainContent$btnTijiao'=>'登录'
+        );
+        $this->http_request_post($url1,$post1,true);  //带着cookie登录
+        $url2 = 'http://hqfw.sdut.edu.cn/stu_elc.aspx';             //查询地址
+        $res2 = $this->http_request_post($url2,'',true);  //带着cookie获取input参数
+        preg_match_all('#<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="([^<>]+)" />#', $res2, $value3);
+        preg_match_all('#<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="([^<>]+)" />#', $res2, $value4);
+        if ($school == 1){
+            //西校区
+            $building='ctl00$MainContent$buildingwest';
+            $campus='1';
+        }else{
+            $building='ctl00$MainContent$buildingeast';
+            $campus='0';
+        }
+
+        $post2=array(
+            'EVENTTARGET'=>'ctl00$MainContent$campus',
+            '__EVENTARGUMENT'=>'',
+            '__LASTFOCUS'=>'',
+            '__VIEWSTATE'=>$value3[1][0],
+            '__EVENTVALIDATION'=>$value4[1][0],
+            'ctl00$MainContent$campus'=>$campus,
+            'ctl00$MainContent$buildingeast'=>$dormitory,
+            'ctl00$MainContent$roomnumber'=>$room,
+            'ctl00$MainContent$Button1'=>'查询',
+            'ctl00$MainContent$TextBox1'=>'请先登录，再选择楼栋和输入房间号查询!'
+        );
+//        dd($post2);
+        $res3 = $this->http_request_post($url2,$post2,true);  //带着cookie查询电费
+        return $res3;
+        preg_match_all('#您所查询的房间为：([^<>]+)。
+ 在([^<>]+)时，所余电量为：([^<>]+)度。
+ 根据您的用电规律，所余电量可用 ([^<>]+)。
+ 当前用电状态为：([^<>]+)#', $res3, $value5);
+//    dd($value5);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     function http_request_get($url){
         $curl = curl_init(); // 启动一个CURL会话
         curl_setopt($curl, CURLOPT_URL, $url);
@@ -87,7 +141,6 @@ class FeatureController extends Controller
         curl_setopt($curl, CURLOPT_POST, 1); // 发送一个常规的Post请求
         if($use_cookie){
             curl_setopt($curl, CURLOPT_COOKIEFILE, $this->cookie_file);
-//            curl_setopt($curl, CURLOPT_COOKIE, 'JSESSIONID=6135581C8A078A9F173ED0D8B2ACC193');
         }
         curl_setopt($curl, CURLOPT_POSTFIELDS, $data); // Post提交的数据包
         curl_setopt($curl, CURLOPT_TIMEOUT, 30); // 设置超时限制防止死循环
@@ -101,7 +154,7 @@ class FeatureController extends Controller
         return $tmpInfo; // 返回数据，json格式
     }
     function get_cookie($url){
-        $this->cookie_file = storage_path('app/public/cookie.txt');
+//        $this->cookie_file = storage_path('app\public\cookie.txt');
 //        $curl = curl_init();
 //        curl_setopt($curl, CURLOPT_URL, $url);
 //        curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
@@ -112,16 +165,21 @@ class FeatureController extends Controller
 //        curl_setopt($curl, CURLOPT_HEADER, 0);
 //        curl_setopt($curl, CURLOPT_HTTPGET, 1);
 //        curl_setopt($curl,  CURLOPT_COOKIEJAR, $this->cookie_file);
-        $curl = curl_init();
-        curl_setopt($curl, CURLOPT_URL, 'http://211.64.28.125/sdut_q/afterlog?code=code&state=QUERY');
-        curl_setopt($curl, CURLOPT_COOKIEJAR, $this->cookie_file);  //保存cookie
-        curl_setopt($curl, CURLOPT_HEADER, 0);
-        curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
-//        $url = Storage::temporaryUrl(
-//            'file.jpg', now()->addMinutes(5)
-//        );
-        $result = curl_exec($curl);
-        curl_close($curl);
+//
+//        $result = curl_exec($curl);
+//        curl_close($curl);
+//        return $result;
+        $userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36';
+        $ch = curl_init();
+        curl_setopt($ch, CURLOPT_URL, $url);
+        curl_setopt($ch, CURLOPT_HEADER, 0);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER,1);
+        curl_setopt($ch, CURLOPT_USERAGENT, $userAgent);
+        curl_setopt($ch, CURLOPT_REFERER, $url);
+        curl_setopt($ch, CURLOPT_POSTFIELDS,'');
+        curl_setopt($ch, CURLOPT_COOKIEJAR, $this->cookie_file);
+        $result=curl_exec($ch);
+        curl_close($ch);
         return $result;
     }
 }

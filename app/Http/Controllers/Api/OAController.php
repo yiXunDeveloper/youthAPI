@@ -100,31 +100,38 @@ class OAController extends Controller
         $lists = OaSchedule::whereTime('created_at','>',$last)->orderBy('updated_at','DESC')->get();
         return $this->response->array(['data'=>$lists->toArray])->setStatusCode(200);
     }
-    public function getSchedule(Request $request,$id){
+    public function getSchedule($id){
         $schedule = OaSchedule::find($id);
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
     }
     public function scheduleStore(Request $request){
         $this->validate($request,[
-            'event_name' => '',
-            'event_place' => '',
-            'event_date' => '',
-            'sponsor' => ''
+            'event_name' => 'required',
+            'event_place' => 'required',
+            'event_date' => 'required|date',
+            'sponsor' => 'required|exist:oa_youth_users,sdut_id'
         ]);
-        //create
-        //return
+        $schedule = OaSchedule::create($request->all());
+
+        return $this->response->array(['data'=>$schedule])->setStatusCode(201);
     }
     public function scheduleUpdate(Request $request,$id){
         $this->validate($request,[
             'user'=>'required|exist:oa_youth_users,sdut_id'
         ]);
         $schedule = OaSchedule::find($id);
+        if (!$schedule){
+            return $this->response->errorNotFound('计划表未找到');
+        }
         $schedule->status = 1;
         $schedule->save();
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
     }
     public function scheduleDelete($id){
         $schedule = OaSchedule::find($id);
+        if (!$schedule){
+            return $this->response->errorNotFound('计划表未找到');
+        }
         $schedule->delete();
         return $this->response->noContent();
     }
@@ -132,17 +139,23 @@ class OAController extends Controller
 
     public function equipmentLists(){
         //查所有
+        $equipments = OaEquipment::all();
+        return $this->response->array(['data'=>$equipments]);
     }
     public function equipment($id){
-
+        $equipment = OaEquipment::find($id);
+        if(!$equipment){
+            return $this->response->errorNotFound('设备未找到');
+        }
+        return $this->response->array(['data'=>$equipment]);
     }
     public function equipmentStore(Request $request){
         $this->validate($request,[
-            'device_name' => 'required',
+            'device_name' => 'required|unique:oa_equipment,device_name',
             'device_type' => 'required',
         ]);
-        //store
-        //return
+        $equipment = OaEquipment::create($request->all());
+        return $this->response->array(['data'=>$equipment]);
     }
     public function euqipmentDelete($id){
         //有token
@@ -152,17 +165,31 @@ class OAController extends Controller
 
     public function equipmentRecordLists(){
         //查一个月
+        $last = date('Y-m-d H:i:s',strtotime("-1 month"));
+        $lists = OaEquipmentRecord::whereTime('created_at','>',$last)->orderBy('updated_at','DESC')->get();
+        return $this->response->array(['data'=>$lists]);
     }
     public function equipmentRecordStore(Request $request){
         $this->validate($request,[
             'device'=>'required|exist:oa_equipment,id',
             'activity'=>'required',
             'lend_at' => 'datetime',
-            'lend_user' => '',        //站内学号，站外名称
+            'lend_user' => 'required',        //站内学号，站外名称
             'memo_user' => 'required|exist:oa_equipment,sdut_id'
         ]);
-        //create
-        //return
+        $sdut_id = $request->lend_user;
+        if (strlen((int)$sdut_id) == strlen($sdut_id)){
+            //全数字
+            $user = OaYouthUser::where('sdut_id',$sdut_id)->first();
+            if(!$user){
+                return $this->response->errorNotFound('用户未找到');
+            }
+        }else if (!strlen((int)$sdut_id) == 0){
+            //不是全是字符串
+            return $this->response->error('数据不合法',422);
+        }
+        $record = OaEquipmentRecord::create($request->all());
+        return $this->response->array(['data'=>$record])->setStatusCode(201);
     }
     public function equipmentRecordUpdate(Request $request,$id){
         $this->validate($request,[
@@ -173,6 +200,9 @@ class OAController extends Controller
             $equipment_record->return_at = date('Y-m-d H:i:s');
             $equipment_record->remome_user = $request->remome_user;
             $equipment_record->save();
+            return $this->response->noContent();
+        }else{
+            return $this->response->errorNotFound('未找到该记录');
         }
     }
     public function equipmentDelete($id){

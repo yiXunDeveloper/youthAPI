@@ -76,10 +76,26 @@ $api->version('v1',[
 
 
 
-    //OA办公系统start
+//OA办公系统start
     $api->get('oa/signin','OAController@getSigninLists');
     $api->post('oa/signin','OAController@updateSignRecord');
+    $api->get('oa/schedule','OAController@getScheduleLists');
+    $api->get('oa/schedule/{id}','OAController@getSchedule');
 
+
+
+
+
+
+
+
+
+
+
+//OA办公系统end
+
+//测试
+    $api->get('service/test','FeatureController@index');
 
 
 

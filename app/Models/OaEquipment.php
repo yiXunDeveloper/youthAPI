@@ -7,4 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class OaEquipment extends Model
 {
     //
+    protected $guarded = ['id'];
 }
