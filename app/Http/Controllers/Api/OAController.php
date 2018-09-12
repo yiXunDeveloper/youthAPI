@@ -172,7 +172,7 @@ class OAController extends Controller
         $lists = OaEquipmentRecord::whereTime('created_at','>',$last)->orderBy('updated_at','DESC')->get();
         foreach ($lists as $k =>$v){
             $v->device;
-            $v->mome_user_name;
+            $v->memo_user_name;
             if (is_numeric($v->lend_user)){
                 //如果借用人事网站内部人员  通过模型关联获取信息
                 $v->lend_user_name;
@@ -226,7 +226,7 @@ class OAController extends Controller
             $user->name = $record->lent_user;
             $record->lend_user_name = $user;
         }
-        $record->mome_user_name;
+        $record->memo_user_name;
         if ($record->rememo_user){
             $record->rememo_user_name;
         }
