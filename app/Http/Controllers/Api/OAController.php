@@ -196,7 +196,7 @@ class OAController extends Controller
             'lend_user' => 'required',        //站内学号，站外名称
             'memo_user' => 'required|exists:oa_youth_users,sdut_id'
         ]);
-        if(OaEquipment::find($request->id)->status == 1){
+        if(OaEquipment::find($request->device)->status == 1){
             //设备已经被借用
             return $this->response->error('设备已被借用，不能重复借用',403);
         }
