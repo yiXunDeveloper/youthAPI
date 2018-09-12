@@ -234,7 +234,7 @@ class OAController extends Controller
     }
     public function equipmentRecordUpdate(Request $request,$id){
         $this->validate($request,[
-            'remome_user' => 'required|exists:oa_youth_user,sdut_id',
+            'remome_user' => 'required|exists:oa_youth_users,sdut_id',
         ]);
         $equipment_record = OaEquipmentRecord::find($id);
         if ($equipment_record){
