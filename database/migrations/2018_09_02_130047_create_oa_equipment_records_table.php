@@ -19,9 +19,9 @@ class CreateOaEquipmentRecordsTable extends Migration
             $table->string('activity');
             $table->dateTime('lend_at');
             $table->string('lend_user');   //这是谁
-            $table->string('memome_user');   //oa_youth_user_id?
+            $table->string('memo_user',11);   //oa_youth_user_id?
             $table->dateTime('return_at')->nullable();
-            $table->string('remome_user',64)->nullable();   //id?
+            $table->string('rememo_user',11)->nullable();   //id?
             $table->timestamps();
         });
     }

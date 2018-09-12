@@ -182,8 +182,8 @@ class OAController extends Controller
                 $user->name = $v->lend_user;
                 $lists[$k]->lend_user_name = $user;
             }
-            if ($v->remome_user){
-                $v->remome_user_name;
+            if ($v->rememo_user){
+                $v->rememo_user_name;
             }
         }
         return $this->response->array(['data'=>$lists]);
@@ -227,19 +227,19 @@ class OAController extends Controller
             $record->lend_user_name = $user;
         }
         $record->mome_user_name;
-        if ($record->remome_user){
-            $record->remome_user_name;
+        if ($record->rememo_user){
+            $record->rememo_user_name;
         }
         return $this->response->array(['data'=>$record])->setStatusCode(201);
     }
     public function equipmentRecordUpdate(Request $request,$id){
         $this->validate($request,[
-            'remome_user' => 'required|exists:oa_youth_users,sdut_id',
+            'rememo_user' => 'required|exists:oa_youth_users,sdut_id',
         ]);
         $equipment_record = OaEquipmentRecord::find($id);
         if ($equipment_record){
             $equipment_record->return_at = date('Y-m-d H:i:s');
-            $equipment_record->remome_user = $request->remome_user;
+            $equipment_record->rememo_user = $request->rememo_user;
             $equipment_record->save();
             return $this->response->noContent();
         }else{

@@ -18,7 +18,7 @@ class OaEquipmentRecord extends Model
     public function memo_user_name(){
         return $this->belongsTo('App\Models\OaYouthUser','memo_user','sdut_id');
     }
-    public function remome_user_name(){
-        return $this->belongsTo('App\Models\OaYouthUser','remome_user','sdut_id');
+    public function rememo_user_name(){
+        return $this->belongsTo('App\Models\OaYouthUser','rememo_user','sdut_id');
     }
 }
