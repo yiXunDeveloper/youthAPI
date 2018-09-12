@@ -9,7 +9,7 @@ class OaSchedule extends Model
     //
     protected $guarded = ['id'];
     public function sponsor_user(){
-        return $this->hasOne('App\Models\OaYouthUser','sdut_id','sponsor');
+        return $this->belongsTo('App\Models\OaYouthUser','sponsor','sdut_id');
     }
 
 }
