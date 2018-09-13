@@ -79,9 +79,9 @@ class OAController extends Controller
                         //不是今天值班
                         $status = $duration>=$timer ? 2 :4 ;
                     }
+                    $record->duration = $duration;
                 }
                 $record->status = $status;
-                $record->duration = $duration;
                 $record->save();
             }else{
                 $id = OaSigninRecord::create([
