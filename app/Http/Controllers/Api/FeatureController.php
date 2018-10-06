@@ -3,14 +3,16 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Dormitory;
-use App\Models\Exam_meta;
-use App\Models\Exam_time;
-use App\Models\Gkl;
-use App\Models\Hygiene;
 use App\Models\QuesCategory;
 use App\Models\QuesQuestion;
+use App\Models\ServiceExamMeta;
+use App\Models\ServiceExamTime;
+use App\Models\ServiceGkl;
+use App\Models\ServiceHygiene;
 use App\Models\ServiceNewStudent;
 use Illuminate\Http\Request;
+use Symfony\Component\EventDispatcher\Tests\Service;
+
 class FeatureController extends Controller
 {
     protected $cookie_file;
@@ -59,7 +61,7 @@ class FeatureController extends Controller
         $lroom = \request('dormitory');
         $croom = intval(\request('room'));
         $room = $lroom.$croom;
-        $data = Hygiene::where('room','=',$room)->orderBy('week','asc')->get();
+        $data = ServiceHygiene::where('room','=',$room)->orderBy('week','asc')->get();
         if(count($data)>0){
             return $this->response->collection($data,new HygieneTransformer())->setStatusCode(200);
         }else{
@@ -69,11 +71,11 @@ class FeatureController extends Controller
     //考试时间
     public function exam(){
         $sdut_id = \request('sdut_id');
-        $exam_times = Exam_time::where('sdut_id',$sdut_id)->get();
+        $exam_times = ServiceExamTime::where('sdut_id',$sdut_id)->get();
         $data = array();
         foreach ($exam_times as $exam_time){
-            $exam_meta = Exam_meta::where('code',$exam_time->code)->where('classroom',$exam_time->classroom)->first();
-            $gkl = Gkl::where('course',$exam_time->course)->first();
+            $exam_meta = ServiceExamMeta::where('code',$exam_time->code)->where('classroom',$exam_time->classroom)->first();
+            $gkl = ServiceGkl::where('course',$exam_time->course)->first();
             $exam_time->meta = $exam_meta;
             $exam_time->gkl = $gkl->gkl;
             array_push($data,$exam_time->toArray());
@@ -92,7 +94,7 @@ class FeatureController extends Controller
         $school = $request->school;
         $dormitory = $request->dormitory;
         $room = $request->room;
-
+//        dd($request->all());
 //        $school = 1;
 //        $dormitory = '01#南';
 //        $room = 101;
@@ -156,6 +158,7 @@ class FeatureController extends Controller
             'ctl00$MainContent$Button1'=>'查询',
             'ctl00$MainContent$TextBox1'=>'请先登录，再选择楼栋和输入房间号查询!'
         );
+//        dd($post2);
         $res3 = $this->http_request_post($url2,$post2,true);  //带着cookie查询电费
         str_replace('/\r\n/','',$res3);
         preg_match_all('#您所查询的房间为：([^<>]+)。\r\n 在([^<>]+)时，所余电量为：([^<>]+)度。\r\n 根据您的用电规律，所余电量可用 ([^<>]+)天。\r\n 当前用电状态为：([^<>]+)。#', $res3, $value5);
