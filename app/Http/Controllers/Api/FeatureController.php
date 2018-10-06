@@ -63,7 +63,7 @@ class FeatureController extends Controller
         $room = $lroom.$croom;
         $data = ServiceHygiene::where('room','=',$room)->orderBy('week','asc')->get();
         if(count($data)>0){
-            return $this->response->collection($data,new HygieneTransformer())->setStatusCode(200);
+            return $this->response->array(['data'=>$data->toArray()])->setStatusCode(200);
         }else{
             return $this->response->errorNotFound("参数错误，未获取到房间为{$room}宿舍卫生信息");
         }
