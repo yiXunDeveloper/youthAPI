@@ -108,6 +108,11 @@ $api->version('v1',[
 //测试
     $api->get('service/test','FeatureController@index');
 
+//全局数据
+    $api->get('dormitory','FeatureController@dormitory');  //所有宿舍
+//学生服务功能API
+    $api->get('service/elec','FeatureController@elec');
+    $api->get('service/hygiene')
 
 
 

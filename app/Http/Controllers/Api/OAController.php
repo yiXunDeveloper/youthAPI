@@ -207,7 +207,7 @@ class OAController extends Controller
             if(!$user){
                 return $this->response->errorNotFound('用户未找到');
             }
-        }else if (!strlen((int)$sdut_id) == 0){
+        }else if (strlen((int)$sdut_id) != 0){
             //不是全是字符串
             return $this->response->error('数据不合法',422);
         }

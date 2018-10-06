@@ -2,6 +2,11 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\Dormitory;
+use App\Models\Exam_meta;
+use App\Models\Exam_time;
+use App\Models\Gkl;
+use App\Models\Hygiene;
 use App\Models\QuesCategory;
 use App\Models\QuesQuestion;
 use App\Models\ServiceNewStudent;
@@ -44,15 +49,53 @@ class FeatureController extends Controller
 //       $data = $this->http_request_post($url,['ticketNumber'=>'18371202151375'],1);
 //        return $data;
     }
+    public function dormitory(){
+        $dormitory = Dormitory::all();
+        return $this->response->array(['data'=>$dormitory->toArray()])->setStatusCode(200);
+    }
+    //宿舍成绩
+    public function hygiene()
+    {
+        $lroom = \request('dormitory');
+        $croom = intval(\request('room'));
+        $room = $lroom.$croom;
+        $data = Hygiene::where('room','=',$room)->orderBy('week','asc')->get();
+        if(count($data)>0){
+            return $this->response->collection($data,new HygieneTransformer())->setStatusCode(200);
+        }else{
+            return $this->response->errorNotFound("参数错误，未获取到房间为{$room}宿舍卫生信息");
+        }
+    }
+    //考试时间
+    public function exam(){
+        $sdut_id = \request('sdut_id');
+        $exam_times = Exam_time::where('sdut_id',$sdut_id)->get();
+        $data = array();
+        foreach ($exam_times as $exam_time){
+            $exam_meta = Exam_meta::where('code',$exam_time->code)->where('classroom',$exam_time->classroom)->first();
+            $gkl = Gkl::where('course',$exam_time->course)->first();
+            $exam_time->meta = $exam_meta;
+            $exam_time->gkl = $gkl->gkl;
+            array_push($data,$exam_time->toArray());
+        }
+        if(count($exam_times)>0){
+            return $this->response->array(['data'=>$exam_times])->setStatusCode(200);
+        }else{
+            return $this->response->errorNotFound("对不起，未获取到学号为{$sdut_id}考试时间信息");
+        }
+    }
 
-    public function index(Request $request){
+    public function index(){
+
+    }
+    public function elec(Request $request){
         $school = $request->school;
         $dormitory = $request->dormitory;
         $room = $request->room;
 
-        $school = 0;
-        $dormitory = 'E01#';
-        $room = 102;
+//        $school = 1;
+//        $dormitory = '01#南';
+//        $room = 101;
         $url_cookie='http://hqfw.sdut.edu.cn';
         $this->cookie_file = public_path('cookie\cookie.txt');//选择cookie储存路径
         $this->get_cookie($url_cookie);  //获取cookie
@@ -72,6 +115,7 @@ class FeatureController extends Controller
         $res2 = $this->http_request_post($url2,'',true);  //带着cookie获取input参数
         preg_match_all('#<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="([^<>]+)" />#', $res2, $value3);
         preg_match_all('#<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="([^<>]+)" />#', $res2, $value4);
+        preg_match_all('#<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="([^<>]+)" />#',$res2,$value5);
         if ($school == 1){
             //西校区
             $building='ctl00$MainContent$buildingwest';
@@ -79,28 +123,47 @@ class FeatureController extends Controller
         }else{
             $building='ctl00$MainContent$buildingeast';
             $campus='0';
+            $post2=array(
+                '__EVENTTARGET'=>'ctl00$MainContent$campus',//
+                '__EVENTARGUMENT'=>'',
+                '__LASTFOCUS'=>'',
+                '__VIEWSTATE'=>$value3[1][0],
+                '__VIEWSTATEGENERATOR'=>$value5[1][0],
+                '__EVENTVALIDATION'=>$value4[1][0],
+                'ctl00$MainContent$campus'=>$campus,
+                'ctl00$MainContent$buildingwest'=>'01#南',
+                'ctl00$MainContent$roomnumber'=>'101',
+//            'ctl00$MainContent$Button1'=>'查询',
+                'ctl00$MainContent$TextBox1'=>'请先登录，再选择楼栋和输入房间号查询!'
+            );
+            $res3 = $this->http_request_post($url2,$post2,true);  //带着cookie查询电费
+            preg_match_all('#<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="([^<>]+)" />#', $res3, $value3);
+            preg_match_all('#<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="([^<>]+)" />#', $res3, $value4);
+            preg_match_all('#<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="([^<>]+)" />#',$res3,$value5);
+
         }
 
         $post2=array(
-            'EVENTTARGET'=>'ctl00$MainContent$campus',
+            'EVENTTARGET'=>'',//
             '__EVENTARGUMENT'=>'',
             '__LASTFOCUS'=>'',
             '__VIEWSTATE'=>$value3[1][0],
+            '__VIEWSTATEGENERATOR'=>$value5[1][0],
             '__EVENTVALIDATION'=>$value4[1][0],
             'ctl00$MainContent$campus'=>$campus,
-            'ctl00$MainContent$buildingeast'=>$dormitory,
+            $building=>$dormitory,
             'ctl00$MainContent$roomnumber'=>$room,
             'ctl00$MainContent$Button1'=>'查询',
             'ctl00$MainContent$TextBox1'=>'请先登录，再选择楼栋和输入房间号查询!'
         );
-//        dd($post2);
         $res3 = $this->http_request_post($url2,$post2,true);  //带着cookie查询电费
-        return $res3;
-        preg_match_all('#您所查询的房间为：([^<>]+)。
- 在([^<>]+)时，所余电量为：([^<>]+)度。
- 根据您的用电规律，所余电量可用 ([^<>]+)。
- 当前用电状态为：([^<>]+)#', $res3, $value5);
-//    dd($value5);
+        str_replace('/\r\n/','',$res3);
+        preg_match_all('#您所查询的房间为：([^<>]+)。\r\n 在([^<>]+)时，所余电量为：([^<>]+)度。\r\n 根据您的用电规律，所余电量可用 ([^<>]+)天。\r\n 当前用电状态为：([^<>]+)。#', $res3, $value5);
+        if (!empty($value5[0])){
+            return $this->response->array(['data'=>['room'=>$value5[1][0],'time'=>$value5[2][0],'elec'=>$value5[3][0],'remain'=>$value5[4][0],'status'=>$value5[5][0]]]);
+        }else{
+            return $this->response->error('所查询房间不存在或服务器错误',500);
+        }
     }
 
 
