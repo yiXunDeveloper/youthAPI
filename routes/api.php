@@ -113,6 +113,7 @@ $api->version('v1',[
 //学生服务功能API
     $api->get('service/elec','FeatureController@elec');  //电费查询
     $api->get('service/hygiene','FeatureController@hygiene');  //宿舍卫生
+    $api->get('service/exam','FeatureController@exam');    //考试时间
 
 
 

@@ -3,15 +3,12 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\Dormitory;
-use App\Models\QuesCategory;
-use App\Models\QuesQuestion;
 use App\Models\ServiceExamMeta;
 use App\Models\ServiceExamTime;
-use App\Models\ServiceGkl;
+use App\Models\ServiceExamGkl;
 use App\Models\ServiceHygiene;
 use App\Models\ServiceNewStudent;
 use Illuminate\Http\Request;
-use Symfony\Component\EventDispatcher\Tests\Service;
 
 class FeatureController extends Controller
 {
@@ -71,13 +68,14 @@ class FeatureController extends Controller
     //考试时间
     public function exam(){
         $sdut_id = \request('sdut_id');
-        $exam_times = ServiceExamTime::where('sdut_id',$sdut_id)->get();
+        $exam_times = ServiceExamTime::where('sdut_id',$sdut_id)->orderBy('date','ASC')->get();
         $data = array();
         foreach ($exam_times as $exam_time){
             $exam_meta = ServiceExamMeta::where('code',$exam_time->code)->where('classroom',$exam_time->classroom)->first();
-            $gkl = ServiceGkl::where('course',$exam_time->course)->first();
+            $gkl = ServiceExamGkl::where('course',$exam_time->course)->first();
+//            $exam_time = $exam_time->toArray();
             $exam_time->meta = $exam_meta;
-            $exam_time->gkl = $gkl->gkl;
+            $exam_time->gkl = count($gkl)?$gkl->gkl:null;
             array_push($data,$exam_time->toArray());
         }
         if(count($exam_times)>0){

@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ServiceGkl extends Model
+class ServiceExamGkl extends Model
 {
     //
 }

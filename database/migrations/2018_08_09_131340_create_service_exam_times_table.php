@@ -15,19 +15,20 @@ class CreateServiceExamTimesTable extends Migration
     {
         Schema::create('service_exam_times', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('seat')->nullable();
-            $table->string('course',48)->nullable();
-            $table->string('jxb',48)->nullable();
-            $table->string('teacher',30)->nullable();
-            $table->string('academy',30)->nullable();
-            $table->string('class_name',30)->nullable();
-            $table->string('sdut_id',11)->nullable();
-            $table->string('name',30)->nullable();
-            $table->string('exam_name','30')->nullable();
-            $table->string('code',30)->nullable();
-            $table->string('date',24)->nullable();
-            $table->string('classroom',13)->nullable();
-            $table->string('school',9)->nullable();
+            $table->integer('seat')->nullable();  //座号
+            $table->string('course',48)->nullable();  //课程名称
+//            $table->string('jxb',48)->nullable();
+            $table->string('teacher',30)->nullable();   //教师信息
+            $table->string('date',24)->nullable();     //考试时间
+            $table->string('classroom',13)->nullable(); //考试地点
+            $table->string('school',9)->nullable();     //校区名称
+            $table->string('college',30)->nullable();    //学院
+            $table->string('class_name',30)->nullable(); //班级
+            $table->string('sdut_id',11)->nullable();    //学号
+            $table->string('name',30)->nullable();      //姓名
+//            $table->string('exam_name','30')->nullable();
+            $table->string('code',30)->nullable();    //试卷编号
+
             $table->timestamps();
         });
     }
