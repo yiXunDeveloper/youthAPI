@@ -11,4 +11,7 @@ class OaSigninRecord extends Model
     public function user(){
         return $this->hasOne('App\Models\OaYouthUser','sdut_id','sdut_id');
     }
+    public function duty(){
+        return $this->belongsTo('App\Models\OaSigninDuty','sdut_id','sdut_id');
+    }
 }

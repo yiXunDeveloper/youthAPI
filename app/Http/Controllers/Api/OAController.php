@@ -9,6 +9,7 @@ use App\Models\OaSigninDuty;
 use App\Models\OaSigninRecord;
 use App\Models\OaYouthUser;
 use Illuminate\Http\Request;
+use Excel;
 
 class OAController extends Controller
 {
@@ -95,6 +96,69 @@ class OAController extends Controller
             return $this->response->error('用户不存在',404);
         }
     }
+    public function signRecordExport(Request $request){
+        $this->validate($request,[
+            'start'=>'date',
+            'end'=>'date|after:start'
+        ]);
+        $start_at = $request->start;
+        $end_at = $request->end;
+        $start_time = strtotime($start_at);
+        $end_time = strtotime($end_at);
+        //查询所选时间段值班记录
+        $records = OaSigninRecord::whereBetween('created_at',[$start_at,$end_at])->get();
+        $data = array();
+
+        foreach ($records as $record){
+            $duty = $record->duty;
+            if ($duty){
+                if(!array_key_exists($record->sdut_id,$data)){
+
+                    preg_match_all('/(\d):\d/', $duty->duty_at, $dutys);
+                    $n = 0;
+                    for ($i=$start_time;$i<$end_time;$i+=86400){
+                        if (date('w', $i) == $dutys[1][0] || date('w', $i) == $dutys[1][1]) {
+                            $n++;
+                        }
+                    }
+                    $data[$record->sdut_id]['name'] = $record->user->name;
+                    $data[$record->sdut_id]['sdut_id'] = $record->sdut_id;
+                    $data[$record->sdut_id]['department'] = $record->user->department;
+                    $data[$record->sdut_id]['origin'] = $n; //本应签到次数，未除去节假日
+                    $data[$record->sdut_id]['unsignout'] = 0;    //未签退次数
+                    $data[$record->sdut_id]['normal'] = 0;       //正常签到次数
+                    $data[$record->sdut_id]['normal_time'] = 0;    //正常签到时长
+                    $data[$record->sdut_id]['surplus'] = 0;        //额外签到次数
+                    $data[$record->sdut_id]['surplus_time'] = 0;   //额外签到时长
+                    $data[$record->sdut_id]['early'] = 0;         //早退次数
+                }//如果未初始化
+                switch ($record->status) {
+                    case 0:
+                        $data[$record->sdut_id]['unsignout'] += 1;
+                        break;
+                    case 1:
+                        $data[$record->sdut_id]['normal'] += 1;
+                        $data[$record->sdut_id]['normal_time'] += intval($record->duration);
+                        break;
+                    case 2:
+                        $data[$record->sdut_id]['surplus'] += 1;
+                        $data[$record->sdut_id]['surplus_time'] += intval($record->duration);
+                        break;
+                    case 3:
+                        $data[$record->sdut_id]['early'] += 1;
+                        break;
+                }
+            }  //如果有值班任务
+        }//endforeach
+        Excel::create('excel',function($excel) use($data){
+            $excel->sheet('值班记录', function($sheet) use ($data){
+                $sheet->fromArray($data);
+            });
+        })->export('xls');
+    }
+
+
+
     public function getScheduleLists(){
         $last = date('Y-m-d H:i:s',strtotime("-1 month"));
         $lists = OaSchedule::whereTime('created_at','>',$last)->orderBy('updated_at','DESC')->get();

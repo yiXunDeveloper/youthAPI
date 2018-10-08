@@ -99,8 +99,7 @@ $api->version('v1',[
 
 
 
-
-
+    $api->get('oa/signin/export','OAController@signRecordExport');
 
 
 //OA办公系统end
