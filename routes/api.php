@@ -77,6 +77,7 @@ $api->version('v1',[
 
 
 //OA办公系统start
+    $api->get('oa/users','OAController@getUsers');
     $api->get('oa/signin','OAController@getSigninLists');
     $api->post('oa/signin','OAController@updateSignRecord');
     $api->get('oa/schedules','OAController@getScheduleLists');

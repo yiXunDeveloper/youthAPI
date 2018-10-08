@@ -13,6 +13,14 @@ use Excel;
 
 class OAController extends Controller
 {
+    //获取所有用户信息
+    public function getUsers(){
+        $users = OaYouthUser::all();
+        return $this->response->array(['data'=>$users->toArray()]);
+    }
+
+
+
     //获取当日签到记录
     public function getSignInLists(){
         $lists = OaSigninRecord::whereDate('created_at',date('Y-m-d'))->orderBy('updated_at','DESC')->get();
@@ -156,8 +164,6 @@ class OAController extends Controller
             });
         })->export('xls');
     }
-
-
 
     public function getScheduleLists(){
         $last = date('Y-m-d H:i:s',strtotime("-1 month"));
