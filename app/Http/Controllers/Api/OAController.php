@@ -98,8 +98,8 @@ class OAController extends Controller
     }
     public function signRecordExport(Request $request){
         $this->validate($request,[
-            'start'=>'date',
-            'end'=>'date|after:start'
+            'start'=>'required|date',
+            'end'=>'required|date|after:start'
         ]);
         $start_at = $request->start;
         $end_at = $request->end;
@@ -150,7 +150,7 @@ class OAController extends Controller
                 }
             }  //如果有值班任务
         }//endforeach
-        Excel::create('excel',function($excel) use($data){
+        Excel::create(date('Y-m-d H:i:s').'导出签到数据',function($excel) use($data){
             $excel->sheet('值班记录', function($sheet) use ($data){
                 $sheet->fromArray($data);
             });
