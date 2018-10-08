@@ -279,7 +279,8 @@ class OAController extends Controller
             }
         }else if (strlen((int)$sdut_id) != 0){
             //不是全是字符串
-            return $this->response->error('数据不合法',422);
+            return strlen((int)$sdut_id);
+            return $this->response->error('借用人数据不合法',500);
         }
         $record = OaEquipmentRecord::create([
             'device_id' => $request->device,
