@@ -41,7 +41,7 @@ class QuesController extends Controller
             //账号密码匹配
             if (Hash::check($password,$user->password))
             {
-                    $token = Auth::guard('ques')->fromUser($user);
+                    $token = Auth::guard('ques')->setTTL(7200)->fromUser($user); //设置过期时间12小时60*12
                     return $this->respondWithToken($token)->setStatusCode(200);
             }else {
                 //账号密码不匹配
@@ -346,7 +346,7 @@ class QuesController extends Controller
         return $this->response->array(['data'=>[
             'access_token' => $token,
             'token_type' => 'Bearer',
-            'expires_in' => Auth::guard('ques')->factory()->getTTL() * 60 * 12
+            'expires_in' => Auth::guard('ques')->factory()->getTTL() * 60
         ],'errCode'=>200]);
     }
 }

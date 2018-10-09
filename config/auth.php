@@ -52,7 +52,11 @@ return [
         'ques'=>[
             'driver' => 'jwt',
             'provider' => 'ques_admins'
-        ]
+        ],
+        'oa' => [
+            'driver' => 'jwt',
+            'provider' => 'oa_users',
+        ],
     ],
 
     /*
@@ -84,7 +88,11 @@ return [
         'ques_admins' => [
             'driver'=>'eloquent',
             'model'=>App\Models\QuesAdmin::class,
-        ]
+        ],
+        'oa_users'=> [
+        'driver'=>'eloquent',
+        'model'=>App\Models\OaUser::class,
+]
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
