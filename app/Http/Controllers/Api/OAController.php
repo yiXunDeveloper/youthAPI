@@ -286,7 +286,7 @@ class OAController extends Controller
         }else if (preg_match("/^[\x{4e00}-\x{9fa5}]+$/u",$sdut_id)){
             //全是中文汉字
             $memo = OaYouthUser::where('name',$sdut_id)->first();
-            if($sdut_id == $memo->name){
+            if($memo && $sdut_id == $memo->name){
                 return $this->response->error('站内人员借用需输入学号！',500);
             }
         }else{
