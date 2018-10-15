@@ -281,10 +281,15 @@ class OAController extends Controller
             //全数字
             $user = OaYouthUser::where('sdut_id',$sdut_id)->first();
             if(!$user){
-                return $this->response->errorNotFound('用户未找到');
+                return $this->response->errorNotFound('借用人未找到');
             }
         }else if (preg_match("/^[\x{4e00}-\x{9fa5}]+$/u",$sdut_id)){
-            //不是全是字符串
+            //全是中文汉字
+            $memo = OaYouthUser::where('name',$sdut_id)->first();
+            if($sdut_id == $memo->name){
+                return $this->response->error('站内人员借用需输入学号！',500);
+            }
+        }else{
             return $this->response->error('借用人数据不合法',500);
         }
         $record = OaEquipmentRecord::create([
