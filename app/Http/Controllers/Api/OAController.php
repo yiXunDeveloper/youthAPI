@@ -105,10 +105,13 @@ class OAController extends Controller
         }
     }
     public function signRecordExport(Request $request){
-        $this->validate($request,[
+        $validator = app('validator')->make($request->all(),[
             'start'=>'required|date',
             'end'=>'required|date|after:start'
         ]);
+        if ($validator->fails()){
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('Could not create new user.', $validator->errors());
+        }
         $start_at = $request->start;
         $end_at = $request->end;
         $start_time = strtotime($start_at);
@@ -277,9 +280,8 @@ class OAController extends Controller
             if(!$user){
                 return $this->response->errorNotFound('用户未找到');
             }
-        }else if (strlen((int)$sdut_id) != 0){
+        }else if (preg_match("/^[\u4e00-\u9fa5]+$/",$sdut_id)){
             //不是全是字符串
-            return strlen((int)$sdut_id);
             return $this->response->error('借用人数据不合法',500);
         }
         $record = OaEquipmentRecord::create([
