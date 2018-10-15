@@ -273,6 +273,9 @@ class OAController extends Controller
             //设备已经被借用
             return $this->response->error('设备已被借用，不能重复借用',403);
         }
+        if($request->lend_user == $request->user){
+            return $this->response->error('借用人和借出备忘人不能为同一人！',500);
+        }
         $sdut_id = $request->lend_user;
         if (strlen((int)$sdut_id) == strlen($sdut_id)){
             //全数字
@@ -311,6 +314,9 @@ class OAController extends Controller
         ]);
         $equipment_record = OaEquipmentRecord::find($id);
         if ($equipment_record){
+            if ($equipment_record->sdut_id == $request->rememo_user){
+                return $this->response->error('借用人和归还备忘人不能为同一人！',500);
+            }
             $equipment_record->return_at = date('Y-m-d H:i:s');
             $equipment_record->rememo_user = $request->rememo_user;
             $equipment_record->save();
