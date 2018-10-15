@@ -283,7 +283,7 @@ class OAController extends Controller
             if(!$user){
                 return $this->response->errorNotFound('用户未找到');
             }
-        }else if (preg_match("/^[\u4e00-\u9fa5]+$/",$sdut_id)){
+        }else if (preg_match("/^[\x{4e00}-\x{9fa5}]+$/u",$sdut_id)){
             //不是全是字符串
             return $this->response->error('借用人数据不合法',500);
         }
