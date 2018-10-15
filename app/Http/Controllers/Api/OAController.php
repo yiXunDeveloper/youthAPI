@@ -170,7 +170,7 @@ class OAController extends Controller
 
     public function getScheduleLists(){
         $last = date('Y-m-d H:i:s',strtotime("-1 month"));
-        $lists = OaSchedule::whereTime('created_at','>',$last)->orderBy('updated_at','DESC')->get();
+        $lists = OaSchedule::whereDate('created_at','>',$last)->orderBy('updated_at','DESC')->get();
         foreach ($lists as $list){
             $list->sponsor_user;
         }
