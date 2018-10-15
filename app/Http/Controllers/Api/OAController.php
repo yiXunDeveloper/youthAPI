@@ -241,8 +241,10 @@ class OAController extends Controller
 
     public function equipmentRecordLists(){
         //查一个月
-        $last = date('Y-m-d H:i:s',strtotime("-1 month"));
-        $lists = OaEquipmentRecord::whereTime('created_at','>',$last)->orderBy('updated_at','DESC')->get();
+        $last = date('Y-m-d',strtotime("-1 month"));
+        $lists = OaEquipmentRecord::whereDate('created_at','>',$last)->orderBy('updated_at','DESC')->get();
+
+
         foreach ($lists as $k =>$v){
             $v->device;
             $v->memo_user_name;
