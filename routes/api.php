@@ -77,21 +77,29 @@ $api->version('v1',[
 
 
 //OA办公系统start
-    $api->get('oa/users','OAController@getUsers');
-    $api->get('oa/signin','OAController@getSigninLists');
-    $api->post('oa/signin','OAController@updateSignRecord');
-    $api->get('oa/schedules','OAController@getScheduleLists');
-    $api->get('oa/schedule/{id}','OAController@getSchedule');
-    $api->post('oa/schedule','OAController@scheduleStore');
-    $api->put('oa/schedule/{id}','OAController@scheduleUpdate');
-    $api->delete('oa/schedule/{id}','OAController@ScheduleDelete');         //!!加权限验证
-    $api->get('oa/equipments','OAController@equipmentLists');
-    $api->get('oa/equipment/{id}','OAController@equipment');
-    $api->post('oa/equipment','OAController@equipmentStore');
-    $api->put('oa/equipment/{id}','OAController@equipmentUpdate');
-    $api->delete('oa/equipment/{id}','OAController@equipmentDelete');
-    $api->get('oa/devices','OAController@equipmentRecordLists');
-    $api->post('oa/device','OAController@equipmentRecordStore');  //增加借阅记录        bug
+    $api->post('oa/login','OAController@login');    //登录
+
+    $api->get('oa/role','PermissionController@role');
+    $api->get('oa/permission','PermissionController@permission');
+
+    $api->get('oa/user/permission','PermissionController@index')->middleware('auth');    //获取当前用户权限
+    $api->post('oa/assign/permission','PermissionController@assignPerssion')->middleware('auth:oa');   //为角色分配权限
+    $api->post('oa/assign/role','PermissionController@assignRole')->middleware('auth:oa');   //为用户分配角色
+    $api->get('oa/users','OAController@getUsers');   //获取全部用户
+    $api->get('oa/signin','OAController@getSigninLists');  //获取当天签到列表
+    $api->post('oa/signin','OAController@updateSignRecord');  //签到、签退
+    $api->get('oa/schedules','OAController@getScheduleLists');   //获取日程列表
+    $api->get('oa/schedule/{id}','OAController@getSchedule');     //获取单个日程
+    $api->post('oa/schedule','OAController@scheduleStore');        //增加日程
+    $api->put('oa/schedule/{id}','OAController@scheduleUpdate');    //更新日程
+    $api->delete('oa/schedule/{id}','OAController@ScheduleDelete')->middleware('auth:oa');;         //删除日程!!加权限验证
+    $api->get('oa/equipments','OAController@equipmentLists');             //获取全部设备
+    $api->get('oa/equipment/{id}','OAController@equipment');               //获取单个设备信息
+    $api->post('oa/equipment','OAController@equipmentStore');               //增加一个设备
+    $api->put('oa/equipment/{id}','OAController@equipmentUpdate');           //更新设备
+    $api->delete('oa/equipment/{id}','OAController@equipmentDelete');       //删除设备   验证
+    $api->get('oa/devices','OAController@equipmentRecordLists');     //获取所有设备借用记录
+    $api->post('oa/device','OAController@equipmentRecordStore');  //增加借阅记录
     $api->put('oa/device/{id}','OAController@equipmentRecordUpdate');  //更新
     $api->delete('oa/device/{id}','OAController@equipmentRecordDelete');  //删除
 
@@ -100,7 +108,7 @@ $api->version('v1',[
 
 
 
-    $api->get('oa/signin/export','OAController@signRecordExport');
+    $api->get('oa/signin/export','OAController@signRecordExport');      //签到记录导出
 
 
 //OA办公系统end

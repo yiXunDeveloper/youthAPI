@@ -15,8 +15,9 @@ class CreateOaUsersTable extends Migration
     {
         Schema::create('oa_users', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('sdut_id','11');
-            $table->string('password','255');
+            $table->string('username',20)->unique();
+            $table->string('password',255);
+            $table->string('sdut_id',11)->unique();
             $table->timestamps();
         });
     }
