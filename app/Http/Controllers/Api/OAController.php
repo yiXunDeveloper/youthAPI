@@ -5,14 +5,46 @@ namespace App\Http\Controllers\Api;
 use App\Models\OaEquipment;
 use App\Models\OaEquipmentRecord;
 use App\Models\OaSchedule;
-use App\Models\OaSigninDuty;
 use App\Models\OaSigninRecord;
+use App\Models\OaUser;
 use App\Models\OaYouthUser;
-use Illuminate\Http\Request;
+use Auth;
 use Excel;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class OAController extends Controller
 {
+    public function login(Request $request){
+        $credentials['username'] = $request->username;
+        $credentials['password'] = $request->password;
+        //找到该用户
+        if ($user = OaUser::where('username',$credentials['username'])->first())
+        {
+            //账号密码匹配
+            if (Hash::check($credentials['password'],$user->password))
+            {
+                $token = Auth::guard('oa')->fromUser($user);
+                return $this->response->array(['data'=>$user->userinfo,'meta'=>[
+                    'access_token' => $token,
+                    'token_type' => 'Bearer',
+                    'expires_in' => Auth::guard('oa')->factory()->getTTL() * 60
+                ]])->setStatusCode(200);
+            }else {
+                //账号密码不匹配
+                return $this->response->errorUnauthorized('密码错误');
+            }
+        }else{
+            //未找到该用户
+            return $this->response->errorUnauthorized('未找到该用户');
+        }
+    }
+
+
+
+
+
+
     //获取所有用户信息
     public function getUsers(){
         $users = OaYouthUser::orderBy('id','DESC')->get();
@@ -128,8 +160,14 @@ class OAController extends Controller
                     preg_match_all('/(\d):\d/', $duty->duty_at, $dutys);
                     $n = 0;
                     for ($i=$start_time;$i<$end_time;$i+=86400){
-                        if (date('w', $i) == $dutys[1][0] || date('w', $i) == $dutys[1][1]) {
-                            $n++;
+                        if (count($dutys[1]) == 2){
+                            if (date('w', $i) == $dutys[1][0] || date('w', $i) == $dutys[1][1]) {
+                                $n++;
+                            }
+                        }else{
+                            if (date('w', $i) == $dutys[1][0]) {
+                                $n++;
+                            }
                         }
                     }
                     $data[$record->sdut_id]['name'] = $record->user->name;
@@ -204,11 +242,16 @@ class OAController extends Controller
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
     }
     public function scheduleDelete($id){
-        $schedule = OaSchedule::find($id);
-        if (!$schedule){
-            return $this->response->errorNotFound('计划表未找到');
+        $user = Auth::guard('oa')->user();
+        if($user->can('manage_activity')){
+            $schedule = OaSchedule::find($id);
+            if (!$schedule){
+                return $this->response->errorNotFound('计划表未找到');
+            }
+            $schedule->delete();
+        }else{
+            return $this->response->error('对不起，您无权限进行该操作！',403);
         }
-        $schedule->delete();
         return $this->response->noContent();
     }
 

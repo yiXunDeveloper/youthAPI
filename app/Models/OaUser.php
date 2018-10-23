@@ -10,7 +10,10 @@ use Spatie\Permission\Traits\HasRoles;
 class OaUser extends Authenticatable implements JWTSubject
 {
     use HasRoles;
-    protected $guard_name = 'web';
+    protected $guard_name = 'oa';
+    public function userinfo(){
+        return $this->hasOne('App\Models\OaYouthUser','sdut_id','sdut_id');
+    }
     //
     public function getJWTIdentifier()
     {
