@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Models\OaEquipment;
 use App\Models\OaEquipmentRecord;
 use App\Models\OaSchedule;
+use App\Models\OaSigninDuty;
 use App\Models\OaSigninRecord;
 use App\Models\OaUser;
 use App\Models\OaYouthUser;
@@ -15,6 +16,7 @@ use Illuminate\Support\Facades\Hash;
 
 class OAController extends Controller
 {
+    //登录
     public function login(Request $request){
         $credentials['username'] = $request->username;
         $credentials['password'] = $request->password;
@@ -41,8 +43,51 @@ class OAController extends Controller
     }
 
 
-
-
+   //导入用户信息
+    public function importUserInfo(Request $request) {
+        $excel = $request->file('excel');
+        $file = $excel->store('excel');
+        OaYouthUser::truncate();
+        OaUser::truncate();
+        OaSigninDuty::truncate();
+        Excel::load($file,function ($reader) {
+            $reader = $reader->getSheet(0);
+            $res = $reader->toArray();
+            if(sizeof($res) <= 1 || sizeof($res[0]) <= 7) {
+                return $this->response->error('文件数据不合法',422);
+            }
+            foreach ($res as $key => $value) {
+                if ($key == 0) {
+                    continue;
+                }
+                OaYouthUser::create([
+                    'sdut_id' => $value[0],
+                    'name' => $value[1],
+                    'department' => $value[2],
+                    'grade' => $value[3],
+                    'phone' => $value[4],
+                    'birthday' => str_replace('\/','-',$value[5]),
+                ]);
+                $user_duty = new OaSigninDuty();
+                $user_duty->sdut_id = $value[0];
+                $user_duty->duty_at = $value[6];
+                $user_duty->save();
+                $user = OaUser::create([
+                    'username' => $value[0],
+                    'password' => bcrypt($value[0]),
+                    'sdut_id' => $value[0],
+                ]);
+                if ($value[7] == '正式') {
+                    $user->assignRole('Formal');
+                }else if($value[7] == '试用') {
+                    $user->assignRole('Probation');
+                }else if($value[7] == 'youthol') {
+                    //退站
+                    $user->assignRole('Secede');
+                }
+            }
+        });
+    }
 
 
     //获取所有用户信息
