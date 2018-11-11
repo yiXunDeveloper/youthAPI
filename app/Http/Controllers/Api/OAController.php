@@ -47,15 +47,16 @@ class OAController extends Controller
     public function importUserInfo(Request $request) {
         $excel = $request->file('excel');
         $file = $excel->store('excel');
-        OaYouthUser::truncate();
-        OaUser::truncate();
-        OaSigninDuty::truncate();
         Excel::load($file,function ($reader) {
             $reader = $reader->getSheet(0);
             $res = $reader->toArray();
-            if(sizeof($res) <= 1 || sizeof($res[0]) <= 7) {
+            return $this->response->array(['data'=>$res]);
+            if(sizeof($res) <= 1 || sizeof($res[0]) != 7) {
                 return $this->response->error('文件数据不合法',422);
             }
+            OaYouthUser::truncate();
+            OaUser::truncate();
+            OaSigninDuty::truncate();
             foreach ($res as $key => $value) {
                 if ($key == 0) {
                     continue;
@@ -87,6 +88,7 @@ class OAController extends Controller
                 }
             }
         });
+        return $this->response->array(['data'=>'导入成功'])->setStatusCode(200);
     }
 
 
