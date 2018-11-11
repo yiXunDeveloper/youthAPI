@@ -47,44 +47,44 @@ class OAController extends Controller
     public function importUserInfo(Request $request) {
         $excel = $request->file('excel');
         $file = $excel->store('excel');
-        Excel::load($file,function ($reader) {
+        Excel::load(public_path('app/').$file,function ($reader){
             $reader = $reader->getSheet(0);
             $res = $reader->toArray();
-            return $this->response->array(['data'=>$res]);
-            if(sizeof($res) <= 1 || sizeof($res[0]) != 7) {
+            if(sizeof($res) <= 1 || sizeof($res[0]) != 8) {
                 return $this->response->error('文件数据不合法',422);
             }
             OaYouthUser::truncate();
             OaUser::truncate();
             OaSigninDuty::truncate();
+            unset($res[0]);
             foreach ($res as $key => $value) {
-                if ($key == 0) {
-                    continue;
-                }
+                $birthday = str_replace('\/','-',$value[5]);
                 OaYouthUser::create([
                     'sdut_id' => $value[0],
                     'name' => $value[1],
                     'department' => $value[2],
                     'grade' => $value[3],
-                    'phone' => $value[4],
-                    'birthday' => str_replace('\/','-',$value[5]),
+                    'phone' => $value[4] ? $value[4] : null,
+                    'birthday' => $birthday ? $birthday : null,
                 ]);
-                $user_duty = new OaSigninDuty();
-                $user_duty->sdut_id = $value[0];
-                $user_duty->duty_at = $value[6];
-                $user_duty->save();
+                if ($value[6]) {
+                    $user_duty = new OaSigninDuty();
+                    $user_duty->sdut_id = $value[0];
+                    $user_duty->duty_at = $value[6];
+                    $user_duty->save();
+                }
                 $user = OaUser::create([
                     'username' => $value[0],
                     'password' => bcrypt($value[0]),
                     'sdut_id' => $value[0],
                 ]);
                 if ($value[7] == '正式') {
-                    $user->assignRole('Formal');
+                    $user->syncRoles('Formal');
                 }else if($value[7] == '试用') {
-                    $user->assignRole('Probation');
+                    $user->syncRoles('Probation');
                 }else if($value[7] == 'youthol') {
                     //退站
-                    $user->assignRole('Secede');
+                    $user->syncRoles('Secede');
                 }
             }
         });
