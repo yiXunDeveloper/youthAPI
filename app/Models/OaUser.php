@@ -11,6 +11,7 @@ class OaUser extends Authenticatable implements JWTSubject
 {
     use HasRoles;
     protected $guard_name = 'oa';
+    protected $guarded = ['id'];
     public function userinfo(){
         return $this->hasOne('App\Models\OaYouthUser','sdut_id','sdut_id');
     }
