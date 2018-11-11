@@ -107,7 +107,7 @@ $api->version('v1',[
 
 
 
-
+    $api->post('oa/user/import','OAController@importUserInfo');
     $api->get('oa/signin/export','OAController@signRecordExport');      //签到记录导出
 
 
