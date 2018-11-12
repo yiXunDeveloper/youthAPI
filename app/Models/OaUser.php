@@ -9,7 +9,7 @@ use Spatie\Permission\Traits\HasRoles;
 
 class OaUser extends Authenticatable implements JWTSubject
 {
-    
+
     use HasRoles;
 
     protected $guard_name = 'oa';

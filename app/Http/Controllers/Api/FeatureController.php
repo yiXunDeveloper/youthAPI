@@ -101,7 +101,6 @@ class FeatureController extends Controller
         $this->get_cookie($url_cookie);  //获取cookie
         $url1 = 'http://hqfw.sdut.edu.cn/login.aspx';  //带着cookie获取input参数
         $res1 = $this->http_request_post($url1,'',true);
-        dd($res1);
         preg_match_all('#<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="([^<>]+)" />#', $res1, $value1);
         preg_match_all('#<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="([^<>]+)" />#', $res1, $value2);
         $post1=array(
