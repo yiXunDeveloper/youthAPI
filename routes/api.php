@@ -79,12 +79,13 @@ $api->version('v1',[
 //OA办公系统start
     $api->post('oa/login','OAController@login');    //登录
 
-    $api->get('oa/role','PermissionController@role');
-    $api->get('oa/permission','PermissionController@permission');
+    $api->get('oa/permissions','PermissionController@permission');
+    $api->get('oa/roles','PermissionController@role');
 
     $api->get('oa/user/permission','PermissionController@index')->middleware('auth');    //获取当前用户权限
     $api->post('oa/assign/permission','PermissionController@assignPerssion')->middleware('auth:oa');   //为角色分配权限
     $api->post('oa/assign/role','PermissionController@assignRole')->middleware('auth:oa');   //为用户分配角色
+
     $api->get('oa/users','OAController@getUsers');   //获取全部用户
     $api->get('oa/signin','OAController@getSigninLists');  //获取当天签到列表
     $api->post('oa/signin','OAController@updateSignRecord');  //签到、签退
@@ -123,6 +124,7 @@ $api->version('v1',[
     $api->get('service/hygiene','FeatureController@hygiene');  //宿舍卫生
     $api->get('service/exam','FeatureController@exam');    //考试时间
 
+//权限管理
 
 
 

@@ -183,6 +183,8 @@ class OAController extends Controller
             return $this->response->error('用户不存在',404);
         }
     }
+
+    //导出签到记录
     public function signRecordExport(Request $request){
         $validator = app('validator')->make($request->all(),[
             'start'=>'required|date',
@@ -197,15 +199,17 @@ class OAController extends Controller
         $end_time = strtotime($end_at);
         //查询所选时间段值班记录
         $records = OaSigninRecord::whereBetween('created_at',[$start_at,$end_at])->get();
-        $data = array();
+        $data = array();//全部记录
 
         foreach ($records as $record){
             $duty = $record->duty;
+            //如果用户有值班任务，进入下一步，否则不进行统计
             if ($duty){
+                //如果已获取签到记录中没有该用户，需要初始化（计算时间段应签到次数，初始化项其他为0）
                 if(!array_key_exists($record->sdut_id,$data)){
 
-                    preg_match_all('/(\d):\d/', $duty->duty_at, $dutys);
-                    $n = 0;
+                    preg_match_all('/(\d):\d/', $duty->duty_at, $dutys);//匹配用户值班日期和节数
+                    $n = 0;          //选定时间段应签到次数
                     for ($i=$start_time;$i<$end_time;$i+=86400){
                         if (count($dutys[1]) == 2){
                             if (date('w', $i) == $dutys[1][0] || date('w', $i) == $dutys[1][1]) {
@@ -252,7 +256,7 @@ class OAController extends Controller
             });
         })->export('xls');
     }
-
+    //获得当月计划表
     public function getScheduleLists(){
         $last = date('Y-m-d H:i:s',strtotime("-1 month"));
         $lists = OaSchedule::whereDate('created_at','>',$last)->orderBy('updated_at','DESC')->get();
@@ -261,10 +265,12 @@ class OAController extends Controller
         }
         return $this->response->array(['data'=>count($lists) > 0 ? $lists->toArray() : $lists])->setStatusCode(200);
     }
+    //通过id获取计划表
     public function getSchedule($id){
         $schedule = OaSchedule::find($id);
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
     }
+    //增加计划表
     public function scheduleStore(Request $request){
         $this->validate($request,[
             'event_name' => 'required',
@@ -276,6 +282,7 @@ class OAController extends Controller
 
         return $this->response->array(['data'=>$schedule])->setStatusCode(201);
     }
+    //修改计划表
     public function scheduleUpdate(Request $request,$id){
         $this->validate($request,[
             'user'=>'required|exists:oa_youth_users,sdut_id'
@@ -288,6 +295,7 @@ class OAController extends Controller
         $schedule->save();
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
     }
+    //删除计划表
     public function scheduleDelete($id){
         $user = Auth::guard('oa')->user();
         if($user->can('manage_activity')){
@@ -302,12 +310,13 @@ class OAController extends Controller
         return $this->response->noContent();
     }
 
-
+    //查询所有设备
     public function equipmentLists(){
         //查所有
         $equipments = OaEquipment::all();
         return $this->response->array(['data'=>$equipments]);
     }
+    //通过id获得设备
     public function equipment($id){
         $equipment = OaEquipment::find($id);
         if(!$equipment){
@@ -315,6 +324,7 @@ class OAController extends Controller
         }
         return $this->response->array(['data'=>$equipment]);
     }
+    //增加设备
     public function equipmentStore(Request $request){
         $this->validate($request,[
             'device_name' => 'required|unique:oa_equipment,device_name',
@@ -323,12 +333,13 @@ class OAController extends Controller
         $equipment = OaEquipment::create($request->all());
         return $this->response->array(['data'=>$equipment]);
     }
+    //删除设备
     public function euqipmentDelete($id){
         //有token
         OaEquipment::find($id)->delete();
         return $this->response->noContent();
     }
-
+    //查询最近一个月的设备借用记录
     public function equipmentRecordLists(){
         //查一个月
         $last = date('Y-m-d',strtotime("-1 month"));
@@ -353,6 +364,7 @@ class OAController extends Controller
         }
         return $this->response->array(['data'=>$lists]);
     }
+//    增加设备借用记录
     public function equipmentRecordStore(Request $request){
         $this->validate($request,[
             'device'=>'required|exists:oa_equipments,id',
@@ -411,7 +423,7 @@ class OAController extends Controller
         ]);
         $equipment_record = OaEquipmentRecord::find($id);
         if ($equipment_record){
-            if ($equipment_record->sdut_id == $request->rememo_user){
+            if ($equipment_record->lend_user == $request->rememo_user){
                 return $this->response->error('借用人和归还备忘人不能为同一人！',500);
             }
             $equipment_record->return_at = date('Y-m-d H:i:s');
