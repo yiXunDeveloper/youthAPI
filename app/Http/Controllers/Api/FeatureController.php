@@ -71,7 +71,7 @@ class FeatureController extends Controller
         $exam_times = ServiceExamTime::where('sdut_id',$sdut_id)->orderBy('date','ASC')->get();
         $data = array();
         foreach ($exam_times as $exam_time){
-            $exam_meta = ServiceExamMeta::where('course',$exam_time->code.'/'.$exam_time->course)->where('classroom',$exam_time->classroom)->first();
+            $exam_meta = ServiceExamMeta::where('date',$exam_time->date)->where('classroom',$exam_time->classroom)->first();
             $gkl = ServiceExamGkl::where('course',$exam_time->course)->first();
 //            $exam_time = $exam_time->toArray();
             $exam_time->meta = $exam_meta;
