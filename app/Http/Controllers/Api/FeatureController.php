@@ -78,8 +78,8 @@ class FeatureController extends Controller
             $exam_time->gkl = count($gkl)?$gkl->gkl:null;
             array_push($data,$exam_time->toArray());
         }
-        if(count($exam_times)>0){
-            return $this->response->array(['data'=>$exam_times])->setStatusCode(200);
+        if(count($data)>0){
+            return $this->response->array(['data'=>$data])->setStatusCode(200);
         }else{
             return $this->response->errorNotFound("对不起，未获取到学号为{$sdut_id}考试时间信息");
         }
