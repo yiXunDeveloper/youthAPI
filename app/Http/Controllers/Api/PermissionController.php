@@ -48,9 +48,10 @@ class PermissionController extends Controller
 //            if ($user->can($permission->name) && $user->can('manager_user') && $permission->name != 'manage_user'){
 //
 //            }
-            if (!$role->hasPermissionTo($permission_id)) {
+            $permission = Permission::findById($permission_id);
+            if (!$role->hasPermissionTo($permission->name)) {
                 //如果角色没有权限，则分配权限
-                $role->givePermissionTo($permission_id);
+                $role->givePermissionTo($permission->name);
             }
         }
         return $this->response->noContent();
