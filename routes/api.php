@@ -82,9 +82,9 @@ $api->version('v1',[
     $api->get('oa/permissions','PermissionController@permission');
     $api->get('oa/roles','PermissionController@role');
 
-    $api->get('oa/user/permission','PermissionController@index')->middleware('auth');    //获取当前用户权限
-    $api->post('oa/assign/permission','PermissionController@assignPerssion')->middleware('auth:oa');   //为角色分配权限
-    $api->post('oa/assign/role','PermissionController@assignRole')->middleware('auth:oa');   //为用户分配角色
+    $api->get('oa/user/permissions','PermissionController@index')->middleware('auth');    //获取当前用户权限
+    $api->post('oa/assign/permissions','PermissionController@assignPermission')->middleware('auth:oa');   //为角色分配权限
+    $api->post('oa/assign/roles','PermissionController@assignRole')->middleware('auth:oa');   //为用户分配角色
 
     $api->get('oa/users','OAController@getUsers');   //获取全部用户
     $api->get('oa/signin','OAController@getSigninLists');  //获取当天签到列表
