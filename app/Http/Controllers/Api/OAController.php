@@ -9,6 +9,7 @@ use App\Models\OaSigninDuty;
 use App\Models\OaSigninRecord;
 use App\Models\OaUser;
 use App\Models\OaYouthUser;
+use App\User;
 use Auth;
 use Excel;
 use Illuminate\Http\Request;
@@ -27,7 +28,7 @@ class OAController extends Controller
             if (Hash::check($credentials['password'],$user->password))
             {
                 $token = Auth::guard('oa')->fromUser($user);
-                return $this->response->array(['data'=>$user->userinfo,'meta'=>[
+                return $this->response->array(['data'=>[
                     'access_token' => $token,
                     'token_type' => 'Bearer',
                     'expires_in' => Auth::guard('oa')->factory()->getTTL() * 60
@@ -53,9 +54,17 @@ class OAController extends Controller
             if(sizeof($res) <= 1 || sizeof($res[0]) != 8) {
                 return $this->response->error('文件数据不合法',422);
             }
+            $user = OaUser::where('username','youthol')->first();
             OaYouthUser::truncate();
             OaUser::truncate();
             OaSigninDuty::truncate();
+            if (!$user) {
+                $user = new User();
+                $user->username = 'youthol';
+                $user->password = bcrypt('youth123');
+                $user->sdut_id = '00000000000';
+            }
+            $user->save();
             unset($res[0]);
             foreach ($res as $key => $value) {
                 $birthday = str_replace('\/','-',$value[5]);

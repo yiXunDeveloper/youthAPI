@@ -14,8 +14,11 @@ class PermissionController extends Controller
     public function index()
     {
         $user = Auth::guard('oa')->user();
-        $permission = $user->getAllPermissions();
-        return $this->response->array(['data' => $permission])->setStatusCode(200);
+        $youth_user  = $user->userinfo;
+        $permissions = $user->getAllPermissions();
+        $role_names = $user->getRoleNames();
+        $roles = Role::whereIn('name',$role_names)->get();
+        return $this->response->array(['data' => ['userinfo'=>$youth_user,'roles'=>$roles,'permissions'=>$permissions]])->setStatusCode(200);
     }
     public function role(){
         $role = Role::all();
@@ -44,16 +47,15 @@ class PermissionController extends Controller
             return $this->response->error('您没有该权限！', 403);
         }
         $role = Role::findById($request->role);
+        $permissions = array();
         foreach ($request->permission as $permission_id) {
 //            if ($user->can($permission->name) && $user->can('manager_user') && $permission->name != 'manage_user'){
 //
 //            }
             $permission = Permission::findById($permission_id);
-            if (!$role->hasPermissionTo($permission->name)) {
-                //如果角色没有权限，则分配权限
-                $role->givePermissionTo($permission->name);
-            }
+            array_push($permissions,$permission->name);
         }
+        $role->syncPermissions($permissions);
         return $this->response->noContent();
     }
 
@@ -68,21 +70,21 @@ class PermissionController extends Controller
             throw new \Dingo\Api\Exception\StoreResourceFailedException('分配角色失败.', $validator->errors());
         }
         //没有操作权限
-        if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
+        if (!$user->can('manage_user') || !$user->can('manage_administrator')) {
             return $this->response->error('您没有该权限！', 403);
         }
         $us = OaUser::where('sdut_id', $request->user)->first();
+        $roles = array();
         foreach ($request->role as $role_id) {
             $role = Role::findById($role_id);
             if ($role->name == 'Administrator' && !$user->can('manage_administrator')) {
                 return $this->response->error('您无法管理 管理员！', 403);
-            }else if($role->name == 'Founder' && !$user->hasRole('Root')){
-                return $this->response->error('只有超级管理员才能分配站长！', 403);
+            }else if(in_array($role->name,['Founder','Root']) && !$user->hasRole('Root')){
+                return $this->response->error('只有超级管理员才能分配站长和超级管理员！', 403);
             }
-            if (!$us->hasRole($role->name)) {
-                $us->assignRole($role->name);
-            }
+            array_push($us,$role->name);
         }
+        $us->assignRoles($roles);
         return $this->response->noContent();
     }
 
