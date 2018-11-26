@@ -9,6 +9,7 @@ use App\Models\OaSigninDuty;
 use App\Models\OaSigninRecord;
 use App\Models\OaUser;
 use App\Models\OaYouthUser;
+use App\Models\ServiceHygiene;
 use App\User;
 use Auth;
 use Excel;
@@ -98,6 +99,34 @@ class OAController extends Controller
             }
         });
         return $this->response->array(['data'=>'导入成功'])->setStatusCode(200);
+    }
+
+    public function importHygiene(Request $request) {
+        $excel = $request->file('dormitory');
+        $file = $excel->store('excel');
+        Excel::load(public_path('app/').$file,function ($reader){
+            $reader = $reader->getSheet(0);
+            $res = $reader->toArray();
+            if(sizeof($res) <= 1 || sizeof($res[0]) != 7) {
+                return $this->response->error('文件数据不合法',422);
+            }
+            unset($res[0]);
+            unset($res[0]);
+            dd($res);
+            foreach ($res as $value) {
+                ServiceHygiene::create([
+                    'date' => $value[0],
+                    'week' => $value[1],
+                    'dormitory' => $value[2],
+                    'room' =>$value[3],
+                    'score' => $value[4],
+                    'academy' => $value[5],
+                    'member' => $value[6]
+                ]);
+            }
+        });
+        return $this->response->array(['data'=>'导入成功'])->setStatusCode(200);
+
     }
 
 
