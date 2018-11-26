@@ -114,6 +114,7 @@ $api->version('v1',[
 
 
     $api->post('oa/user/import','OAController@importUserInfo');          //清空原有用户并导入
+    $api->post('oa/hygiene/import','OAController@importHygiene');        //宿舍卫生成绩导入
     $api->get('oa/signin/export','OAController@signRecordExport');      //签到记录导出
 
 

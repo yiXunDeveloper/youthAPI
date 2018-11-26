@@ -118,7 +118,8 @@ class PermissionController extends Controller
             'sdut_id' => 'required|size:11',
             'name' => 'required|between:2,10',
             'grade' => 'required|size:4',
-            'phone' => 'required|size:11',
+            'phone' => 'nullable|size:11',
+            'birthday' => 'nullable|date',
             'department' => 'required',
             'role.*' => 'required|exists:roles,id',
         ]);
@@ -174,7 +175,12 @@ class PermissionController extends Controller
         }
         $youthUser->name = $request->name;
         $youthUser->grade = $request->grade;
-        $youthUser->phone = $request->phone;
+        if ($request->phone) {
+            $youthUser->phone = $request->phone;
+        }
+        if ($request->birthday) {
+            $youthUser->birthday = $request->birthday;
+        }
         $youthUser->department = $request->department;
         $youthUser->save();
         return $this->response->noContent();

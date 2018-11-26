@@ -7,4 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class ServiceHygiene extends Model
 {
     //
+    protected $guarded = [];
 }

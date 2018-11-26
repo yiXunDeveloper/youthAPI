@@ -111,8 +111,7 @@ class OAController extends Controller
                 return $this->response->error('文件数据不合法',422);
             }
             unset($res[0]);
-            unset($res[0]);
-            dd($res);
+            unset($res[1]);
             foreach ($res as $value) {
                 ServiceHygiene::create([
                     'date' => $value[0],
