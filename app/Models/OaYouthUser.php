@@ -11,4 +11,7 @@ class OaYouthUser extends Model
     public function duty(){
         return $this->hasOne('App\Models\OaSigninDuty','sdut_id','sdut_id');
     }
+    public function user() {
+        return $this->hasOne('App\Models\OaUser','sdut_id','sdut_id');
+    }
 }

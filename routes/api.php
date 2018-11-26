@@ -78,13 +78,18 @@ $api->version('v1',[
 
 //OA办公系统start
     $api->post('oa/login','OAController@login');    //登录
+    $api->get('oa/user','PermissionController@index')->middleware('auth:oa');    //获取当前登录用户信息
 
-    $api->get('oa/permissions','PermissionController@permission');
-    $api->get('oa/roles','PermissionController@role');
 
-    $api->get('oa/user/permissions','PermissionController@index')->middleware('auth');    //获取当前用户权限
-    $api->post('oa/assign/permissions','PermissionController@assignPermission')->middleware('auth:oa');   //为角色分配权限
-    $api->post('oa/assign/roles','PermissionController@assignRole')->middleware('auth:oa');   //为用户分配角色
+    $api->get('oa/permissions','PermissionController@getAllPermissions');    //获取所有权限
+    $api->get('oa/roles','PermissionController@getAllRoles');                //获取所有角色
+    $api->get('oa/permission/{id}','PermissionController@getPermissionById');//根据id获取权限信息
+    $api->get('oa/role/{id}','PermissionController@getRoleById');              //根据id获取角色及其权限
+
+    $api->get('oa/user/{id}','PermissionController@getUserById')->middleware('auth:oa');   //根据id获取用户信息
+    $api->put('oa/user/{id}','PermissionController@updateUser')->middleware('auth:oa');   //修改用户信息，为用户分配角色
+    $api->put('oa/role/{id}','PermissionController@updateRole')->middleware('auth:oa');   //修改角色信息，为角色分配权限
+    $api->put('oa.permission/{id}','PermissionController@updatePermission')->middleware('auth:oa');   //修改权限名称
 
     $api->get('oa/users','OAController@getUsers');   //获取全部用户
     $api->get('oa/signin','OAController@getSigninLists');  //获取当天签到列表
@@ -108,7 +113,7 @@ $api->version('v1',[
 
 
 
-    $api->post('oa/user/import','OAController@importUserInfo');
+    $api->post('oa/user/import','OAController@importUserInfo');          //清空原有用户并导入
     $api->get('oa/signin/export','OAController@signRecordExport');      //签到记录导出
 
 
