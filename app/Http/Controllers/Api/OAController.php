@@ -287,10 +287,12 @@ class OAController extends Controller
                             if (date('w', $i) == $dutys[1][0] || date('w', $i) == $dutys[1][1]) {
                                 $n++;
                             }
-                        }else{
+                        }else if(count($duty[1]) == 1){
                             if (date('w', $i) == $dutys[1][0]) {
                                 $n++;
                             }
+                        }else {
+                            return $record->sdut_id."的duty错误，duty：".$duty->duty_at;
                         }
                     }
                     $data[$record->sdut_id]['name'] = $record->user->name;
