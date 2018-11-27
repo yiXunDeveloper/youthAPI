@@ -103,19 +103,19 @@ $api->version('v1',[
     $api->get('oa/equipment/{id}','OAController@equipment');               //获取单个设备信息
     $api->post('oa/equipment','OAController@equipmentStore');               //增加一个设备
     $api->put('oa/equipment/{id}','OAController@equipmentUpdate');           //更新设备
-    $api->delete('oa/equipment/{id}','OAController@equipmentDelete');       //删除设备   验证
+    $api->delete('oa/equipment/{id}','OAController@equipmentDelete')->middleware('auth:oa');       //删除设备   验证
     $api->get('oa/devices','OAController@equipmentRecordLists');     //获取所有设备借用记录
     $api->post('oa/device','OAController@equipmentRecordStore');  //增加借阅记录
     $api->put('oa/device/{id}','OAController@equipmentRecordUpdate');  //更新
-    $api->delete('oa/device/{id}','OAController@equipmentRecordDelete');  //删除
+    $api->delete('oa/device/{id}','OAController@equipmentRecordDelete')->middleware('auth:oa');  //删除
 
 
 
 
 
-    $api->post('oa/user/import','OAController@importUserInfo');          //清空原有用户并导入
-    $api->post('oa/hygiene/import','OAController@importHygiene');        //宿舍卫生成绩导入
-    $api->get('oa/signin/export','OAController@signRecordExport');      //签到记录导出
+    $api->post('oa/user/import','OAController@importUserInfo')->middleware('auth:oa');          //清空原有用户并导入
+    $api->post('oa/hygiene/import','OAController@importHygiene')->middleware('auth:oa');        //宿舍卫生成绩导入
+    $api->get('oa/signin/export','OAController@signRecordExport')->middleware('auth:oa');      //签到记录导出
 
 
 //OA办公系统end
