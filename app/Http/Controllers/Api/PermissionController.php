@@ -156,7 +156,7 @@ class PermissionController extends Controller
                 return $this->response->error('值班任务不合法',500);
             }
         }
-        $us->assignRoles($roles);
+        $us->syncRoles($roles);
 
         if ($youthUser->sdut_id != $request->sdut_id) {
             OaUser::where('sdut_id',$youthUser->sdut_id)->update([
