@@ -125,7 +125,10 @@ class OAController extends Controller
             $data[$user->sdut_id]['phone'] = $user->phone;
             $data[$user->sdut_id]['birthday'] = $user->birthday;
             $data[$user->sdut_id]['duty_at'] = $user->duty ? $user->duty->duty_at : "";
-            $roles = $user->user()->first()->roles;
+            if (!$user->user) {
+                dd($user);
+            }
+            $roles = $user->user->roles;
             $name = array();
             foreach ($roles as $role) {
                 array_push($name,$role->display_name);
