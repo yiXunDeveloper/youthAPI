@@ -53,7 +53,7 @@ class PermissionController extends Controller
     public function getAllRoles(){
         $role = Role::all();
         foreach ($role as $item) {
-            $item->permissions();
+            $item->permissions;
         }
         return $this->response->array(['data'=>$role->toArray()]);
     }
@@ -66,8 +66,7 @@ class PermissionController extends Controller
         if(!$role) {
             return $this->response->errorNotFound('角色未找到');
         }
-//        $role->permissions();
-        $role->permissions = $role->permissions();
+        $role->permissions;
         return $this->response->array(['data'=>$role])->setStatusCode(200);
     }
     public function getPermissionById($id) {
