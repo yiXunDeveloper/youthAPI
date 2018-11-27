@@ -30,9 +30,9 @@ class PermissionController extends Controller
     public function getUserById($id) {
         $us = Auth::guard('oa')->user();
         //没有操作权限
-//        if (!$us->can('manage_user') || !$us->can('manage_administrator')) {
-//            return $this->response->error('您没有该权限！', 403);
-//        }
+        if (!$us->can('manage_user') || !$us->can('manage_administrator')) {
+            return $this->response->error('您没有该权限！', 403);
+        }
         $youthUser = OaYouthUser::find($id);
         if (!$youthUser) {
             return $this->response->errorNotFound('用户未找到！');
@@ -126,7 +126,7 @@ class PermissionController extends Controller
             throw new \Dingo\Api\Exception\StoreResourceFailedException('参数错误，修改用户信息失败.', $validator->errors());
         }
         //没有操作权限
-        if (!$user->can('manage_user') || !$user->can('manage_administrator')) {
+        if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
             return $this->response->error('您没有该权限！', 403);
         }
         $youthUser = OaYouthUser::find($id);
