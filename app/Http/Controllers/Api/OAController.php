@@ -15,6 +15,7 @@ use Auth;
 use Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 class OAController extends Controller
 {
@@ -99,6 +100,35 @@ class OAController extends Controller
             }
         });
         return $this->response->array(['data'=>'导入成功'])->setStatusCode(200);
+    }
+    public function exportUser() {
+        $user = Auth::guard('auth:oa')->user();
+        if (!$user->can('manage_user') || !$user->can('manage_administrator')) {
+            return $this->response->error('您没有该权限！', 403);
+        }
+        $users = OaYouthUser::all();
+        $data = array();
+        foreach ($users as $user) {
+
+            $data[$user->sdut_id]['sdut_id'] = $user->sdut_id;
+            $data[$user->sdut_id]['name'] = $user->name;
+            $data[$user->sdut_id]['department'] = $user->department;
+            $data[$user->sdut_id]['grade'] = $user->grade;
+            $data[$user->sdut_id]['phone'] = $user->phone;
+            $data[$user->sdut_id]['birthday'] = $user->birthday;
+            $data[$user->sdut_id]['duty_at'] = $user->duty ? $user->duty->duty_at : "";
+            $roles = $user->user->roles;
+            $name = array();
+            foreach ($roles as $role) {
+                array_push($name,$role->display_name);
+            }
+            $data[$user->sdut_id]['role'] = implode("|",$name);
+        }
+        Excel::create(date('Y-m-d H:i:s').'导出用户数据',function($excel) use($data){
+            $excel->sheet('用户数据', function($sheet) use ($data){
+                $sheet->fromArray($data);
+            });
+        })->export('xls');
     }
 
     public function importHygiene(Request $request) {

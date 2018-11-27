@@ -74,6 +74,7 @@ $api->version('v1',[
 //事务中心参观end
 
 
+    $api->get('oa/user/export','OAController@exportUser');
 
 
 //OA办公系统start
@@ -116,7 +117,6 @@ $api->version('v1',[
     $api->post('oa/user/import','OAController@importUserInfo')->middleware('auth:oa');          //清空原有用户并导入
     $api->post('oa/hygiene/import','OAController@importHygiene')->middleware('auth:oa');        //宿舍卫生成绩导入
     $api->get('oa/signin/export','OAController@signRecordExport')->middleware('auth:oa');      //签到记录导出
-
 
 //OA办公系统end
 
