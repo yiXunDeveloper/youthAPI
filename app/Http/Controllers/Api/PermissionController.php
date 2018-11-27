@@ -147,15 +147,27 @@ class PermissionController extends Controller
             }
             array_push($roles,$role->name);
         }
+        //传来的参数有值班任务，先判断是否合法，如果合法查询这个人有没有值班任务，没有值班任务就创建，有值班任务就修改
         if ($request->duty_at) {
             if (sizeof(preg_match("/[0-6]:[1-5]|[0-6]:[1-5]/",$request->duty_at))>0 || sizeof(preg_match("/[0-6]:[1-5]/",$request->duty_at))>0) {
                 $duty = OaSigninDuty::where('sdut_id',$us->sdut_id)->first();
+                if (!$duty) {
+                    $duty = new OaSigninDuty();
+                    $duty->sdut_id = $us->sdut_id;
+                }
                 $duty->duty_at = $request->duty_at;
                 $duty->save();
             }else{
                 return $this->response->error('值班任务不合法',500);
             }
+        }else {
+            //传来的参数没有值班任务，查询这个人有没有值班任务，若有则删除此任务
+            $duty = OaSigninDuty::where('sdut_id',$us->sdut_id)->first();
+            if ($duty) {
+                $duty->delete();
+            }
         }
+        
         $us->syncRoles($roles);
 
         if ($youthUser->sdut_id != $request->sdut_id) {
