@@ -83,7 +83,8 @@ class PermissionController extends Controller
         $user = Auth::guard('oa')->user();
         $validator = app('validator')->make($request->all(), [
             'display_name' => 'required',
-            'permission.*' => 'required|exists:permissions,id'
+            'permissions' => 'required|array',
+            'permissions.*' => 'required|exists:permissions,id'
         ]);
         if ($validator->fails()) {
             throw new \Dingo\Api\Exception\StoreResourceFailedException('修改角色信息失败.', $validator->errors());
@@ -93,7 +94,7 @@ class PermissionController extends Controller
         }
 //        $role = Role::findById($request->role);
         $permissions = array();
-        foreach ($request->permission as $permission_id) {
+        foreach ($request->permissions as $permission_id) {
 //            if ($user->can($permission->name) && $user->can('manager_user') && $permission->name != 'manage_user'){
 //
 //            }
@@ -121,7 +122,8 @@ class PermissionController extends Controller
             'phone' => 'nullable|size:11',
             'birthday' => 'nullable|date',
             'department' => 'required',
-            'role.*' => 'required|exists:roles,id',
+            'role' => 'required|array',
+            'roles.*' => 'required|exists:roles,id',
         ]);
         if ($validator->fails()) {
             throw new \Dingo\Api\Exception\StoreResourceFailedException('修改用户信息失败.', $validator->errors());
@@ -136,14 +138,14 @@ class PermissionController extends Controller
         }
         $us = $youthUser->user()->first();
         $roles = array();
-        foreach ($request->role as $role_id) {
+        foreach ($request->roles as $role_id) {
             $role = Role::findById($role_id);
             if ($role->name == 'Administrator' && !$user->can('manage_administrator')) {
                 return $this->response->error('您无法管理 管理员！', 403);
             }else if(in_array($role->name,['Founder','Root']) && !$user->hasRole('Root')){
                 return $this->response->error('只有超级管理员才能分配站长和超级管理员！', 403);
             }
-            array_push($us,$role->name);
+            array_push($roles,$role->name);
         }
         if ($request->duty_at) {
             if (sizeof(preg_match("/[0-6]:[1-5]|[0-6]:[1-5]/",$request->duty_at))>0 || sizeof(preg_match("/[0-6]:[1-5]/",$request->duty_at))>0) {
