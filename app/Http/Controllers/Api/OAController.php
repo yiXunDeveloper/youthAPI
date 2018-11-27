@@ -281,6 +281,9 @@ class OAController extends Controller
                 if(!array_key_exists($record->sdut_id,$data)){
 
                     preg_match_all('/(\d):\d/', $duty->duty_at, $dutys);//匹配用户值班日期和节数
+                    if ($record->id == 278) {
+                        return $dutys;
+                    }
                     $n = 0;          //选定时间段应签到次数
                     for ($i=$start_time;$i<$end_time;$i+=86400){
                         if (count($dutys[1]) == 2){
