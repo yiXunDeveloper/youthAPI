@@ -122,11 +122,11 @@ class PermissionController extends Controller
             'phone' => 'nullable|size:11',
             'birthday' => 'nullable|date',
             'department' => 'required',
-            'role' => 'required|array',
+            'roles' => 'required|array',
             'roles.*' => 'required|exists:roles,id',
         ]);
         if ($validator->fails()) {
-            throw new \Dingo\Api\Exception\StoreResourceFailedException('修改用户信息失败.', $validator->errors());
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('参数错误，修改用户信息失败.', $validator->errors());
         }
         //没有操作权限
         if (!$user->can('manage_user') || !$user->can('manage_administrator')) {
