@@ -48,8 +48,13 @@ class OAController extends Controller
 
    //导入用户信息
     public function importUserInfo(Request $request) {
+        $user = Auth::guard('oa')->user();
+        if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
+            return $this->response->error('您没有该权限！', 403);
+        }
         $excel = $request->file('excel');
         $file = $excel->store('excel');
+
         Excel::load(public_path('app/').$file,function ($reader){
             $reader = $reader->getSheet(0);
             $res = $reader->toArray();
@@ -102,8 +107,8 @@ class OAController extends Controller
         return $this->response->array(['data'=>'导入成功'])->setStatusCode(200);
     }
     public function exportUser() {
-        $user = Auth::guard('auth:oa')->user();
-        if (!$user->can('manage_user') || !$user->can('manage_administrator')) {
+        $user = Auth::guard('oa')->user();
+        if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
             return $this->response->error('您没有该权限！', 403);
         }
         $users = OaYouthUser::all();
