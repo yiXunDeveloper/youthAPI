@@ -211,6 +211,7 @@ class PermissionController extends Controller
             return $this->response->errorNotFound('权限未找到');
         }
         $permission->display_name = $request->display_name;
+        $permission->save();
         return $this->response->noContent();
 
     }
