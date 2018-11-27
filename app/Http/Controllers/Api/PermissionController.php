@@ -67,14 +67,14 @@ class PermissionController extends Controller
             return $this->response->errorNotFound('角色未找到');
         }
         $role->permissions();
-        return $this->response->array(['data'=>$role])->setStautsCode(200);
+        return $this->response->array(['data'=>$role])->setStatusCode(200);
     }
     public function getPermissionById($id) {
         $permission = Permission::findById($id);
         if(!$permission) {
             return $this->response->errorNotFound('权限未找到');
         }
-        return $this->response->array(['data'=>$permission])->setStautsCode(200);
+        return $this->response->array(['data'=>$permission])->setStatusCode(200);
     }
 
     //修改角色/给角色分配权限
