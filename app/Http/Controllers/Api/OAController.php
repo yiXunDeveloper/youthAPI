@@ -281,24 +281,24 @@ class OAController extends Controller
                 if(!array_key_exists($record->sdut_id,$data)){
 
                     preg_match_all('/(\d):\d/', $duty->duty_at, $dutys);//匹配用户值班日期和节数
-                    if ($record->sdut_id == '18110901024') {
-                        var_dump($dutys);
-                        dd(count($dutys[1]));
-                    }
+
                     $n = 0;          //选定时间段应签到次数
-                    for ($i=$start_time;$i<$end_time;$i+=86400){
-                        if (count($dutys[1]) == 2){
+                    if (count($dutys[1]) == 2) {
+                        for ($i = $start_time; $i < $end_time; $i += 86400) {
                             if (date('w', $i) == $dutys[1][0] || date('w', $i) == $dutys[1][1]) {
                                 $n++;
                             }
-                        }else if(count($duty[1]) == 1){
-                            if (date('w', $i) == $dutys[1][0]) {
+                        }
+                    }else if (count($dutys[1]) == 1) {
+                        for ($i = $start_time; $i < $end_time; $i += 86400) {
+                            if (date('w', $i) == $duty[1][0]) {
                                 $n++;
                             }
-                        }else {
-                            return $record->sdut_id."的duty错误，duty：".$duty->duty_at;
                         }
+                    } else {
+                        return $record->sdut_id . "的duty错误，duty：" . $duty->duty_at;
                     }
+
                     $data[$record->sdut_id]['name'] = $record->user->name;
                     $data[$record->sdut_id]['sdut_id'] = $record->sdut_id;
                     $data[$record->sdut_id]['department'] = $record->user->department;
