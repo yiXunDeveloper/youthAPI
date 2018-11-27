@@ -167,7 +167,7 @@ class PermissionController extends Controller
                 $duty->delete();
             }
         }
-        
+
         $us->syncRoles($roles);
 
         if ($youthUser->sdut_id != $request->sdut_id) {

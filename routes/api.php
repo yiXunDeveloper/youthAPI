@@ -89,7 +89,7 @@ $api->version('v1',[
     $api->get('oa/user/{id}','PermissionController@getUserById')->middleware('auth:oa');   //根据id获取用户信息
     $api->put('oa/user/{id}','PermissionController@updateUser')->middleware('auth:oa');   //修改用户信息，为用户分配角色
     $api->put('oa/role/{id}','PermissionController@updateRole')->middleware('auth:oa');   //修改角色信息，为角色分配权限
-    $api->put('oa.permission/{id}','PermissionController@updatePermission')->middleware('auth:oa');   //修改权限名称
+    $api->put('oa/permission/{id}','PermissionController@updatePermission')->middleware('auth:oa');   //修改权限名称
 
     $api->get('oa/users','OAController@getUsers');   //获取全部用户
     $api->get('oa/signin','OAController@getSigninLists');  //获取当天签到列表
