@@ -84,6 +84,9 @@ class OAController extends Controller
                     'birthday' => $birthday ? $birthday : null,
                 ]);
                 if ($value[6]) {
+                    if (sizeof(preg_match("/[0-6]:[1-5]|[0-6]:[1-5]/",$value[6])) == 0 || sizeof(preg_match("/[0-6]:[1-5]/",$value[6]))==0) {
+                        return $this->response->error("{$value[0]}{$value[1]}的duty:{$value[6]}数据不合法",422);
+                    }
                     $user_duty = new OaSigninDuty();
                     $user_duty->sdut_id = $value[0];
                     $user_duty->duty_at = $value[6];
