@@ -19,11 +19,13 @@ class PermissionController extends Controller
         $user = Auth::guard('oa')->user();
         $youth_user  = $user->userinfo;
         $permissions = $user->getAllPermissions();
-        $duty = $youth_user->duty()->first();
-        if ($duty) {
-            $duty = $duty->duty_at;
+        if ($youth_user){
+            $duty = $youth_user->duty;
+            if ($duty) {
+                $duty = $duty->duty_at;
+            }
+            $youth_user->duty_at = $duty;
         }
-        $youth_user->duty_at = $duty;
         return $this->response->array(['data' => ['userinfo'=>$youth_user,'roles'=>$user->roles,'permissions'=>$permissions]])->setStatusCode(200);
     }
     //根据youth_user id获取用户
