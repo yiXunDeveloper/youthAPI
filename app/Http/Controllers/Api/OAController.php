@@ -49,9 +49,9 @@ class OAController extends Controller
    //导入用户信息
     public function importUserInfo(Request $request) {
         $user = Auth::guard('oa')->user();
-//        if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
-////            return $this->response->error('您没有该权限！', 403);
-//        }
+        if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
+            return $this->response->error('您没有该权限！', 403);
+        }
         $excel = $request->file('excel');
         $file = $excel->store('excel');
 
@@ -66,6 +66,7 @@ class OAController extends Controller
             OaYouthUser::truncate();
             OaUser::truncate();
             OaSigninDuty::truncate();
+            DB::table('model_has_roles')::truncate();
             $user = new OaUser();
             $user->username = 'youthol';
             $user->password = $ps;
