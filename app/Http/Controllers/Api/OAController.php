@@ -101,13 +101,10 @@ class OAController extends Controller
                     'password' => bcrypt($value[0]),
                     'sdut_id' => $value[0],
                 ]);
-                if ($value[7] == '正式') {
-                    $user->syncRoles('Formal');
-                }else if($value[7] == '试用') {
-                    $user->syncRoles('Probation');
-                }else if($value[7] == 'youthol') {
-                    //退站
-                    $user->syncRoles('Secede');
+                $roles = explode('|',$value[7]);
+                $roles = Role::whereIn('display_name',$roles)->get(['name']);
+                foreach ($roles as $role) {
+                    $user->assignRole($role->name);
                 }
             }
         });
