@@ -66,11 +66,11 @@ class OAController extends Controller
             OaYouthUser::truncate();
             OaUser::truncate();
             OaSigninDuty::truncate();
-            $user = new User();
+            $user = new OaUser();
             $user->username = 'youthol';
             $user->password = $ps;
             $user->sdut_id = '00000000000';
-            $user->syncRole('Root');
+            $user->assignRole('Root');
             $user->save();
             unset($res[0]);
             foreach ($res as $key => $value) {
