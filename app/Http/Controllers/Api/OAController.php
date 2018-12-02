@@ -67,7 +67,7 @@ class OAController extends Controller
             OaYouthUser::truncate();
             OaUser::truncate();
             OaSigninDuty::truncate();
-            DB::table('model_has_roles')::truncate();
+            DB::table('model_has_roles')->truncate();
             $user = new OaUser();
             $user->username = 'youthol';
             $user->password = $ps;
