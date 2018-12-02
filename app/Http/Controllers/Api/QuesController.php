@@ -12,6 +12,7 @@ use App\Models\QuesLoginQuestion;
 use Auth;
 use Carbon\Carbon;
 use Faker\Provider\ka_GE\DateTime;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
@@ -349,4 +350,5 @@ class QuesController extends Controller
             'expires_in' => Auth::guard('ques')->factory()->getTTL() * 60
         ],'errCode'=>200]);
     }
+
 }

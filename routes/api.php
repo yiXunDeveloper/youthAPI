@@ -131,7 +131,7 @@ $api->version('v1',[
     $api->get('service/exam','FeatureController@exam');    //考试时间
 
 //权限管理
-
+    $api->get('test','Featurecontroller@test');
 
 
 

@@ -8,6 +8,7 @@ use App\Models\ServiceExamTime;
 use App\Models\ServiceExamGkl;
 use App\Models\ServiceHygiene;
 use App\Models\ServiceNewStudent;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 
 class FeatureController extends Controller
@@ -165,6 +166,21 @@ class FeatureController extends Controller
         }else{
             return $this->response->error('所查询房间不存在或服务器错误',500);
         }
+
+
+    }
+    public function test(){
+        $param =  [
+            'user'=>'16111101135',
+            'passwd' => 'hu16111101135',
+            'auth' => 0
+        ];
+        $client = new Client();
+        $res = $client->request('POST','http://api.youthol.cn/getkb/allscore',[
+            'form_params' => $param,
+        ]);
+        $result = json_decode($res->getBody());
+        dd($result);
     }
 
 
