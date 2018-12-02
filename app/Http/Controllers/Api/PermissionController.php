@@ -136,11 +136,18 @@ class PermissionController extends Controller
                 return $this->response->errorNotFound('用户未找到');
         }
         $us = $youthUser->user()->first();
+
+        if($us->hasRole('Admionistrator') && !$user->can('manage_administrator')) {
+            return $this->response->error('您没有权限管理 管理员！', 403);
+        }
+        if($us->hasAnyRoles(['Founder','Root']) && !$user->hasRole('Root')) {
+            return $this->response->error('您没有权限管理 、站长和超级管理员！', 403);
+        }
         $roles = array();
         foreach ($request->roles as $role_id) {
             $role = Role::findById($role_id);
             if ($role->name == 'Administrator' && !$user->can('manage_administrator')) {
-                return $this->response->error('您无法管理 管理员！', 403);
+                return $this->response->error('您无法分配 管理员！', 403);
             }else if(in_array($role->name,['Founder','Root']) && !$user->hasRole('Root')){
                 return $this->response->error('只有超级管理员才能分配站长和超级管理员！', 403);
             }

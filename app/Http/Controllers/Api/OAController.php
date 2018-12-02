@@ -50,7 +50,7 @@ class OAController extends Controller
     public function importUserInfo(Request $request) {
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
-            return $this->response->error('您没有该权限！', 403);
+//            return $this->response->error('您没有该权限！', 403);
         }
         $excel = $request->file('excel');
         $file = $excel->store('excel');
@@ -62,15 +62,15 @@ class OAController extends Controller
                 return $this->response->error('文件数据不合法',422);
             }
             $user = OaUser::where('username','youthol')->first();
+            $ps = $user->password;
             OaYouthUser::truncate();
             OaUser::truncate();
             OaSigninDuty::truncate();
-            if (!$user) {
-                $user = new User();
-                $user->username = 'youthol';
-                $user->password = bcrypt('youth123');
-                $user->sdut_id = '00000000000';
-            }
+            $user = new User();
+            $user->username = 'youthol';
+            $user->password = $ps;
+            $user->sdut_id = '00000000000';
+            $user->syncRole('Root');
             $user->save();
             unset($res[0]);
             foreach ($res as $key => $value) {
