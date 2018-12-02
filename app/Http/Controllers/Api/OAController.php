@@ -62,7 +62,7 @@ class OAController extends Controller
                 return $this->response->error('文件数据不合法',422);
             }
             $user = OaUser::where('username','youthol')->first();
-            $ps = $user->password;
+            $ps = $user ? $user->password : bcrypt('youth123');
             OaYouthUser::truncate();
             OaUser::truncate();
             OaSigninDuty::truncate();
