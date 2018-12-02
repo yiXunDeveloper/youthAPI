@@ -49,9 +49,9 @@ class OAController extends Controller
    //导入用户信息
     public function importUserInfo(Request $request) {
         $user = Auth::guard('oa')->user();
-        if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
-//            return $this->response->error('您没有该权限！', 403);
-        }
+//        if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
+////            return $this->response->error('您没有该权限！', 403);
+//        }
         $excel = $request->file('excel');
         $file = $excel->store('excel');
 
@@ -70,8 +70,10 @@ class OAController extends Controller
             $user->username = 'youthol';
             $user->password = $ps;
             $user->sdut_id = '00000000000';
-            $user->assignRole('Root');
             $user->save();
+            if (!$user->hasRole('Root')) {
+                $user->assignRole('Root');
+            }
             unset($res[0]);
             foreach ($res as $key => $value) {
                 $birthday = str_replace('\/','-',$value[5]);
@@ -84,7 +86,7 @@ class OAController extends Controller
                     'birthday' => $birthday ? $birthday : null,
                 ]);
                 if ($value[6]) {
-                    if (sizeof(preg_match("/[0-6]:[1-5]|[0-6]:[1-5]/",$value[6])) == 0 || sizeof(preg_match("/[0-6]:[1-5]/",$value[6]))==0) {
+                    if (preg_match("/[0-6]:[1-5]|[0-6]:[1-5]/",$value[6]) == 0 && preg_match("/[0-6]:[1-5]/",$value[6])==0) {
                         return $this->response->error("{$value[0]}{$value[1]}的duty:{$value[6]}数据不合法",422);
                     }
                     $user_duty = new OaSigninDuty();
