@@ -75,7 +75,7 @@ $api->version('v1',[
 
 
     $api->get('oa/user/export','OAController@exportUser')->middleware('auth:oa');
-    $api->post('oa/user/import','OAController@importUserInfo')/*->middleware('auth:oa')*/;          //清空原有用户并导入
+    $api->post('oa/user/import','OAController@importUserInfo')->middleware('auth:oa');          //清空原有用户并导入
 
 
 //OA办公系统start
