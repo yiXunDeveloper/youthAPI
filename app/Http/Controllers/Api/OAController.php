@@ -14,6 +14,7 @@ use App\User;
 use Auth;
 use Excel;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Spatie\Permission\Models\Role;
 
