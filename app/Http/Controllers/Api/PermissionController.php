@@ -140,7 +140,7 @@ class PermissionController extends Controller
         if($us->hasRole('Admionistrator') && !$user->can('manage_administrator')) {
             return $this->response->error('您没有权限管理 管理员！', 403);
         }
-        if($us->hasAnyRoles(['Founder','Root']) && !$user->hasRole('Root')) {
+        if($us->hasAnyRole(['Founder','Root']) && !$user->hasRole('Root')) {
             return $this->response->error('您没有权限管理 、站长和超级管理员！', 403);
         }
         $roles = array();
