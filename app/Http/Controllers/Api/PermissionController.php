@@ -188,8 +188,14 @@ class PermissionController extends Controller
             OaSigninRecord::where('sdut_id',$youthUser->sdut_id)->update([
                 'sdut_id'=>$request->sdut_id,
             ]);
-            OaEquipmentRecord::where('sdut_id',$youthUser->sdut_id)->update([
-                'sdut_id'=>$request->sdut_id,
+            OaEquipmentRecord::where('lend_user',$youthUser->sdut_id)->update([
+                'lend_user'=>$request->sdut_id,
+            ]);
+            OaEquipmentRecord::where('memo_user',$youthUser->sdut_id)->update([
+                'memo_user'=>$request->sdut_id,
+            ]);
+            OaEquipmentRecord::where('rememo_user',$youthUser->sdut_id)->update([
+                'rememo_user'=>$request->sdut_id,
             ]);
             $youthUser->sdut_id = $request->sdut_id;
         }
