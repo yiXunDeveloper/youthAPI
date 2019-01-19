@@ -16,7 +16,7 @@ class CreateOaWorkloadsTable extends Migration
         //工作量统计表
         Schema::create('oa_workloads', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('user_id',11);   //用户学号
+            $table->string('sdut_id',11);   //用户学号
             $table->string('description')->nullable();  //工作量描述
             $table->integer('score')->nullable();  //工作积分
             $table->string('manager_id',11);   //操作者学号

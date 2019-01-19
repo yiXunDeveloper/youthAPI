@@ -6,6 +6,7 @@ use App\Models\OaEquipmentRecord;
 use App\Models\OaSigninDuty;
 use App\Models\OaSigninRecord;
 use App\Models\OaUser;
+use App\Models\OaWorkload;
 use App\Models\OaYouthUser;
 use Illuminate\Http\Request;
 use Auth;
@@ -164,7 +165,7 @@ class PermissionController extends Controller
                 $duty->duty_at = $request->duty_at;
                 $duty->save();
             }else{
-                return $this->response->error('值班任务不合法',500);
+                return $this->response->error('值班任务不合法',422);
             }
         }else {
             //传来的参数没有值班任务，查询这个人有没有值班任务，若有则删除此任务
@@ -177,26 +178,44 @@ class PermissionController extends Controller
         $us->syncRoles($roles);
 
         if ($youthUser->sdut_id != $request->sdut_id) {
+            //如果修改学号
+//            更新账号密码
             OaUser::where('sdut_id',$youthUser->sdut_id)->update([
                 'username'=>$request->sdut_id,
                 'password'=>bcrypt($request->sdut_id),
                 'sdut_id'=>$request->sdut_id,
             ]);
+
+            //更新值班任务
             OaSigninDuty::where('sdut_id',$youthUser->sdut_id)->update([
                 'sdut_id'=>$request->sdut_id,
             ]);
+            //更新签到记录
             OaSigninRecord::where('sdut_id',$youthUser->sdut_id)->update([
                 'sdut_id'=>$request->sdut_id,
             ]);
+            //更新设备借用记录的借用人
             OaEquipmentRecord::where('lend_user',$youthUser->sdut_id)->update([
                 'lend_user'=>$request->sdut_id,
             ]);
+            //更新设备借用记录的借备忘用人
             OaEquipmentRecord::where('memo_user',$youthUser->sdut_id)->update([
                 'memo_user'=>$request->sdut_id,
             ]);
+            //更新设备借用记录的归还备忘人
             OaEquipmentRecord::where('rememo_user',$youthUser->sdut_id)->update([
                 'rememo_user'=>$request->sdut_id,
             ]);
+            //更新工作量
+            OaWorkload::where('sdut_id',$youthUser->sdut_id)->update([
+                'sdut_id'=>$request->sdut_id,
+            ]);
+            //更新工作量备忘人
+            OaWorkload::where('manager_id',$youthUser->sdut_id)->update([
+                'manager_id' => $request->sdut_id,
+            ]);
+
+
             $youthUser->sdut_id = $request->sdut_id;
         }
         $youthUser->name = $request->name;
