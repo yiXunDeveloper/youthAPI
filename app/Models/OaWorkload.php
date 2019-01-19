@@ -7,4 +7,5 @@ use Illuminate\Database\Eloquent\Model;
 class OaWorkload extends Model
 {
     //
+    protected $guarded = [];
 }

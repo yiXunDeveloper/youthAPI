@@ -4,13 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use App\Models\OaEquipment;
 use App\Models\OaEquipmentRecord;
+use App\Models\OaPhonebook;
 use App\Models\OaSchedule;
 use App\Models\OaSigninDuty;
 use App\Models\OaSigninRecord;
 use App\Models\OaUser;
+use App\Models\OaWorkload;
 use App\Models\OaYouthUser;
 use App\Models\ServiceHygiene;
-use App\User;
 use Auth;
 use Excel;
 use Illuminate\Http\Request;
@@ -22,6 +23,13 @@ class OAController extends Controller
 {
     //登录
     public function login(Request $request){
+        $validator = app('validator')->make($request->all(),[
+            'username'=>'required',
+            'password'=>'required',
+        ]);
+        if ($validator->fails()){
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('参数错误！');
+        }
         $credentials['username'] = $request->username;
         $credentials['password'] = $request->password;
         //找到该用户
@@ -53,12 +61,14 @@ class OAController extends Controller
         if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
             return $this->response->error('您没有该权限！', 403);
         }
+        //获取上传的文件
         $excel = $request->file('excel');
         $file = $excel->store('excel');
-
+        //Excel加载文件
         Excel::load(public_path('app/').$file,function ($reader){
             $reader = $reader->getSheet(0);
             $res = $reader->toArray();
+            //如果没有数据或者表格的列数不等于8，报错
             if(sizeof($res) <= 1 || sizeof($res[0]) != 8) {
                 return $this->response->error('文件数据不合法',422);
             }
@@ -110,6 +120,7 @@ class OAController extends Controller
         });
         return $this->response->array(['data'=>'导入成功'])->setStatusCode(200);
     }
+    //导出用户
     public function exportUser() {
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
@@ -139,16 +150,20 @@ class OAController extends Controller
             });
         })->export('xls');
     }
-
+    //卫生成绩导入
     public function importHygiene(Request $request) {
+
         $excel = $request->file('dormitory');
         $file = $excel->store('excel');
+        //如果没有数据或者表格的列数不等于8，报错
         Excel::load(public_path('app/').$file,function ($reader){
             $reader = $reader->getSheet(0);
             $res = $reader->toArray();
+
             if(sizeof($res) <= 1 || sizeof($res[0]) != 7) {
-                return $this->response->error('文件数据不合法',422);
+                throw new \Dingo\Api\Exception\StoreResourceFailedException('文件格式错误！', ['dormitory'=>'Excel文件为空或列数不等于7']);
             }
+            //删除前两行无用信息
             unset($res[0]);
             unset($res[1]);
             foreach ($res as $value) {
@@ -195,12 +210,13 @@ class OAController extends Controller
                 if(!$user->duty){
                     $status = 4;//无效值班
                 }else{
+                    //通过‘|’将用户的多个值班任务分开
                     $arr = explode('|',$user->duty->duty_at);
-                    $timer = 70;
-                    $is_today = false;
-                    $duty_area = 0;
-                    $current_now = time();
-                    $duration = ceil(($current_now - strtotime($record->created_at))/60);
+                    $timer = 70; //值班时间70分钟为合格
+                    $is_today = false; //今天是否有值班任务
+                    $duty_area = 0;   //当日签到任务（1-5）
+                    $current_now = time();  //当前时间
+                    $duration = ceil(($current_now - strtotime($record->created_at))/60);  //此次签退距上次签到的时间段
                     foreach ($arr as $item){
                         if(substr($item,0,1) == date('w')){
                             $is_today = true;
@@ -218,27 +234,30 @@ class OAController extends Controller
                             default:
                                  $start_at = strtotime('00:00');$end_at = strtotime('00:00');
                         }
-                        if (strtotime($record->created_at) < $start_at && time() < $end_at && time() > $start_at) {
-                            // 签到时间比规定时间早，签退时间比规定时间早
-                            $duration = ceil((time() - $start_at) / 60);
-                        } elseif (strtotime($record->created_at) < $start_at && time() >= $end_at) {
-                            // 签到时间比规定时间早，签退时间比规定时间晚
+                        $created_at = strtotime($record->created_at);
+
+                        if ($created_at < $start_at && $current_now < $end_at && $current_now > $start_at) {
+                            // 签到时间比规定签到时间早，签退时间比规定签退时间早但是比规定签到时间晚
+                            $duration = ceil(($current_now - $start_at) / 60);
+                        } elseif ($created_at <= $start_at && $current_now >= $end_at) {
+                            // 签到时间比规定签到时间早，签退时间比规定签退时间晚
                             $duration = ceil(($end_at - $start_at) / 60);
-                        } elseif (strtotime($record->created_at) >= $start_at && time() >= $end_at && strtotime($record->created_at) < $end_at) {
-                            // 签到时间比规定时间晚，签退时间比规定时间晚
+                        } elseif ($created_at >= $start_at && $current_now >= $end_at && strtotime($record->created_at) < $end_at) {
+                            // 签到时间比规定签到时间晚但比规定签退时间早，签退时间比规定签退时间晚
                             $duration = ceil(($end_at - strtotime($record->created_at)) / 60);
-                        } elseif (strtotime($record->created_at) >= $start_at && time() < $end_at) {
-                            // 签到时间比规定时间晚，签退时间比规定时间早
-                            $duration = ceil((time() - strtotime($record->created_at)) / 60);
+                        } elseif ($created_at >= $start_at && $current_now < $end_at) {
+                            // 签到时间比规定签到时间晚，签退时间比规定时间早
+                            $duration = ceil(($current_now - strtotime($record->created_at)) / 60);
                         }
 
-                        if (strtotime($record->created_at) >= $end_at || $current_now < $start_at) {
+                        if ($created_at >= $end_at || $current_now < $start_at) {
                             //多余值班
                             $status = $duration >= $timer ? 2 : 4;
                         } else {
                             //不多余
                             $status = $duration >= $timer ? 1 : 3;
                         }
+
                     }else{
                         //不是今天值班
                         $status = $duration>=$timer ? 2 :4 ;
@@ -261,13 +280,13 @@ class OAController extends Controller
     }
 
     //导出签到记录
-    public function signRecordExport(Request $request){
+    public function ExportSignRecord(Request $request){
         $validator = app('validator')->make($request->all(),[
             'start'=>'required|date',
             'end'=>'required|date|after:start'
         ]);
         if ($validator->fails()){
-            throw new \Dingo\Api\Exception\StoreResourceFailedException('Could not create new user.', $validator->errors());
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('数据格式错误！', $validator->errors());
         }
         $start_at = $request->start;
         $end_at = $request->end;
@@ -339,7 +358,7 @@ class OAController extends Controller
         })->export('xls');
     }
     //获得当月计划表
-    public function getScheduleLists(){
+    public function getSchedules(){
         $last = date('Y-m-d H:i:s',strtotime("-1 month"));
         $lists = OaSchedule::whereDate('created_at','>',$last)->orderBy('updated_at','DESC')->get();
         foreach ($lists as $list){
@@ -348,43 +367,41 @@ class OAController extends Controller
         return $this->response->array(['data'=>count($lists) > 0 ? $lists->toArray() : $lists])->setStatusCode(200);
     }
     //通过id获取计划表
-    public function getSchedule($id){
-        $schedule = OaSchedule::find($id);
+    public function getSchedule(OaSchedule $schedule){
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
     }
     //增加计划表
-    public function scheduleStore(Request $request){
-        $this->validate($request,[
+    public function addSchedule(Request $request){
+        $validator = app('validator')->make($request->all(),[
             'event_name' => 'required',
             'event_place' => 'required',
             'event_date' => 'required|date',
             'sponsor' => 'required|exists:oa_youth_users,sdut_id'
         ]);
+        if ($validator->fails()){
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('数据格式错误', $validator->errors());
+        }
         $schedule = OaSchedule::create($request->all());
 
         return $this->response->array(['data'=>$schedule])->setStatusCode(201);
     }
     //修改计划表
-    public function scheduleUpdate(Request $request,$id){
-        $this->validate($request,[
+    public function updateSchedule(Request $request,OaSchedule $schedule){
+        $validator = app('validator')->make($request->all(),[
             'user'=>'required|exists:oa_youth_users,sdut_id'
         ]);
-        $schedule = OaSchedule::find($id);
-        if (!$schedule){
-            return $this->response->errorNotFound('计划表未找到');
+        if ($validator->fails()){
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('数据格式错误', $validator->errors());
         }
         $schedule->event_status = 1;
         $schedule->save();
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
     }
     //删除计划表
-    public function scheduleDelete($id){
+    public function deleteSchedule(OaSchedule $schedule){
         $user = Auth::guard('oa')->user();
         if($user->can('manage_activity')){
-            $schedule = OaSchedule::find($id);
-            if (!$schedule){
-                return $this->response->errorNotFound('计划表未找到');
-            }
+
             $schedule->delete();
         }else{
             return $this->response->error('对不起，您无权限进行该操作！',403);
@@ -393,36 +410,39 @@ class OAController extends Controller
     }
 
     //查询所有设备
-    public function equipmentLists(){
+    public function getEquipments(){
         //查所有
         $equipments = OaEquipment::all();
         return $this->response->array(['data'=>$equipments]);
     }
     //通过id获得设备
-    public function equipment($id){
-        $equipment = OaEquipment::find($id);
-        if(!$equipment){
-            return $this->response->errorNotFound('设备未找到');
-        }
+    public function getEquipmentById(OaEquipment $equipment){
         return $this->response->array(['data'=>$equipment]);
     }
     //增加设备
-    public function equipmentStore(Request $request){
-        $this->validate($request,[
+    public function addEquipment(Request $request){
+        $validator = app('validator')->make($request->all(),[
             'device_name' => 'required|unique:oa_equipment,device_name',
             'device_type' => 'required',
         ]);
+        if ($validator->fails()){
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('数据格式错误', $validator->errors());
+        }
         $equipment = OaEquipment::create($request->all());
         return $this->response->array(['data'=>$equipment]);
     }
     //删除设备
-    public function euqipmentDelete($id){
+    public function deleteEquipment(OaEquipment $equipment){
         //有token
-        OaEquipment::find($id)->delete();
+        $user = Auth::guard('oa')->user();
+        if (!$user->can('manage_device')) {
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("您没有该权限！");
+        }
+        $equipment->delete();
         return $this->response->noContent();
     }
     //查询最近一个月的设备借用记录
-    public function equipmentRecordLists(){
+    public function getEquipmentRecords(){
         //查一个月
         $last = date('Y-m-d',strtotime("-1 month"));
         $lists = OaEquipmentRecord::whereDate('created_at','>',$last)->orderBy('updated_at','DESC')->get();
@@ -447,20 +467,24 @@ class OAController extends Controller
         return $this->response->array(['data'=>$lists]);
     }
 //    增加设备借用记录
-    public function equipmentRecordStore(Request $request){
-        $this->validate($request,[
+    public function addEquipmentRecord(Request $request){
+        $validator = app('validator')->make($request->all(),[
             'device'=>'required|exists:oa_equipments,id',
             'activity'=>'required',
             'lend_at' => 'date',
             'lend_user' => 'required',        //站内学号，站外名称
             'memo_user' => 'required|exists:oa_youth_users,sdut_id'
         ]);
-        if(OaEquipment::find($request->device)->status == 1){
+        if ($validator->fails()){
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('数据格式错误', $validator->errors());
+        }
+        $equipment = OaEquipment::find($request->device);
+        if($equipment->status == 1){
             //设备已经被借用
             return $this->response->error('设备已被借用，不能重复借用',403);
         }
-        if($request->lend_user == $request->user){
-            return $this->response->error('借用人和借出备忘人不能为同一人！',500);
+        if($request->lend_user == $request->memo_user){
+            return $this->response->error('借用人和借出备忘人不能为同一人！',422);
         }
         $sdut_id = $request->lend_user;
         if (strlen((int)$sdut_id) == strlen($sdut_id)){
@@ -473,10 +497,10 @@ class OAController extends Controller
             //全是中文汉字
             $memo = OaYouthUser::where('name',$sdut_id)->first();
             if($memo && $sdut_id == $memo->name){
-                return $this->response->error('站内人员借用需输入学号！',500);
+                return $this->response->error('站内人员借用需输入学号！',422);
             }
         }else{
-            return $this->response->error('借用人数据不合法',500);
+            return $this->response->error('借用人数据不合法',422);
         }
         $record = OaEquipmentRecord::create([
             'device_id' => $request->device,
@@ -485,6 +509,8 @@ class OAController extends Controller
             'lend_user' => $request->lend_user,
             'memo_user' => $request->memo_user,
         ]);
+        $equipment->status = 1;  //状态设置为借用中
+        $equipment->save();
         $record->device;
         if (is_numeric($record->lend_user)){
             $record->lend_user_name;
@@ -499,28 +525,132 @@ class OAController extends Controller
         }
         return $this->response->array(['data'=>$record])->setStatusCode(201);
     }
-    public function equipmentRecordUpdate(Request $request,$id){
-        $this->validate($request,[
+    //归还设备
+    public function updateEquipmentRecord(Request $request,OaEquipmentRecord $record){
+        $validator = app('validator')->make($request->all(),[
             'rememo_user' => 'required|exists:oa_youth_users,sdut_id',
         ]);
-        $equipment_record = OaEquipmentRecord::find($id);
-        if ($equipment_record){
-            if ($equipment_record->lend_user == $request->rememo_user){
-                return $this->response->error('借用人和归还备忘人不能为同一人！',500);
+        if ($validator->fails()){
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('归还备忘人错误', $validator->errors());
+        }
+        if ($record){
+            if ($record->lend_user == $request->rememo_user){
+                return $this->response->error('借用人和归还备忘人不能为同一人！',422);
             }
-            $equipment_record->return_at = date('Y-m-d H:i:s');
-            $equipment_record->rememo_user = $request->rememo_user;
-            $equipment_record->save();
+            $record->return_at = date('Y-m-d H:i:s');
+            $record->rememo_user = $request->rememo_user;
+            $record->save();
+            //修改设备状态
+            $equipment = OaEquipment::find($record->device);
+            $equipment->status = 0; //设置为未借用
+            $equipment->save();
             return $this->response->noContent();
         }else{
             return $this->response->errorNotFound('未找到该记录');
         }
     }
-    public function equipmentDelete($id){
-        //验证token
-        OaEquipmentRecord::find($id)->delete();
+    //删除设备借还记录
+    public function deleteEquipmentRecord(OaEquipmentRecord $record){
+        //有token
+        $user = Auth::guard('oa')->user();
+        if (!$user->can('manage_device')) {
+
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("您没有该权限！");
+        }
+        $record->delete();
         return $this->response->noContent();
     }
 
-    
+    //电话簿管理
+
+    //获取全部电话簿
+    public function getPhonebooks() {
+        $phonebooks = OaPhonebook::all();
+        return $this->response->array(['data'=>$phonebooks])->setStatusCode(200);
+    }
+//    添加电话簿
+    public function addPhonebook(Request $request) {
+        $user = Auth::guard('oa')->user();
+        if (!$user->can('manage_phone_book')){
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("您没有该权限！");
+        }
+        $validator = app('validator')->make($request->all(),[
+            'administrative_unit'=>'required',
+            'office_location' => 'required',
+            'office_person' => 'required',
+            'telephone' => 'required',
+        ]);
+        if ($validator->fails()) {
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('数据不完整', $validator->errors());
+        }
+        OaPhonebook::create($request->all());
+        return $this->response->noContent();
+    }
+//    删除电话簿
+    public function deletePhonebook(OaPhonebook $phonebook) {
+        $user = Auth::guard('oa')->user();
+        if (!$user->can('manage_phone_book')){
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("您没有该权限！");
+        }
+        $phonebook->delete();
+        return $this->response->noContent();
+    }
+
+    //获取工作量
+    public function getWorkloads() {
+
+    }
+
+    //增加工作量
+    public function addWorkloads(Request $request){
+        $user = Auth::guard('oa')->user();
+        if (!$user->hasRole('Administrator')) {
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("只有管理员才能进行该操作！");
+        }
+        $validator = app('validator')->make($request->all(),[
+            'sdut_id' => 'required|exists:oa_users,sdut_id',
+            'description' => 'required',
+            'score' => 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('数据错误！', $validator->errors());
+        }
+        OaWorkload::create([
+            'sdut_id' => $request->sdut_id,
+            'description' => $request->description,
+            'score' => $request->score,
+            'manager_id' => $user->sdut_id,
+        ]);
+        return $this->response->noContent();
+    }
+
+    //修改工作量
+    public function updateWorkload(Request $request,OaWorkload $workload) {
+        $user = Auth::guard('oa')->user();
+        if (!$user->hasRole('Administrator')) {
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("只有管理员才能进行该操作！");
+        }
+        $validator = app('validator')->make($request->all(),[
+            'description' => 'required',
+            'score' => 'required|numeric',
+        ]);
+        if ($validator->fails()) {
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('数据错误！', $validator->errors());
+        }
+        $workload->description = $request->description;
+        $workload->score = $request->score;
+        $workload->manager_id = $user->sdut_id;
+        $workload->save();
+        return $this->response->noContent();
+    }
+
+    //删除工作量
+    public function deleteWorkload(OaWorkload $workload) {
+        $user = Auth::guard('oa')->user();
+        if (!$user->hasRole('Administrator')) {
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("只有管理员才能进行该操作！");
+        }
+        $workload->delete();
+        return $this->response->noContent();
+    }
 }

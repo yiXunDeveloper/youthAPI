@@ -15,7 +15,7 @@ class PreordainCheckUser
      */
     public function handle($request, Closure $next)
     {
-        if(Auth::user()->admin==0){
+        if(Auth::guard('preordain')->user()->admin==0){
             return $next($request);
         }else{
             throw new \Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException('您没有权限进行该操作');

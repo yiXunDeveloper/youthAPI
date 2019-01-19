@@ -15,7 +15,7 @@ class QuesCheck
      */
     public function handle($request, Closure $next)
     {
-        $user = Auth::guard('ques')->user;
+        $user = Auth::guard('ques')->user();
 
         return $next($request);
     }

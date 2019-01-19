@@ -164,7 +164,7 @@ class FeatureController extends Controller
         if (!empty($value5[0])){
             return $this->response->array(['data'=>['room'=>$value5[1][0],'time'=>$value5[2][0],'elec'=>$value5[3][0],'remain'=>$value5[4][0],'status'=>$value5[5][0]]]);
         }else{
-            return $this->response->error('所查询房间不存在或服务器错误',500);
+            return $this->response->error('所查询房间不存在或服务器错误',404);
         }
 
 
