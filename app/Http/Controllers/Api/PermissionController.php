@@ -50,14 +50,14 @@ class PermissionController extends Controller
         $youthUser->duty_at = $duty;
         return $this->response->array(['data' => ['userinfo'=>$youthUser,'roles'=>$user->roles,'permissions'=>$permissions]])->setStatusCode(200);
     }
-    public function getAllRoles(){
+    public function getRoles(){
         $role = Role::all();
         foreach ($role as $item) {
             $item->permissions;
         }
         return $this->response->array(['data'=>$role->toArray()]);
     }
-    public function getAllPermissions() {
+    public function getPermissions() {
         $permission = Permission::all();
         return $this->response->array(['data'=>$permission->toArray()]);
     }
