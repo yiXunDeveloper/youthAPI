@@ -185,7 +185,7 @@ class OAController extends Controller
 
     //获取所有用户信息
     public function getUsers(){
-        $users = OaYouthUser::orderBy('id','DESC')->get();
+        $users = OaYouthUser::all();
         return $this->response->array(['data'=>$users->toArray()]);
     }
 
