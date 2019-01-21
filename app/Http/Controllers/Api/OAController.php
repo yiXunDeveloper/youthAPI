@@ -586,6 +586,51 @@ class OAController extends Controller
         OaPhonebook::create($request->all());
         return $this->response->noContent();
     }
+//导入电话簿
+    public function importPhonebook(Request $request) {
+        $user = Auth::guard('oa')->user();
+        if (!$user->can('manage_phone_book')){
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("您没有该权限！");
+        }
+        //获取上传的文件
+        $excel = $request->file('excel');
+        $file = $excel->store('excel');
+        //Excel加载文件
+        Excel::load(public_path('app/').$file,function ($reader) {
+            $reader = $reader->getSheet(0);
+            $res = $reader->toArray();
+            //如果没有数据或者表格的列数不等于8，报错
+            if (sizeof($res) <= 1 || sizeof($res[0]) != 5) {
+                return $this->response->error('文件数据不合法', 422);
+            }
+            OaPhonebook::truncate();
+            unset($res[0]);
+            foreach ($res as $value) {
+                $phonebook = new OaPhonebook();
+                $phonebook->administrative_unit = $value[0];
+                $phonebook->office_location = $value[1];
+                $phonebook->office_person = $value[2];
+                $phonebook->telephone = $value[3];
+                $phonebook->notation = $value[4];
+                $phonebook->save();
+            }
+        });
+        return $this->response->array(['data'=>'导入成功'])->setStatusCode(200);
+    }
+    //导出电话簿
+    public function exportPhonebook(){
+        $user = Auth::guard('oa')->user();
+        if (!$user->can('manage_phone_book')){
+            throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("您没有该权限！");
+        }
+        $phonebooks = OaPhonebook::all(['administrative_unit','office_location','office_person','telephone','notation']);
+        $data = $phonebooks->toArray();
+        Excel::create(date('Y-m-d H:i:s').'导出电话簿数据',function($excel) use($data){
+            $excel->sheet('电话簿', function($sheet) use ($data){
+                $sheet->fromArray($data);
+            });
+        })->export('xls');
+    }
 //    删除电话簿
     public function deletePhonebook(OaPhonebook $phonebook) {
         $user = Auth::guard('oa')->user();
