@@ -631,6 +631,26 @@ class OAController extends Controller
             });
         })->export('xls');
     }
+
+    //更新电话簿
+    public function updatePhonebook(Request $request,OaPhonebook $phonebook) {
+        $validator = app('validator')->make($request->all(),[
+            'administrative_unit'=>'required',
+            'office_location' => 'required',
+            'office_person' => 'required',
+            'telephone' => 'required',
+        ]);
+        if ($validator->fails()) {
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('数据不完整', $validator->errors());
+        }
+        $phonebook->administrative_unit = $request->administrative;
+        $phonebook->office_location = $request->office_location;
+        $phonebook->office_person = $request->office_person;
+        $phonebook->telephone = $request->telephone;
+        $phonebook->notation = $request->notation;
+        $phonebook->save();
+        return $this->response->noContent();
+    }
 //    删除电话簿
     public function deletePhonebook(OaPhonebook $phonebook) {
         $user = Auth::guard('oa')->user();
