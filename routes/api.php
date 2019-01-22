@@ -119,6 +119,7 @@ $api->version('v1',[
     $api->post('oa/phonebook','OAController@addPhonebook')->middleware('api.auth'); // 添加电话簿
     $api->post('oa/phonebook/import','OAController@importPhonebook')->middleware('api.auth'); // 导入电话簿
     $api->get('oa/phonebook/export','OAController@exportPhonebook')->middleware('api.auth'); //导出电话簿
+    $api->put('oa/phonebook/{phonebook}','OAController@updatePhonebook')->middleware('api.auth'); //更新电话簿
     $api->delete('oa/phonebook/{phonebook}','OAController@deletePhonebook')->middleware('api.auth');//删除电话簿
 
     $api->get('oa/workloads','OAController@getWorkloads');   //获取当月的任务量
