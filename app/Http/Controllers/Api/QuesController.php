@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Faker\Provider\ka_GE\DateTime;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Tymon\JWTAuth\JWTAuth;
@@ -172,15 +173,16 @@ class QuesController extends Controller
         }
         $cats = array();
         foreach ($categories as $category){
-            $category->name = $category->user()->first()->name;
+            $category->name = $category->user == null ? null : $category->user->name;
             array_push($cats,$category);
         }
         return $this->response->array(['data'=>$cats])->setStatusCode(200);
     }
+
     public function quesDetail($id){
         $category = QuesCategory::find($id);
         if(!$category){
-            return $this->response->error('资源未找到',404);
+            return $this->response->errorNotFound('问卷未找到');
         }
         $category->invest_questions;
         $category->login_questions;
@@ -202,6 +204,7 @@ class QuesController extends Controller
         ]);
         $userinfo = $request->userinfo;
         $answers = $request->answers;
+        $answers = new Collection($answers);
         if($category){
             $now = new \DateTime();
             $start = new \DateTime($category->start_at);
@@ -213,15 +216,15 @@ class QuesController extends Controller
 //                return $this->response->error('数据不合法',422);
 //            }
             //数据验证
-            $invest_questions = $category->invest_questions;
-            if ($category->user_required ==1 ){
-                $login_questions = $category->login_questions;
-                foreach ($login_questions as $login_question){
-                    if ($login_question->input_type == 1){
-                        $login_options = $login_question->input_options;
+            $invest_questions = $category->invest_questions;//获取问卷问题
+            if ($category->user_required ==1 ){  //如果要求验证用户身份：如年龄、政治面貌等
+                $login_questions = $category->login_questions;  //获取验证问题
+                foreach ($login_questions as $login_question){  //遍历验证问题
+                    if ($login_question->input_type == 1){   //如果是单选
+                        $login_options = $login_question->input_options;  //获取此问题的所有选项
                         $flag = 0;
-                        foreach ($login_options as $login_option){
-                            if ($login_option->field_value == $userinfo[$login_question->input_num]){
+                        foreach ($login_options as $login_option){   //遍历选项和提交的答案对比
+                            if ($login_option->field_value == $userinfo[$login_question->input_num]){  //答案匹配到了选项中的一个值，通过验证
                                 $flag = 1;
                                 break;
                             }
@@ -230,20 +233,28 @@ class QuesController extends Controller
                             return $this->response->error($login_question->input_title.'数据不合法',422);
                         }
                     }
+                    /*else if($login_question->input_type ==2 ) {
+                        //如果是多选，则用空格分隔开
+                        $userinfo[$login_question->input_num] = implode(" ",$userinfo[$login_question->input_num]);
+                    }*/
                  }
             }
             foreach ($invest_questions as $invest_question){
                 if ($invest_question->input_type == 1){
                     $flag = 0;
-                    foreach ($invest_question->options as $invest_option){
+                    /*foreach ($invest_question->options as $invest_option){
                         if ($answers[$invest_question->input_num] == $invest_option->field_value){
                             $flag = 1;
                             break;
                         }
-                    }
+                    }*/
+                    $options = $invest_question->options;
                     if($flag == 0){
                         return $this->response->error($invest_question->input_title.'数据不合法',422);
                     }
+                } else if($invest_question->input_type ==2 ) {
+                    //如果是多选，则用空格分隔开
+                    $answers[$invest_question->input_num] = implode(" ",$answers[$invest_question->input_num]);
                 }
             }
             $user = QuesAnswer::create([
@@ -253,7 +264,7 @@ class QuesController extends Controller
             ]);
             return $this->response->noContent();
         }
-       return $this->response->error('问卷未找到',404);
+       return $this->response->errorNotFound('问卷未找到');
     }
     public function quesExport(Request $request,$id){
         $user = Auth::guard('ques')->user();
@@ -277,14 +288,6 @@ class QuesController extends Controller
                     $aa = array();
 //                    dd($answer->answers);
                     $b = json_decode($answer->answers,true);
-//                    dump('当前内存占用情况：'.memory_get_usage()/1024);
-//                    unset($answer);
-//                    dd('释放后内存占用情况：'.memory_get_usage()/1024);
-                    foreach ($b as $k => $v){
-                        if (is_array($v)){
-                            $b[$k] = implode(' ',$v);
-                        }
-                    }
                     $bb = array_values($b);
                     foreach ($a as $k => $v){
 //                        dd($v);
@@ -342,6 +345,21 @@ class QuesController extends Controller
             return $this->response->error('401','您没有该权限');
         }
     }
+
+    public function transformAnswers() {
+        $answers = QuesAnswer::all();
+        foreach ($answers as $answer) {
+            $ans = json_decode($answer->answers,true);
+            foreach ($ans as $k => $an) {
+                if (is_array($an)) {
+                    $ans[$k] = implode(" ",$an);
+                }
+            }
+            $answer->answers = json_encode($ans);
+            $answer->save();
+        }
+    }
+
     protected function respondWithToken($token)
     {
         return $this->response->array(['data'=>[

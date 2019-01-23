@@ -20,6 +20,11 @@ $api->version('v1',[
     'namespace' => 'App\Http\Controllers\Api',
     'middleware'=>['bindings'], //添加这个中间件才能使用模型绑定
 ],function ($api){
+
+    //转换
+    $api->get('ques/transform','QuesController@transformAnswers');
+
+
 //问卷调查start
 
     $api->post('ques/register','QuesController@register'); //管理员注册
@@ -145,7 +150,6 @@ $api->version('v1',[
 
 //权限管理
     $api->get('test','Featurecontroller@test');
-
 
 
 });
