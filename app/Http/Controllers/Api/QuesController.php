@@ -11,6 +11,7 @@ use App\Models\QuesLoginOption;
 use App\Models\QuesLoginQuestion;
 use Auth;
 use Carbon\Carbon;
+use Dingo\Api\Exception\StoreResourceFailedException;
 use Faker\Provider\ka_GE\DateTime;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
@@ -22,10 +23,13 @@ use Excel;
 class QuesController extends Controller
 {
     public function register(Request $request){
-        $this->validate($request,[
+        $validator = app('validator')->make($request->all(),[
             'username'=>'required|unique:ques_admins',
             'password'=>'required'
         ]);
+        if ($validator->fails) {
+            throw new StoreResourceFailedException("数据非法");
+        }
         $username = $request->username;
         $password = bcrypt($request->password);
         QuesAdmin::create([
@@ -56,8 +60,7 @@ class QuesController extends Controller
     }
     //
     public function quesCreate(Request $request){
-//        return $this->response->array($request)->setStatusCode(500);
-        $this->validate($request,[
+        $validator = app('validator')->make($request->all(),[
            'category'=>'array',
            'category.title'=>'required',
             'category.user_required'=>[
@@ -86,7 +89,9 @@ class QuesController extends Controller
             'validate_field.*.input_options'=>'nullable|array',
         ]);
 //        return $request->validate_field;
-
+        if ($validator->fails()){
+            throw new StoreResourceFailedException("数据非法");
+        }
         $user = Auth::guard('ques')->user();
         $category = $request->category;
         $category['author'] = $user->id;
@@ -154,14 +159,15 @@ class QuesController extends Controller
                         $login_question->input_options()->delete();
                     }
                 }
+                $category->answers()->delete();
                 $category->login_questions()->delete();
                 $category->delete();
                 return $this->response->noContent();
             }else{
-                return $this->response->error('您没有该权限',403);
+                return $this->response->errorForbidden('您没有该权限');
             }
         }else{
-            return $this->response->error('资源未找到',404);
+            return $this->response->errorNotFound('资源未找到');
         }
     }
     public function quesGet(){
@@ -197,11 +203,14 @@ class QuesController extends Controller
 
     public function quesStore(Request $request,$id){
         $category = QuesCategory::find($id);
-        $this->validate($request,[
+        $validator = app('validator')->make($request->all(),[
             'userinfo'=>'nullable|array',
             'answers'=>'required|array',
             'userinfo.*'=>'sometimes|required|string'
         ]);
+        if ($validator->fails()) {
+            throw new StoreResourceFailedException("您所提交的数据不符合规范，请检查后提交");
+        }
         $userinfo = $request->userinfo;
         $answers = $request->answers;
         $answers = new Collection($answers);
@@ -210,7 +219,7 @@ class QuesController extends Controller
             $start = new \DateTime($category->start_at);
             $end = new \DateTime($category->end_at);
             if($now<$start||$now>$end) {
-                return $this->response->error('不在开放时间内',403);
+                return $this->response->errorForbidden('不在开放时间内');
             }
 //            if(($category->user_required == 1 && count($userinfo) == 0)||count($answers)==0){
 //                return $this->response->error('数据不合法',422);
@@ -230,34 +239,41 @@ class QuesController extends Controller
                             }
                         }
                         if ($flag == 0){
-                            return $this->response->error($login_question->input_title.'数据不合法',422);
+                            throw new StoreResourceFailedException($login_question->input_title.'数据不合法');
                         }
                     }
-                    /*else if($login_question->input_type ==2 ) {
-                        //如果是多选，则用空格分隔开
-                        $userinfo[$login_question->input_num] = implode(" ",$userinfo[$login_question->input_num]);
-                    }*/
                  }
             }
             foreach ($invest_questions as $invest_question){
+                //非填空题必须填写
+                if ($invest_question->input_type !=3 ) {
+                    if (!isset($answers[$invest_question->input_num] )) {
+                        throw new StoreResourceFailedException("第{$invest_question->input_num}题必须填写");
+                    }
+                }
+                //如果是单选题  验证提交的答案是否在选项中
                 if ($invest_question->input_type == 1){
                     $flag = 0;
-                    /*foreach ($invest_question->options as $invest_option){
+                    foreach ($invest_question->options as $invest_option){
                         if ($answers[$invest_question->input_num] == $invest_option->field_value){
                             $flag = 1;
                             break;
                         }
-                    }*/
-                    $options = $invest_question->options;
-                    if($flag == 0){
-                        return $this->response->error($invest_question->input_title.'数据不合法',422);
                     }
-                } else if($invest_question->input_type ==2 ) {
-                    //如果是多选，则用空格分隔开
+                    if($flag == 0){
+                        throw new StoreResourceFailedException($invest_question->input_title.'数据不合法');
+                    }
+                } else if($invest_question->input_type == 2) {
+                    //如果是多选
+                    //判断是否为数组
+                    if (!is_array($answers[$invest_question->input_num])) {
+                        throw new StoreResourceFailedException("第{$invest_question->input_num}题数据不合法");
+                    }
+                    //把选项用空格分隔开
                     $answers[$invest_question->input_num] = implode(" ",$answers[$invest_question->input_num]);
                 }
             }
-            $user = QuesAnswer::create([
+            QuesAnswer::create([
                 'catid'=>$id,
                 'userinfo'=>json_encode($userinfo),
                 'answers'=>json_encode($answers),
@@ -266,11 +282,11 @@ class QuesController extends Controller
         }
        return $this->response->errorNotFound('问卷未找到');
     }
-    public function quesExport(Request $request,$id){
+    public function quesExport($id){
         $user = Auth::guard('ques')->user();
         $category = QuesCategory::find($id);
         if(!$category){
-            return $this->response->error('资源未找到',404);
+            return $this->response->errorNotFound('问卷未找到');
         }
         if($user && ($user->id ==$category->author || $user->admin ==1)){
             $answers = $category->answers;
@@ -283,12 +299,19 @@ class QuesController extends Controller
                 foreach ($login_questions as $login_question){
                     array_push($title,$login_question->input_title);
                 }
+                $i = 0;
                 foreach ($answers as $answer){
+                    $i++;
+                    if ($i == 4501) {
+                        dump(json_decode($answer->userinfo,true));
+                    }
+                    if ($i == 4502) {
+                        dd(json_decode($answer->userinfo,true));
+                    }
                     $a = json_decode($answer->userinfo,true);
                     $aa = array();
-//                    dd($answer->answers);
                     $b = json_decode($answer->answers,true);
-                    $bb = array_values($b);
+                    $b = array_values($b);
                     foreach ($a as $k => $v){
 //                        dd($v);
                         if($login_questions[$k-1]->input_type == 1){
@@ -305,21 +328,13 @@ class QuesController extends Controller
                         }
 
                     }
-                    array_push($data,array_merge($aa,$bb));
-//                    dump($aa);
-//                    dd($data);
+                    array_push($data,array_merge($aa,$b));
                 }
             }else{
                 foreach ($answers as $answer){
-                    $b = json_decode($answer->answers.true);
-//                    unset($answer->answers);
-                    foreach ($b as $k => $v){
-                        if (is_array($v)){
-                            $b[$k] = implode(' ',$v);
-                        }
-                    }
-                    $bb = array_values($b);
-                    array_push($data,$bb);
+                    $b = json_decode($answer->answers,true);
+                    $b = array_values($b);
+                    array_push($data,$b);
                 }
             }
             foreach ($invest_questions as $invest_question){
@@ -342,7 +357,7 @@ class QuesController extends Controller
                 });
             })->export('xls');
         }else{
-            return $this->response->error('401','您没有该权限');
+            return $this->response->errorForbidden('您没有该权限');
         }
     }
 
