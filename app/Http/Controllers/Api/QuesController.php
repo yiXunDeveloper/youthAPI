@@ -90,7 +90,7 @@ class QuesController extends Controller
         ]);
 //        return $request->validate_field;
         if ($validator->fails()){
-            throw new StoreResourceFailedException("数据非法");
+            throw new StoreResourceFailedException("数据非法",$validator->errors());
         }
         $user = Auth::guard('ques')->user();
         $category = $request->category;
@@ -148,19 +148,23 @@ class QuesController extends Controller
         if($category){
             if($user->admin == 1 || $user->id == $category->author){
                 $invest_questions = $category->invest_questions;
+                //先遍历问题删除所有选项
                 foreach ($invest_questions as $invest_question){
                     $invest_question->options()->delete();
                 }
+                //再删除问题
                 $category->invest_questions()->delete();
-
                 $login_questions = $category->login_questions;
                 if ($login_questions){
+                    //先遍历问题删除所有选项
                     foreach ($login_questions as $login_question){
                         $login_question->input_options()->delete();
                     }
                 }
-                $category->answers()->delete();
+                //再删除问题
                 $category->login_questions()->delete();
+                //删除答案
+                $category->answers()->delete();
                 $category->delete();
                 return $this->response->noContent();
             }else{
@@ -288,11 +292,11 @@ class QuesController extends Controller
         if(!$category){
             return $this->response->errorNotFound('问卷未找到');
         }
-        if($user && ($user->id ==$category->author || $user->admin ==1)){
-            $answers = $category->answers()->get();
-            $invest_questions = $category->invest_questions()->get();
-            $title = array();
-            $data =array();
+        if($user->id ==$category->author || $user->admin ==1){
+            $answers = $category->answers()->get();   //获得全部提交的答案
+            $invest_questions = $category->invest_questions()->get();  //获取问卷的问题
+            $title = array();  //excel第一行
+            $data =array();   //excel数据行
             if($category->user_required){
                 //验证用户信息
                 $login_questions = $category->login_questions()->get();   //获取登录问题
@@ -304,23 +308,26 @@ class QuesController extends Controller
                             $questions[$k][$option->field_value] = $option->field_label;
                         }
                     }
-                    array_push($title,$login_question->input_title);
+                    array_push($title,$login_question->input_title);  //把登录问题添加到标题里
                 }
                 foreach ($answers as $answer){
-                    $userinfos = json_decode($answer->userinfo,true);
+                    $userinfos = json_decode($answer->userinfo,true);  //获取答案中的登录信息
                     $infos = array();
-                    $ans = array_values(json_decode($answer->answers,true));
-                    foreach ($userinfos as $k => $v){
+                    $ans = array_values(json_decode($answer->answers,true));  //答案中的问卷答案
+                    foreach ($userinfos as $k => $v){  //遍历登录信息
+                        //如果是选择题，把对应选项的描述添加进去
                         if($login_questions[$k-1]->input_type == 1){
                             array_push($infos,$questions[$k-1][$v]);
                         }else{
+                            //填空题直接把答案添加进去
                             array_push($infos,$v);
                         }
                     }
-                    unset($userinfos);
+                    unset($userinfos);//释放空间
                     array_push($data,array_merge($infos,$ans));
                 }
             }else{
+                //没有登录问题只有问卷
                 foreach ($answers as $answer){
                     $ans = array_values(json_decode($answer->answers,true));
                     array_push($data,$ans);
@@ -347,23 +354,9 @@ class QuesController extends Controller
                     });
 
                 });
-            })->export('xlsx');
+            })->export('xlsx'); //xls格式会导致文件数据不完整
         }else{
             return $this->response->errorForbidden('您没有该权限');
-        }
-    }
-
-    public function transformAnswers() {
-        $answers = QuesAnswer::all();
-        foreach ($answers as $answer) {
-            $ans = json_decode($answer->answers,true);
-            foreach ($ans as $k => $an) {
-                if (is_array($an)) {
-                    $ans[$k] = implode(" ",$an);
-                }
-            }
-            $answer->answers = json_encode($ans);
-            $answer->save();
         }
     }
 
