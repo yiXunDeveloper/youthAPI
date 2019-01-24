@@ -302,12 +302,12 @@ class QuesController extends Controller
                 $i = 0;
                 foreach ($answers as $answer){
                     $i++;
-                    if ($i == 4501) {
+                    /*if ($i == 4501) {
                         dump(json_decode($answer->userinfo,true));
                     }
                     if ($i == 4502) {
                         dd(json_decode($answer->userinfo,true));
-                    }
+                    }*/
                     $a = json_decode($answer->userinfo,true);
                     $aa = array();
                     $b = json_decode($answer->answers,true);
@@ -356,6 +356,7 @@ class QuesController extends Controller
 
                 });
             })->export('xls');
+            exit();
         }else{
             return $this->response->errorForbidden('您没有该权限');
         }
