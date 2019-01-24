@@ -643,7 +643,7 @@ class OAController extends Controller
         if ($validator->fails()) {
             throw new \Dingo\Api\Exception\StoreResourceFailedException('数据不完整', $validator->errors());
         }
-        $phonebook->administrative_unit = $request->administrative;
+        $phonebook->administrative_unit = $request->administrative_unit;
         $phonebook->office_location = $request->office_location;
         $phonebook->office_person = $request->office_person;
         $phonebook->telephone = $request->telephone;
