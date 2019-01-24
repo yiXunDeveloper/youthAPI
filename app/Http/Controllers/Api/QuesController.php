@@ -289,58 +289,50 @@ class QuesController extends Controller
             return $this->response->errorNotFound('问卷未找到');
         }
         if($user && ($user->id ==$category->author || $user->admin ==1)){
-            $answers = $category->answers;
-            $invest_questions = $category->invest_questions;
+            $answers = $category->answers()->get();
+            $invest_questions = $category->invest_questions()->get();
             $title = array();
             $data =array();
             if($category->user_required){
                 //验证用户信息
-                $login_questions = $category->login_questions;
-                foreach ($login_questions as $login_question){
+                $login_questions = $category->login_questions()->get();   //获取登录问题
+                $questions = array();
+                foreach ($login_questions as $k => $login_question){
+                    //如果问题是选择题，则把改问题的所有选项放到数组里   数据的键是 field_value(ABCD),数组的值是field_lable（计算机学院、经济学院）
+                    if ($login_question->input_type == 1){   //单选
+                        foreach ($login_question->input_options as $option) {
+                            $questions[$k][$option->field_value] = $option->field_label;
+                        }
+                    }
                     array_push($title,$login_question->input_title);
                 }
-                $i = 0;
                 foreach ($answers as $answer){
-                    $i++;
-                    /*if ($i == 4501) {
-                        dump(json_decode($answer->userinfo,true));
-                    }
-                    if ($i == 4502) {
-                        dd(json_decode($answer->userinfo,true));
-                    }*/
-                    $a = json_decode($answer->userinfo,true);
-                    $aa = array();
-                    $b = json_decode($answer->answers,true);
-                    $b = array_values($b);
-                    foreach ($a as $k => $v){
-//                        dd($v);
+                    $userinfos = json_decode($answer->userinfo,true);
+                    $infos = array();
+                    $ans = array_values(json_decode($answer->answers,true));
+                    foreach ($userinfos as $k => $v){
                         if($login_questions[$k-1]->input_type == 1){
-                            foreach ($login_questions[$k-1]->input_options as $option){
-                                if($option->field_value == $v){
-//                                    dd(123);
-                                    array_push($aa,$option->field_label);
-//                                    dump($option);
-                                    break;
-                                }
-                            }
+                            array_push($infos,$questions[$k-1][$v]);
                         }else{
-                            array_push($aa,$v);
+                            array_push($infos,$v);
                         }
-
                     }
-                    array_push($data,array_merge($aa,$b));
+                    unset($userinfos);
+                    array_push($data,array_merge($infos,$ans));
                 }
             }else{
                 foreach ($answers as $answer){
-                    $b = json_decode($answer->answers,true);
-                    $b = array_values($b);
-                    array_push($data,$b);
+                    $ans = array_values(json_decode($answer->answers,true));
+                    array_push($data,$ans);
                 }
             }
+            //文件题号加入到title里面
             foreach ($invest_questions as $invest_question){
                 array_push($title,$invest_question->input_num);
             }
-//            dd($title);
+            //释放空间
+            unset($answers);
+            unset($invest_questions);
             Excel::create($category->title,function ($excel) use ($title,$data){
                 $excel->sheet('sheet1',function ($sheet) use ($title,$data){
                     $sheet->rows($data);
@@ -356,7 +348,6 @@ class QuesController extends Controller
 
                 });
             })->export('xlsx');
-            exit();
         }else{
             return $this->response->errorForbidden('您没有该权限');
         }
