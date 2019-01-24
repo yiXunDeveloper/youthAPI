@@ -28,7 +28,7 @@ class QuesController extends Controller
             'password'=>'required'
         ]);
         if ($validator->fails) {
-            throw new StoreResourceFailedException("数据非法");
+            throw new StoreResourceFailedException("数据非法",$validator->errors());
         }
         $username = $request->username;
         $password = bcrypt($request->password);
@@ -90,7 +90,7 @@ class QuesController extends Controller
         ]);
 //        return $request->validate_field;
         if ($validator->fails()){
-            throw new StoreResourceFailedException("数据非法",$validator->errors());
+            throw new StoreResourceFailedException("数据填写不完整或有错误",$validator->errors());
         }
         $user = Auth::guard('ques')->user();
         $category = $request->category;
@@ -213,7 +213,7 @@ class QuesController extends Controller
             'userinfo.*'=>'sometimes|required|string'
         ]);
         if ($validator->fails()) {
-            throw new StoreResourceFailedException("您所提交的数据不符合规范，请检查后提交");
+            throw new StoreResourceFailedException("您所提交的数据不符合规范，请检查后提交",$validator->errors());
         }
         $userinfo = $request->userinfo;
         $answers = $request->answers;

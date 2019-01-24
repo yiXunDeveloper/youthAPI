@@ -31,7 +31,9 @@
         ],
         "psr-4": {
             "App\\": "app/"
-        }
+        },"files": [
+            "app/Libs/Base64.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
