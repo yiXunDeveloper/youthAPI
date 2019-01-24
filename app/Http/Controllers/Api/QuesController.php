@@ -355,7 +355,7 @@ class QuesController extends Controller
                     });
 
                 });
-            })->export('xls');
+            })->export('xlsx');
             exit();
         }else{
             return $this->response->errorForbidden('您没有该权限');
