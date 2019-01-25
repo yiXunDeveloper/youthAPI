@@ -129,6 +129,7 @@ $api->version('v1',[
 
     $api->get('oa/workloads','OAController@getWorkloads');   //获取当月的任务量
     $api->post('oa/workload','OAController@addWorkload');      //添加工作量
+    $api->get('oa/workload/export','OAController@exportWorkload');//导出工作量
     $api->get('oa/workload/{workload}','OAController@getWorkloadById'); //通过id获取任务量详情
     $api->put('oa/workload/{workload}','OAController@updateWorkload'); //更新任务量
     $api->delete('oa/workload/{workload}','OAController@deleteWorkload');  //删除任务量
