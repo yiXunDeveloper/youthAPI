@@ -7,4 +7,4 @@
  */
 use App\Libs\Base64;
 include "Base64.php";
-echo Base64::b64tohex("abc");
+echo Base64::b64tohex("aaa");
