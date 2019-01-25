@@ -541,7 +541,7 @@ class OAController extends Controller
             $record->rememo_user = $request->rememo_user;
             $record->save();
             //修改设备状态
-            $equipment = OaEquipment::find($record->device);
+            $equipment = OaEquipment::find($record->device_id);
             $equipment->status = 0; //设置为未借用
             $equipment->save();
             return $this->response->noContent();
