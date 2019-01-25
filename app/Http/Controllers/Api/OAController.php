@@ -687,9 +687,10 @@ class OAController extends Controller
             $user = $workload->user()->first();
             array_push($data,[$user->sdut_id,$user->name,$user->department,$workload->description,$workload->score,$workload->manager_user->name]);
         }
+        dd($data);
         Excel::create(date('Y-m-d H:i:s')."导出工作量",function ($excel) use ($data) {
             $excel->sheet('工作量',function ($sheet) use($data) {
-                $sheet->fromArray($data);
+                $sheet->rows($data);
             })->export('xlsx');
         });
     }
