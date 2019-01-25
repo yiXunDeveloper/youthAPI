@@ -667,6 +667,7 @@ class OAController extends Controller
         $lists = OaWorkload::whereDate('created_at','>',$last)->orderBy('updated_at','DESC')->get();
         foreach ($lists as $list) {
             $list->user;
+            $list->manager_user;
         }
         return $this->response->array(['data'=>$lists]);
     }
