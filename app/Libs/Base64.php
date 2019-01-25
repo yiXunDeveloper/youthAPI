@@ -65,7 +65,7 @@ class Base64
             $ret .= self::int2char($slop << 2);
         return $ret;
     }
-    public function b64toBA($s) {
+    public static function b64toBA($s) {
         $h = self::b64tohex($s);
         $a = array();
         for ($i=0;2*$i < strlen($h);$i++) {
