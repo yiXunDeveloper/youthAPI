@@ -672,6 +672,28 @@ class OAController extends Controller
         return $this->response->array(['data'=>$lists]);
     }
 
+    //导出工作量
+    public function exportWorkload(Request $request) {
+        $validator = app('validator')->make($request->all(),[
+            'start'=>'required|date',
+            'end'=>'required|date|after:start'
+        ]);
+        if ($validator->fails()){
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('数据格式错误！', $validator->errors());
+        }
+        $workloads = OaWorkload::whereBetween('created_at',[$request->start,$request->end])->get();
+        $data = array(['学号','姓名','部门','工作量描述','加分','记录者']);
+        foreach ($workloads as $workload) {
+            $user = $workload->user()->first();
+            array_push($data,[$user->sdut_id,$user->name,$user->department,$workload->description,$workload->score,$workload->manager_user->name]);
+        }
+        Excel::create(date('Y-m-d H:i:s')."导出工作量",function ($excel) use ($data) {
+            $excel->sheet('工作量',function ($sheet) use($data) {
+                $sheet->fromArray($data);
+            })->export('xlsx');
+        });
+    }
+
     //增加工作量
     public function addWorkload(Request $request){
         $user = Auth::guard('oa')->user();
