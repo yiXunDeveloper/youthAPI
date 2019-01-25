@@ -667,7 +667,7 @@ class OAController extends Controller
     }
 
     //增加工作量
-    public function addWorkloads(Request $request){
+    public function addWorkload(Request $request){
         $user = Auth::guard('oa')->user();
         if (!$user->hasRole('Administrator')) {
             throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("只有管理员才能进行该操作！");
