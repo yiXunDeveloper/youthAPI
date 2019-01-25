@@ -663,7 +663,12 @@ class OAController extends Controller
 
     //获取工作量
     public function getWorkloads() {
-
+        $last = date('Y-m-d H:i:s',strtotime("-1 month"));
+        $lists = OaWorkload::whereDate('created_at','>',$last)->orderBy('updated_at','DESC')->get();
+        foreach ($lists as $list) {
+            $list->user;
+        }
+        return $this->response->array(['data'=>$lists]);
     }
 
     //增加工作量
