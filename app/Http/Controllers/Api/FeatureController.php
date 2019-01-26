@@ -9,7 +9,7 @@ use App\Models\ServiceExamGkl;
 use App\Models\ServiceHygiene;
 use App\Models\ServiceNewStudent;
 use App\Models\ServiceUser;
-use Dingo\Api\Auth\Auth;
+use Auth;
 use Dingo\Api\Exception\StoreResourceFailedException;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
