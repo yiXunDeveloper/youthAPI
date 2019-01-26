@@ -34,6 +34,14 @@ class FeatureController extends Controller
                 'openid' => $response['openid'],
             ]);
         }
+        $data = array([
+            'college'=>$user->college,
+            'class' => $user->class,
+            'dormitory' => $user->dormitory,
+            'room' => $user->room,
+            'password_jwc' => $user->password_jwc == null ? null : decrypt($user->password_jwc),
+            'password_dt' => $user->password_dt == null ? null : decrypt($user->password_dt),
+        ]);
         return $this->response->array(['data'=>$user,'meta'=>[
             'access_token' => Auth::guard('service')->fromUser($user),
             'token_type' => 'Bearer',
