@@ -34,11 +34,11 @@ class FeatureController extends Controller
                 'openid' => $response['openid'],
             ]);
         }
-        return $this->response->array(['data'=>$user])->setMeta([
+        return $this->response->array(['data'=>$user,'meta'=>[
             'access_token' => Auth::guard('service')->fromUser($user),
             'token_type' => 'Bearer',
             'expires_in' => Auth::guard('service')->factory()->getTTL() * 60,
-        ]);
+        ]])->setStatusCode(201);
     }
 
     public function newStudent(Request $request)
