@@ -57,6 +57,10 @@ return [
             'driver' => 'jwt',
             'provider' => 'oa_users',
         ],
+        'service' => [
+            'driver' => 'jwt',
+            'provider' => 'service_users'
+        ],
     ],
 
     /*
@@ -92,7 +96,11 @@ return [
         'oa_users'=> [
         'driver'=>'eloquent',
         'model'=>App\Models\OaUser::class,
-]
+        ],
+        'service_users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\ServiceUser::class,
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',

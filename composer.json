@@ -12,6 +12,7 @@
         "laravel/framework": "5.5.*",
         "laravel/tinker": "~1.0",
         "maatwebsite/excel": "~2.1.0",
+        "socialiteproviders/weixin": "^4.0",
         "spatie/laravel-permission": "^2.12",
         "tymon/jwt-auth": "1.0.0-rc.2",
         "viacreative/sudo-su": "~1.1"
