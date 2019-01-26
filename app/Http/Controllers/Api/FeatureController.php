@@ -35,6 +35,7 @@ class FeatureController extends Controller
             ]);
         }
         $data = array([
+            'sdut_id' => $user->sdut_id,
             'college'=>$user->college,
             'class' => $user->class,
             'dormitory' => $user->dormitory,
@@ -52,6 +53,7 @@ class FeatureController extends Controller
     public function index(){
         $user = Auth::guard('service')->user();
         $data = array([
+            'sdut_id' => $user->sdut_id,
             'college'=>$user->college,
             'class' => $user->class,
             'dormitory' => $user->dormitory,
