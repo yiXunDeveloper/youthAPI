@@ -19,4 +19,11 @@ class ServiceUser  extends Authenticatable implements JWTSubject
     {
         return [];
     }
+
+    public function college() {
+        return $this->belongsTo('App\Models\College','college_id','id');
+    }
+    public function dormitory() {
+        return $this->belongsTo('App\Models\Dormitory','college_id','id');
+    }
 }
