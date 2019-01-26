@@ -150,6 +150,8 @@ $api->version('v1',[
     $api->get('service/hygiene','FeatureController@hygiene');  //宿舍卫生
     $api->get('service/exam','FeatureController@exam');    //考试时间
 
+    $api->get('service/user','FeatureController@index')->middleware('api.auth');  //通过token获取个人信息
+
 //权限管理
     $api->get('test','Featurecontroller@test');
 

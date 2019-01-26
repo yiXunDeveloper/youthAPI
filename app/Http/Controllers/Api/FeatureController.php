@@ -42,11 +42,24 @@ class FeatureController extends Controller
             'password_jwc' => $user->password_jwc == null ? null : decrypt($user->password_jwc),
             'password_dt' => $user->password_dt == null ? null : decrypt($user->password_dt),
         ]);
-        return $this->response->array(['data'=>$user,'meta'=>[
+        return $this->response->array(['data'=>$data,'meta'=>[
             'access_token' => Auth::guard('service')->fromUser($user),
             'token_type' => 'Bearer',
             'expires_in' => Auth::guard('service')->factory()->getTTL() * 60,
         ]])->setStatusCode(201);
+    }
+
+    public function index(){
+        $user = Auth::guard('service')->user();
+        $data = array([
+            'college'=>$user->college,
+            'class' => $user->class,
+            'dormitory' => $user->dormitory,
+            'room' => $user->room,
+            'password_jwc' => $user->password_jwc == null ? null : decrypt($user->password_jwc),
+            'password_dt' => $user->password_dt == null ? null : decrypt($user->password_dt),
+        ]);
+        return $this->response->array(['data'=>$data])->setStatusCode(200);
     }
 
     public function newStudent(Request $request)
@@ -117,9 +130,6 @@ class FeatureController extends Controller
         }
     }
 
-    public function index(){
-
-    }
     public function elec(Request $request){
         $school = $request->school;
         $dormitory = $request->dormitory;
