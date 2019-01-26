@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Models\College;
 use App\Models\Dormitory;
 use App\Models\ServiceExamMeta;
 use App\Models\ServiceExamTime;
@@ -136,6 +137,12 @@ class FeatureController extends Controller
         $dormitory = Dormitory::all();
         return $this->response->array(['data'=>$dormitory->toArray()])->setStatusCode(200);
     }
+
+    public function college() {
+        $colleges = College::all();
+        return $this->response->array(['data'=>$colleges->toArray()])->setStatusCode(200);
+    }
+
     //宿舍成绩
     public function hygiene()
     {
