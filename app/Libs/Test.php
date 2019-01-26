@@ -7,4 +7,9 @@
  */
 use App\Libs\Base64;
 include "Base64.php";
-var_dump( Base64::b64toBA("aaa"));
+//$jar = new \GuzzleHttp\Cookie\CookieJar;
+$guzzle = new \GuzzleHttp\Client(['cookies'=>'true']);
+$guzzle->request('GET','http://hqfw.sdut.edu.cn/');
+$r = $guzzle->request('GET','http://hqfw.sdut.edu.cn/login.aspx');
+echo $r->getBody();
+

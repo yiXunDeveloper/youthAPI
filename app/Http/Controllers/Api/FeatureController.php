@@ -8,16 +8,39 @@ use App\Models\ServiceExamTime;
 use App\Models\ServiceExamGkl;
 use App\Models\ServiceHygiene;
 use App\Models\ServiceNewStudent;
+use App\Models\ServiceUser;
+use Dingo\Api\Auth\Auth;
+use Dingo\Api\Exception\StoreResourceFailedException;
 use GuzzleHttp\Client;
 use Illuminate\Http\Request;
+use Laravel\Socialite\Facades\Socialite;
 
 class FeatureController extends Controller
 {
     protected $cookie_file;
-    function __construct()
-    {
 
+    public function authorization(Request $request) {
+        $validator = app('validator')->make($request->all(),[
+            'code' => 'required'
+        ]);
+        if ($validator->fails()) {
+            throw new StoreResourceFailedException("参数不正确",$validator->errors());
+        }
+        $driver = Socialite::driver('weixin');
+        $response = $driver->getAccessTokenResponse($request->code);
+        $user = ServiceUser::where('openid',$response['openid'])->first();
+        if (!$user) {
+            $user = ServiceUser::create([
+                'openid' => $response['openid'],
+            ]);
+        }
+        return $this->response->array(['data'=>$user])->setMeta([
+            'access_token' => Auth::guard('service')->fromUser($user),
+            'token_type' => 'Bearer',
+            'expires_in' => Auth::guard('service')->factory()->getTTL() * 60,
+        ]);
     }
+
     public function newStudent(Request $request)
     {
         $num = $request->num;
