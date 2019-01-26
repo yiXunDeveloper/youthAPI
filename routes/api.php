@@ -151,7 +151,7 @@ $api->version('v1',[
     $api->get('service/exam','FeatureController@exam');    //考试时间
 
     $api->get('service/user','FeatureController@index')->middleware('api.auth');  //通过token获取个人信息
-
+    $api->post('service/user','FeatureController@updateUser')->middleware('api.auth'); //修改个人信息
 //权限管理
     $api->get('test','Featurecontroller@test');
 

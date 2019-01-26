@@ -12,6 +12,7 @@ use App\Models\ServiceUser;
 use Auth;
 use Dingo\Api\Exception\StoreResourceFailedException;
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 
@@ -62,6 +63,42 @@ class FeatureController extends Controller
             'password_dt' => $user->password_dt == null ? null : decrypt($user->password_dt),
         ]);
         return $this->response->array(['data'=>$data])->setStatusCode(200);
+    }
+    public function updateUser(Request $request) {
+        $user = Auth::guard('service')->user();
+        $validator = app('validator')->make($request->all(),[
+            'sdut_id' => 'sometimes|size:11',
+            'college' => 'sometimes|exists:colleges,id',
+            'dormitory' => 'sometimes|exists:dormitorys,id',
+        ]);
+        if ($validator->fails()) {
+            throw new StoreResourceFailedException("信息错误！",$validator->errors());
+        }
+        //填了学号和教务处密码，验证是否正确
+        if ($request->sdut_id != null && $request->password_jwc!=null) {
+            $client = new Client();
+            $res = $client->request('POST',"https://api.youthol.cn/getkb/allscore",[
+                'form_params' =>[
+                    'user' => $request->sdut_id,
+                    'passwd' => $request->password_jwc,
+                    'isauth' => 0,
+                ],
+                'http_errors' => false,
+            ]);
+            if ($res->getBody() == '-1') {
+                throw new StoreResourceFailedException("学号或教务处密码错误");
+            }
+        }
+
+        $user->sdut_id = $request->sdut_id;
+        $user->college_id = $request->college;
+        $user->dormitory_id = $request->dormitory;
+        $user->class = $request->class;
+        $user->room = $request->room;
+        $user->password_jwc = $request->password_jwc == null ? null : encrypt($request->password_jwc);
+        $user->password_dt = $request->password_dt == null ? null : encrypt($request->passwprd_dt);
+        $user->save();
+        return $this->response->noContent();
     }
 
     public function newStudent(Request $request)
