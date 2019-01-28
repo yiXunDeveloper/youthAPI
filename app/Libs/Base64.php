@@ -59,7 +59,6 @@ class Base64
                 $ret .= self::int2char($v & 0xf);
                 $k = 0;
             }
-            echo "$slop -----------$k\n";
         }
         if ($k == 1)
             $ret .= self::int2char($slop << 2);

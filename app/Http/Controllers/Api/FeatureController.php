@@ -13,9 +13,14 @@ use App\Models\ServiceUser;
 use Auth;
 use Dingo\Api\Exception\StoreResourceFailedException;
 use GuzzleHttp\Client;
+use GuzzleHttp\Cookie\CookieJar;
+use App\Libs\Base64;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
+use phpseclib\Crypt\RSA;
+use phpseclib\Math\BigInteger;
+use QL\QueryList;
 
 class FeatureController extends Controller
 {
@@ -36,20 +41,26 @@ class FeatureController extends Controller
                 'openid' => $response['openid'],
             ]);
         }
-        $data = array([
-            'sdut_id' => $user->sdut_id,
-            'college'=>$user->college,
-            'class' => $user->class,
-            'dormitory' => $user->dormitory,
-            'room' => $user->room,
-            'password_jwc' => $user->password_jwc == null ? null : decrypt($user->password_jwc),
-            'password_dt' => $user->password_dt == null ? null : decrypt($user->password_dt),
-        ]);
-        return $this->response->array(['data'=>$data,'meta'=>[
-            'access_token' => Auth::guard('service')->fromUser($user),
-            'token_type' => 'Bearer',
-            'expires_in' => Auth::guard('service')->factory()->getTTL() * 60,
-        ]])->setStatusCode(201);
+        if ($user->sdut_id != null) {
+            //用户已绑定
+            $data = array([
+                'sdut_id' => $user->sdut_id,
+                'college'=>$user->college,
+                'class' => $user->class,
+                'dormitory' => $user->dormitory,
+                'room' => $user->room,
+                'password_jwc' => $user->password_jwc == null ? null : decrypt($user->password_jwc),
+                'password_dt' => $user->password_dt == null ? null : decrypt($user->password_dt),
+            ]);
+            return $this->response->array(['data'=>$data,'meta'=>[
+                'access_token' => Auth::guard('service')->fromUser($user),
+                'token_type' => 'Bearer',
+                'expires_in' => Auth::guard('service')->factory()->getTTL() * 60,
+            ]])->setStatusCode(201);
+        }else {
+            return $this->response->errorUnauthorized("用户未绑定！");
+        }
+
     }
 
     public function index(){
@@ -77,16 +88,8 @@ class FeatureController extends Controller
         }
         //填了学号和教务处密码，验证是否正确
         if ($request->sdut_id != null && $request->password_jwc!=null) {
-            $client = new Client();
-            $res = $client->request('POST',"https://api.youthol.cn/getkb/allscore",[
-                'form_params' =>[
-                    'user' => $request->sdut_id,
-                    'passwd' => $request->password_jwc,
-                    'isauth' => 0,
-                ],
-                'http_errors' => false,
-            ]);
-            if ($res->getBody() == '-1') {
+            $jar = $this->loginJWC($request->sdut_id,$request->password_jwc);
+            if ($jar == null) {
                 throw new StoreResourceFailedException("学号或教务处密码错误");
             }
         }
@@ -180,30 +183,31 @@ class FeatureController extends Controller
         $school = $request->school;
         $dormitory = $request->dormitory;
         $room = $request->room;
-//        dd($request->all());
-//        $school = 1;
-//        $dormitory = '01#南';
-//        $room = 101;
-        $url_cookie='http://hqfw.sdut.edu.cn';
-        $this->cookie_file = public_path('cookie\cookie.txt');//选择cookie储存路径
-        $this->get_cookie($url_cookie);  //获取cookie
-        $url1 = 'http://hqfw.sdut.edu.cn/login.aspx';  //带着cookie获取input参数
-        $res1 = $this->http_request_post($url1,'',true);
-        preg_match_all('#<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="([^<>]+)" />#', $res1, $value1);
-        preg_match_all('#<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="([^<>]+)" />#', $res1, $value2);
-        $post1=array(
-            '__VIEWSTATE'=>$value1[1][0],
-            '__EVENTVALIDATION'=>$value2[1][0],
-            'ctl00$MainContent$txtName'=>'孙骞',
-            'ctl00$MainContent$txtID'=>'15110201098',
-            'ctl00$MainContent$btnTijiao'=>'登录'
-        );
-        $this->http_request_post($url1,$post1,true);  //带着cookie登录
-        $url2 = 'http://hqfw.sdut.edu.cn/stu_elc.aspx';             //查询地址
-        $res2 = $this->http_request_post($url2,'',true);  //带着cookie获取input参数
-        preg_match_all('#<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="([^<>]+)" />#', $res2, $value3);
-        preg_match_all('#<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="([^<>]+)" />#', $res2, $value4);
-        preg_match_all('#<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="([^<>]+)" />#',$res2,$value5);
+        $jar = new CookieJar();
+        $client = new Client();
+
+        $login_url = 'http://hqfw.sdut.edu.cn/login.aspx';  //获取登录参数
+        $elec_url = 'http://hqfw.sdut.edu.cn/stu_elc.aspx';  //查询地址
+
+        //获取登录参数
+        $res = $client->request('GET',$login_url,['cookies'=>$jar]);
+        $ql = QueryList::html($res->getBody());
+        $viewstate =$ql->find('#__VIEWSTATE')->val();
+        $event = $ql->find('#__EVENTVALIDATION')->val();
+        $client->request('POST',$login_url,[
+            'cookies'=>$jar,
+            'form_params'=> [
+                '__VIEWSTATE'=>$viewstate,
+                '__EVENTVALIDATION'=>$event,
+                'ctl00$MainContent$txtName'=>'孙骞',
+                'ctl00$MainContent$txtID'=>'15110201098',
+                'ctl00$MainContent$btnTijiao'=>'登录'
+            ],
+        ]);
+        $res = $client->request('GET',$elec_url,['cookies'=>$jar]);
+        $ql = QueryList::html($res->getBody());
+        $viewstate =$ql->find('#__VIEWSTATE')->val();
+        $event = $ql->find('#__EVENTVALIDATION')->val();
         if ($school == 1){
             //西校区
             $building='ctl00$MainContent$buildingwest';
@@ -212,65 +216,123 @@ class FeatureController extends Controller
             $building='ctl00$MainContent$buildingeast';
             $campus='0';
             $post2=array(
-                '__EVENTTARGET'=>'ctl00$MainContent$campus',//
-                '__EVENTARGUMENT'=>'',
-                '__LASTFOCUS'=>'',
-                '__VIEWSTATE'=>$value3[1][0],
-                '__VIEWSTATEGENERATOR'=>$value5[1][0],
-                '__EVENTVALIDATION'=>$value4[1][0],
+                '__VIEWSTATE'=>$viewstate,
+                '__EVENTVALIDATION'=>$event,
                 'ctl00$MainContent$campus'=>$campus,
-                'ctl00$MainContent$buildingwest'=>'01#南',
-                'ctl00$MainContent$roomnumber'=>'101',
-//            'ctl00$MainContent$Button1'=>'查询',
-                'ctl00$MainContent$TextBox1'=>'请先登录，再选择楼栋和输入房间号查询!'
             );
-            $res3 = $this->http_request_post($url2,$post2,true);  //带着cookie查询电费
-            preg_match_all('#<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="([^<>]+)" />#', $res3, $value3);
-            preg_match_all('#<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="([^<>]+)" />#', $res3, $value4);
-            preg_match_all('#<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="([^<>]+)" />#',$res3,$value5);
-
+            $res = $client->request('POST',$elec_url,[
+                'cookies'=>$jar,
+                'form_params'=>$post2
+            ]);
+            $ql = QueryList::html($res->getBody());
+            $viewstate =$ql->find('#__VIEWSTATE')->val();
+            $event = $ql->find('#__EVENTVALIDATION')->val();
         }
 
         $post2=array(
-            'EVENTTARGET'=>'',//
-            '__EVENTARGUMENT'=>'',
-            '__LASTFOCUS'=>'',
-            '__VIEWSTATE'=>$value3[1][0],
-            '__VIEWSTATEGENERATOR'=>$value5[1][0],
-            '__EVENTVALIDATION'=>$value4[1][0],
+            '__VIEWSTATE'=>$viewstate,
+            '__EVENTVALIDATION'=>$event,
             'ctl00$MainContent$campus'=>$campus,
             $building=>$dormitory,
             'ctl00$MainContent$roomnumber'=>$room,
             'ctl00$MainContent$Button1'=>'查询',
-            'ctl00$MainContent$TextBox1'=>'请先登录，再选择楼栋和输入房间号查询!'
         );
-//        dd($post2);
-        $res3 = $this->http_request_post($url2,$post2,true);  //带着cookie查询电费
-        str_replace('/\r\n/','',$res3);
-        preg_match_all('#您所查询的房间为：([^<>]+)。\r\n 在([^<>]+)时，所余电量为：([^<>]+)度。\r\n 根据您的用电规律，所余电量可用 ([^<>]+)天。\r\n 当前用电状态为：([^<>]+)。#', $res3, $value5);
-        if (!empty($value5[0])){
-            return $this->response->array(['data'=>['room'=>$value5[1][0],'time'=>$value5[2][0],'elec'=>$value5[3][0],'remain'=>$value5[4][0],'status'=>$value5[5][0]]]);
+        $res = $client->request('POST',$elec_url,[
+            'cookies' => $jar,
+            'form_params' => $post2,
+            'http_errors' => false,
+        ]);
+        $res = $res->getBody();
+        str_replace('/\r\n/','',$res);
+        preg_match_all('#您所查询的房间为：([^<>]+)。\r\n 在([^<>]+)时，所余电量为：([^<>]+)度。\r\n 根据您的用电规律，所余电量可用 ([^<>]+)天。\r\n 当前用电状态为：([^<>]+)。#', $res, $value);
+        if (isset($value[0])&&!empty($value[0])){
+            return $this->response->array(['data'=>['room'=>$value[1][0],'time'=>$value[2][0],'elec'=>$value[3][0],'remain'=>$value[4][0],'status'=>$value[5][0]]]);
         }else{
             return $this->response->error('所查询房间不存在或服务器错误',404);
         }
 
 
     }
-    public function test(){
-        $param =  [
-            'user'=>'16111101135',
-            'passwd' => 'hu16111101135',
-            'auth' => 0
-        ];
-        $client = new Client();
-        $res = $client->request('POST','http://api.youthol.cn/getkb/allscore',[
-            'form_params' => $param,
-        ]);
-        $result = json_decode($res->getBody());
-        dd($result);
+    public function test(Request $request){
+
+//        $this->loginJWC($request->sdut_id,$request->password_jwc);
+        return $this->loginEhall($request->sdut_id,$request->password_jwc);
     }
     
+    protected function loginJWC($sdut_id,$password) {
+        $jar = new CookieJar();
+        $client = new Client();
+        $res = $client->request('GET',"http://210.44.191.124/jwglxt/xtgl/login_slogin.html",[
+            'cookies' => $jar,
+        ]);
+        $csrf = QueryList::html($res->getBody())->find('#csrftoken')->val();
+        $rsakey = $client->request('GET','http://210.44.191.124/jwglxt/xtgl/login_getPublicKey.html',[
+            'cookies' => $jar,
+        ]);
+        $rsainfo = json_decode($rsakey->getBody());
+        $rsa = new RSA();
+        $publicKey = array(
+            'n' => new BigInteger(Base64::b64tohex($rsainfo->modulus), 16),
+            'e' => new BigInteger(Base64::b64tohex($rsainfo->exponent), 16),
+        );
+        $rsa->loadKey($publicKey);
+        $rsa->setEncryptionMode(2);
+        $en_pwd = $rsa->encrypt($password);
+        $en_pwd = bin2hex($en_pwd);
+        $password = Base64::hex2b64($en_pwd);
+//        return $password;
+        $res = $client->request('POST',"http://210.44.191.124/jwglxt/xtgl/login_slogin.html",[
+            'cookies' => $jar,
+            'form_params' => [
+                'csrftoken' => $csrf,
+                'yhm' => $sdut_id,
+                'mm' => $password,
+                'mm' => $password,
+            ],
+            'http_errors'=>false,
+        ]);
+        if (preg_match("/修改密码/",$res->getBody()) == 1) {
+            //证明登录成功，返回cookie
+            return $jar;
+        }else  {
+            //未匹配成功，登录失败
+            return null;
+        }
+    }
 
+    protected function loginEhall($sdut_id,$password) {
+        $jar = new CookieJar();
+        $client = new Client(['cookies'=>$jar]);
+        $login_url = "http://authserver.sdut.edu.cn/authserver/login?service=http%3A%2F%2Fehall.sdut.edu.cn%2Flogin%3Fservice%3Dhttp%3A%2F%2Fehall.sdut.edu.cn%2Fnew%2Fehall.html";
+        $res = $client->request('GET',$login_url);
+        if ($res->getStatusCode()!=200) {
+            return $this->response->error('源服务器错误',500);
+        }
+        $ql = QueryList::html($res->getBody());
+        $lt = $ql->find("input[name='lt']")->val();
+        $dtlt = $ql->find("input[name='dllt']")->val();
+        $execution = $ql->find("input[name='execution']")->val();
+        $_evenId = $ql->find("input[name='_eventId']")->val();
+        $rmShown = $ql->find("input[name='rmShown']")->val();
+        $result = $client->request('POST',$login_url,[
+            'form_params'=>[
+                'username' => $sdut_id,
+                'password' => $password,
+                'lt' => $lt,
+                'dllt' => $dtlt,
+                'execution' => $execution,
+                '_eventId' => $_evenId,
+                'rmShown' => $rmShown,
+            ],
+            'http_errors'=>false,
+        ]);
+        $client->request('GET',"http://ehall.sdut.edu.cn/xsfw/sys/swpubapp/userinfo/getConfigUserInfo.do");
+//        $client->request('GET','http://ehall.sdut.edu.cn/xsfw/sys/emappagelog/config/sswsapp.do');
+//        $result = $client->request('GET',"http://ehall.sdut.edu.cn/xsfw/sys/sswsapp/modules/dorm_health_student/sswsxs_sswsxsbg.do",[
+//            'http_errors'=>false,
+//        ]);
+        return $result->getBody();
+    }
 
 
 
