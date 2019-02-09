@@ -151,10 +151,14 @@ $api->version('v1',[
     $api->get('service/hygiene','FeatureController@hygiene');  //宿舍卫生
     $api->get('service/exam','FeatureController@exam');    //考试时间
 
+    //四六级查询
+    $api->get('service/cet','FeatureController@cetGet');  //获取验证码 返回cookie
+    $api->post('service/cet','FeatureController@cetPost');//提交信息，获取考试成绩
+
+
     $api->get('service/user','FeatureController@index')->middleware('api.auth');  //通过token获取个人信息
     $api->post('service/user','FeatureController@updateUser')->middleware('api.auth'); //修改个人信息
-//权限管理
+//测试
     $api->get('test','Featurecontroller@test');
-
 
 });

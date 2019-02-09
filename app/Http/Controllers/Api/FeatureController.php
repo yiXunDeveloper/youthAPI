@@ -15,6 +15,7 @@ use Dingo\Api\Exception\StoreResourceFailedException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use App\Libs\Base64;
+use GuzzleHttp\Cookie\SetCookie;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
@@ -257,12 +258,103 @@ class FeatureController extends Controller
 
 
     }
+
     public function test(Request $request){
 
 //        $this->loginJWC($request->sdut_id,$request->password_jwc);
-        return $this->loginEhall($request->sdut_id,$request->password_jwc);
+//        return $this->loginEhall($request->sdut_id,$request->password_jwc);
+        //创建cookie
+
     }
-    
+
+    public function cetGet(Request $request) {
+        $validator = app('validator')->make($request->all(),[
+            'number'=>'required|size:15'
+        ]);
+        if ($validator->fails()) {
+            throw new StoreResourceFailedException("请输入完整的准考证号",$validator->errors());
+        }
+        $cookie = new CookieJar();
+        $client = new Client();
+        //获取客户端访问ip
+        $client_ip = $this->getip();
+        $cetUrl = "http://cet.neea.edu.cn/cet";
+        //获取输入的准考证号
+        $number = $request->number;
+        $url = "http://cache.neea.edu.cn/Imgs.do?c=CET&ik={$number}&t=".rand();
+        $res = $client->request('GET',$url,[
+            'cookies' => $cookie,
+            'headers' => [
+                'Referer' => $cetUrl,
+                'CLIENT-IP'=> $client_ip,
+                'X-FORWARDED-FOR'=> $client_ip,
+            ],
+            'http_errors' => false,
+        ]);
+        preg_match("/result.imgs\(\"([^<>]+)\"\);/",$res->getBody(),$values);
+        return $this->response->array([
+            'data'=>[
+                'img' => $values[1],
+            ],
+            'cookies' => $cookie->toArray(),
+        ])->setStatusCode(200);
+    }
+
+    public function cetPost(Request $request)
+    {
+        $validator = app('validator')->make($request->all(), [
+            'number' => 'required|size:15',
+            'name' => 'required',
+            'code' => 'required',
+        ]);
+        if ($validator->fails()) {
+            throw new StoreResourceFailedException("请输入完整的准考证号", $validator->errors());
+        }
+        $cookies = json_decode($request->header('Cookies'), true);
+        $jar = new CookieJar(false, $cookies);
+        $client = new Client(['cookies' => $jar]);
+        //获取客户端访问ip
+        $client_ip = $this->getip();
+        $cetUrl = "http://cache.neea.edu.cn/cet/query";
+        $res = $client->request('POST', $cetUrl, [
+            'form_params' => [
+                'data' => 'CET4_181_DANGCI,' . $request->number . ',' . $request->name,
+                'v' => $request->code,
+            ],
+            'headers' => [
+                'Referer' => "http://cache.neea.edu.cn/cet",
+                'CLIENT-IP' => $client_ip,
+                'X-FORWARDED-FOR' => $client_ip,
+                'Origin' => "http://cet.neea.edu.cn",
+            ]
+        ]);
+        if ($res->getStatusCode() != 200) {
+            return $this->response->error('源服务器错误，请联系管理员',$res->getStatusCode());
+        }
+        preg_match("/parent.result.callback\(\"([^<>]+)\"\);/", $res->getBody(), $value);
+        if (sizeof($value) < 2) {
+            return $this->response->error("服务器错误，请联系管理员",500);
+        }
+        $data = $this->ext_json_decode($value[1]);
+        if (property_exists($data,"error")) {
+            throw new StoreResourceFailedException($data->error);
+        }
+        return $this->response->array(['data'=>$data]);
+    }
+
+
+    //非标准JSON字符串转化为对象：键没有用双引号包裹，值用单引号包裹
+    protected function ext_json_decode($str, $mode=false){
+        //将键用双引号包裹
+        if(preg_match('/\w:/', $str)){
+            $str = preg_replace('/(\w+):/is', '"$1":', $str);
+        }
+        //把双引号变为单引号
+        $str = preg_replace('/\'/', '"', $str);
+        return json_decode($str, $mode);
+    }
+
+
     protected function loginJWC($sdut_id,$password) {
         $jar = new CookieJar();
         $client = new Client();
@@ -336,5 +428,18 @@ class FeatureController extends Controller
 //            'http_errors'=>false,
 //        ]);
         return $result->getBody();
+    }
+
+    protected  function getip(){
+        if(!empty($_SERVER['HTTP_CLIENT_IP'])){
+            $cip = $_SERVER['HTTP_CLIENT_IP'];
+        }elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])){
+            $cip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+        }elseif(!empty($_SERVER['REMOTE_ADDR'])){
+            $cip = $_SERVER['REMOTE_ADDR'];
+        }else{
+            $cip = '';
+        }
+        return $cip;
     }
 }
