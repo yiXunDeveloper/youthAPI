@@ -28,7 +28,7 @@ class CreateServiceExamTimesTable extends Migration
             $table->string('name',30)->nullable();      //姓名
 //            $table->string('exam_name','30')->nullable();
             $table->string('code',30)->nullable();    //试卷编号
-
+            $table->tinyInteger('note')->default(0); //备注  暂时用来 0代表正常考试，1代表补考
             $table->timestamps();
         });
     }

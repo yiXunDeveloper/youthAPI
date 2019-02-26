@@ -146,7 +146,7 @@ $api->version('v1',[
     $api->get('dormitory','FeatureController@dormitory');  //所有宿舍
     $api->get('college','FeatureController@college');  //所有学院
 //学生服务功能API
-    $api->get('service/authorization','FeatureController@authorization');
+    $api->get('service/authorization','FeatureController@authorization'); //登录
     $api->get('service/elec','FeatureController@elec');  //电费查询
     $api->get('service/hygiene','FeatureController@hygiene');  //宿舍卫生
     $api->get('service/exam','FeatureController@exam');    //考试时间

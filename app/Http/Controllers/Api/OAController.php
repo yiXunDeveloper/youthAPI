@@ -28,7 +28,7 @@ class OAController extends Controller
             'password'=>'required',
         ]);
         if ($validator->fails()){
-            throw new \Dingo\Api\Exception\StoreResourceFailedException('参数错误！');
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('参数错误！',$validator->errors());
         }
         $credentials['username'] = $request->username;
         $credentials['password'] = $request->password;
@@ -69,7 +69,8 @@ class OAController extends Controller
             $reader = $reader->getSheet(0);
             $res = $reader->toArray();
             //如果没有数据或者表格的列数不等于8，报错
-            if(sizeof($res) <= 1 || sizeof($res[0]) != 8) {
+            dd($res);
+            if(sizeof($res) <= 1 || sizeof($res[0]) < 8) {
                 return $this->response->error('文件数据不合法',422);
             }
             $user = OaUser::where('username','youthol')->first();
@@ -97,6 +98,8 @@ class OAController extends Controller
                     'phone' => $value[4] ? $value[4] : null,
                     'birthday' => $birthday ? $birthday : null,
                 ]);
+                //消除空格
+                $value[6] = trim($value[6]);
                 if ($value[6]) {
                     if (preg_match("/[0-6]:[1-5]|[0-6]:[1-5]/",$value[6]) == 0 && preg_match("/[0-6]:[1-5]/",$value[6])==0) {
                         return $this->response->error("{$value[0]}{$value[1]}的duty:{$value[6]}数据不合法",422);
@@ -111,6 +114,8 @@ class OAController extends Controller
                     'password' => bcrypt($value[0]),
                     'sdut_id' => $value[0],
                 ]);
+                //消除空格
+                $value[7] = trim($value[7]);
                 $roles = explode('|',$value[7]);
                 $roles = Role::whereIn('display_name',$roles)->get(['name']);
                 foreach ($roles as $role) {
@@ -160,7 +165,7 @@ class OAController extends Controller
             $reader = $reader->getSheet(0);
             $res = $reader->toArray();
 
-            if(sizeof($res) <= 1 || sizeof($res[0]) != 7) {
+            if(sizeof($res) <= 1 || sizeof($res[0]) < 7) {
                 throw new \Dingo\Api\Exception\StoreResourceFailedException('文件格式错误！', ['dormitory'=>'Excel文件为空或列数不等于7']);
             }
             //删除前两行无用信息
