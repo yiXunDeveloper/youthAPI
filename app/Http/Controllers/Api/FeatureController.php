@@ -166,7 +166,7 @@ class FeatureController extends Controller
     //考试时间
     public function exam(){
         $sdut_id = \request('sdut_id');
-        $exam_times = ServiceExamTime::where('sdut_id',$sdut_id)->orderBy('date','ASC')->get();
+        $exam_times = ServiceExamTime::where('sdut_id',$sdut_id)/*->orderBy('date','ASC')*/->get();
         $data = array();
         foreach ($exam_times as $exam_time){
             $exam_meta = ServiceExamMeta::where('date',$exam_time->date)->where('classroom',$exam_time->classroom)->first();
