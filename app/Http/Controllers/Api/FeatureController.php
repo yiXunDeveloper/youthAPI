@@ -15,8 +15,6 @@ use Dingo\Api\Exception\StoreResourceFailedException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use App\Libs\Base64;
-use GuzzleHttp\Cookie\SetCookie;
-use GuzzleHttp\Exception\RequestException;
 use Illuminate\Http\Request;
 use Laravel\Socialite\Facades\Socialite;
 use phpseclib\Crypt\RSA;
@@ -44,7 +42,7 @@ class FeatureController extends Controller
         }
         if ($user->sdut_id != null) {
             //用户已绑定
-            $data = array([
+            $data = array(
                 'sdut_id' => $user->sdut_id,
                 'college'=>$user->college,
                 'class' => $user->class,
@@ -52,7 +50,7 @@ class FeatureController extends Controller
                 'room' => $user->room,
                 'password_jwc' => $user->password_jwc == null ? null : decrypt($user->password_jwc),
                 'password_dt' => $user->password_dt == null ? null : decrypt($user->password_dt),
-            ]);
+            );
             return $this->response->array(['data'=>$data,'meta'=>[
                 'access_token' => Auth::guard('service')->fromUser($user),
                 'token_type' => 'Bearer',
@@ -81,6 +79,7 @@ class FeatureController extends Controller
         ]);
         return $this->response->array(['data'=>$data])->setStatusCode(200);
     }
+
     public function updateUser(Request $request) {
         $user = Auth::guard('service')->user();
         $validator = app('validator')->make($request->all(),[
@@ -174,7 +173,7 @@ class FeatureController extends Controller
             $gkl = ServiceExamGkl::where('course',$exam_time->course)->first();
 //            $exam_time = $exam_time->toArray();
             $exam_time->meta = $exam_meta;
-            $exam_time->gkl = count($gkl)?$gkl->gkl:null;
+            $exam_time->gkl = $gkl == null?null:$gkl->gkl;
             array_push($data,$exam_time->toArray());
         }
         if(count($data)>0){
