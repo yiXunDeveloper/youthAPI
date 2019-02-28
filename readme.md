@@ -1,58 +1,76 @@
-<p align="center"><img src="https://laravel.com/assets/img/components/logo-laravel.svg"></p>
+<p align="center"><img src="https://lab.youthol.cn/default/static/media/youthol_logo_md@300x300.9309bfce.png" width="80px;"></p>
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
 
-## About Laravel
+## 项目概述
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel attempts to take the pain out of development by easing common tasks used in the majority of web projects, such as:
++ 项目名称：youthAPI
++ 项目介绍：随着互联网的发展，前后端分离已是大势所趋。青春在线API是为青春在线各功能提供服务的一个API，它整合了青春在线的几乎所有后端程序。
++ 官方地址：https://api.youthol.cn/
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 运行环境
 
-Laravel is accessible, yet powerful, providing tools needed for large, robust applications.
++ Nginx 1.8+ / Apache 2.4+
++ PHP 7.0+
++ Mysql 5.7+
 
-## Learning Laravel
+## 开发环境部署/安装
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of any modern web application framework, making it a breeze to get started learning the framework.
+本项目代码使用 PHP 框架 [Laravel 5.5](https://learnku.com/docs/laravel/5.5) 开发，依赖于[Composer](https://getcomposer.org/)
 
-If you're not in the mood to read, [Laracasts](https://laracasts.com) contains over 1100 video tutorials on a range of topics including Laravel, modern PHP, unit testing, JavaScript, and more. Boost the skill level of yourself and your entire team by digging into our comprehensive video library.
+如果未安装Composer请先安装Composer
 
-## Laravel Sponsors
+**1.克隆代码**
 
-We would like to extend our thanks to the following sponsors for helping fund on-going Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell):
+```bash
+$ git clone https://github.com/youthol/youthAPI.git
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[British Software Development](https://www.britishsoftware.co)**
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Pulse Storm](http://www.pulsestorm.net/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
+**2.安装扩展包依赖**
 
-## Contributing
+```bash
+$ composer install
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**3.生成配置文件**
 
-## Security Vulnerabilities
+```bash
+$ cp .env.example .env
+```
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**4.生成密钥**
 
-## License
+```bash
+$ php artisan key:generate
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+$ php artisan jwt:secret
+```
+
+## 功能
+
++ [事务中心预约系统](https://github.com/youthol/swzx-preordain) **(/preordain/~)**
++ 问卷调查系统 **(/ques/~)**
+  + [用户端](https://github.com/youthol/sdut-survey)
+  + [管理端](https://github.com/youthol/sdut-survey-admin)
++ [网上办公系统](https://github.com/youthol/youthoa) **(/oa/~)**
++ 学生服务 **(/service/~)**
+  + [微信绑定](https://github.com/yhlchao/wechat_binding) **(/service/authorization    +       /service/user)**
+  + [用电查询](https://github.com/yhlchao/wechat_elec-use) **(/service/elec)**
+  + [宿舍卫生](https://github.com/yhlchao/wechat_hygiene) **(/service/hygiene)**
+  + [考试时间](https://github.com/yhlchao/wechat_exam) **(/service/exam)**
+  + [四六级查询](https://github.com/yhlchao/wechat_cet-score) **(/service/cet)**
+
+## 扩展包描述
+
+| 扩展包                                                       | 一句话描述                         | 在本项目中的使用案例                                         |
+| ------------------------------------------------------------ | ---------------------------------- | ------------------------------------------------------------ |
+| [dingo/api](https://learnku.com/docs/dingo-api/2.0.0)        | API处理包                          | 全部                                                         |
+| [tymon/jwt-auth](https://packagist.org/packages/tymon/jwt-auth) | 前后端交互时传递数据的格式         | 事务中心预约、问卷调查、办公系统、学生服务等功能的登录       |
+| [guzzlehttp/guzzle](https://guzzle-cn.readthedocs.io/zh_CN/latest/) | 发送Http请求（用于爬虫和模拟登陆） | 学生服务的用电查询、教务处登录和网上服务大厅登录             |
+| [jaeger/querylist](https://www.querylist.cc/)                | 内容采集工具，解析HTML DOM         | 学生服务的用电查询、教务处登录和网上服务大厅登录             |
+| [maatwebsite/excel](https://laravel-excel.com/)              | Excel文件导入导出                  | 事务中心预约导出、调查问卷导出、办公系统用户导入导出、卫生成绩导入等 |
+| [phpseclib/phpseclib](https://github.com/phpseclib/phpseclib) | 各种加密功能（本项目用于RSA加密）  | 教务处登录所用（获取Module和Exponent生成RSA公钥进行密码加密） |
+| socialiteproviders/weixin                                    | 微信登录包                         | 微信登录绑定                                                 |
+| [spatie/laravel-permission](https://github.com/laravel/socialite) | 权限管理系统                       | 办公系统                                                     |
+
