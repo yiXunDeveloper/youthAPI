@@ -44,6 +44,7 @@ class FeatureController extends Controller
             //用户已绑定
             $data = array(
                 'sdut_id' => $user->sdut_id,
+                'name' => $user->name,
                 'college'=>$user->college,
                 'class' => $user->class,
                 'dormitory' => $user->dormitory,
@@ -70,6 +71,7 @@ class FeatureController extends Controller
         $user = Auth::guard('service')->user();
         $data = array([
             'sdut_id' => $user->sdut_id,
+            'name' => $user->name,
             'college'=>$user->college,
             'class' => $user->class,
             'dormitory' => $user->dormitory,
@@ -83,22 +85,35 @@ class FeatureController extends Controller
     public function updateUser(Request $request) {
         $user = Auth::guard('service')->user();
         $validator = app('validator')->make($request->all(),[
-            'sdut_id' => 'sometimes|size:11',
-            'college' => 'sometimes|exists:colleges,id',
-            'dormitory' => 'sometimes|exists:dormitorys,id',
+            'sdut_id' => 'required|size:11',
+            'college' => 'required|exists:colleges,id',
+            'dormitory' => 'required|exists:dormitorys,id',
+            'room' => 'required|numeric',
+            'password_jwc' => 'required'
         ]);
         if ($validator->fails()) {
             throw new StoreResourceFailedException("信息错误！",$validator->errors());
         }
-        //填了学号和教务处密码，验证是否正确
-        if ($request->sdut_id != null && $request->password_jwc!=null) {
-            $jar = $this->loginJWC($request->sdut_id,$request->password_jwc);
+        //验证教务处密码是否正确
+        $jar = $this->loginJWC($request->sdut_id,$request->password_jwc);
+        if ($jar == null) {
+            throw new StoreResourceFailedException("学号或教务处密码错误");
+        }
+        $client = new Client(['cookies'=>$jar]);
+        $res = $client->request('GET','http://210.44.191.124/jwglxt/xtgl/index_cxYhxxIndex.html');
+        $queryList = QueryList::html($res->getBody());
+        $name = $queryList->find('.media-heading')->text();
+
+        //验证网上服务大厅密码
+        if ($request->password_dt != null) {
+            $jar = $this->loginEhall($request->sdut_id,$request->password_dt);
             if ($jar == null) {
-                throw new StoreResourceFailedException("学号或教务处密码错误");
+                throw new StoreResourceFailedException("学号或网上服务大厅密码错误");
             }
         }
 
         $user->sdut_id = $request->sdut_id;
+        $user->name = $name;
         $user->college_id = $request->college;
         $user->dormitory_id = $request->dormitory;
         $user->class = $request->class;
@@ -261,7 +276,7 @@ class FeatureController extends Controller
     public function test(Request $request){
 
 //        $this->loginJWC($request->sdut_id,$request->password_jwc);
-//        return $this->loginEhall($request->sdut_id,$request->password_jwc);
+//        echo $this->loginEhall($request->sdut_id,$request->password_jwc);
         //创建cookie
 
     }
@@ -409,7 +424,7 @@ class FeatureController extends Controller
         $execution = $ql->find("input[name='execution']")->val();
         $_evenId = $ql->find("input[name='_eventId']")->val();
         $rmShown = $ql->find("input[name='rmShown']")->val();
-        $result = $client->request('POST',$login_url,[
+        $client->request('POST',$login_url,[
             'form_params'=>[
                 'username' => $sdut_id,
                 'password' => $password,
@@ -421,12 +436,21 @@ class FeatureController extends Controller
             ],
             'http_errors'=>false,
         ]);
-        $client->request('GET',"http://ehall.sdut.edu.cn/xsfw/sys/swpubapp/userinfo/getConfigUserInfo.do");
+        $result = $client->request('GET',"http://ehall.sdut.edu.cn/xsfw/sys/swpubapp/userinfo/getConfigUserInfo.do");
+        //登录成功将返回json字符串，失败返回html文件
+        $data = json_decode($result->getBody());
+        //如果正常解析，证明登录成功，返回jar
+        if (($data && (is_object($data))) || (is_array($data) && !empty($data))) {
+            return $jar;
+        }else {
+            return null;
+        }
+
 //        $client->request('GET','http://ehall.sdut.edu.cn/xsfw/sys/emappagelog/config/sswsapp.do');
 //        $result = $client->request('GET',"http://ehall.sdut.edu.cn/xsfw/sys/sswsapp/modules/dorm_health_student/sswsxs_sswsxsbg.do",[
 //            'http_errors'=>false,
 //        ]);
-        return $result->getBody();
+//        return $result->getBody();
     }
 
     protected  function getip(){

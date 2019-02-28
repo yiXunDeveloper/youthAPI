@@ -16,13 +16,14 @@ class CreateServiceUsersTable extends Migration
         Schema::create('service_users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('sdut_id',11)->nullable()->unique();
+            $table->string('name','30')->nullable();
             $table->string('openid');
             $table->integer('college_id')->nullable();
             $table->string('class')->nullable();
             $table->integer('dormitory_id')->nullable();
             $table->integer('room')->nullable();
-            $table->string('password_jwc')->nullable();
-            $table->string('password_dt')->nullable();
+            $table->string('password_jwc',255)->nullable();
+            $table->string('password_dt',255)->nullable();
             $table->timestamps();
         });
     }
