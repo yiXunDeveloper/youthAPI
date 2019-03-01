@@ -69,6 +69,9 @@ class FeatureController extends Controller
 
     public function index(){
         $user = Auth::guard('service')->user();
+        if ($user == null) {
+            return $this->response->errorUnauthorized("用户不存在");
+        }
         $data = array([
             'sdut_id' => $user->sdut_id,
             'name' => $user->name,
@@ -84,6 +87,9 @@ class FeatureController extends Controller
 
     public function updateUser(Request $request) {
         $user = Auth::guard('service')->user();
+        if ($user == null) {
+            return $this->response->errorUnauthorized("用户不存在");
+        }
         $validator = app('validator')->make($request->all(),[
             'sdut_id' => 'required|size:11',
             'college' => 'required|exists:colleges,id',
@@ -121,6 +127,15 @@ class FeatureController extends Controller
         $user->password_jwc = $request->password_jwc == null ? null : encrypt($request->password_jwc);
         $user->password_dt = $request->password_dt == null ? null : encrypt($request->passwprd_dt);
         $user->save();
+        return $this->response->noContent();
+    }
+
+    public function deleteUser() {
+        $user = Auth::guard('service')->user();
+        if ($user == null) {
+            return $this->response->errorUnauthorized("用户不存在");
+        }
+        $user->delete();
         return $this->response->noContent();
     }
 
