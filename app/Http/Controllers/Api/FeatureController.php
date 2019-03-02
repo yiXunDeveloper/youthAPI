@@ -331,6 +331,8 @@ class FeatureController extends Controller
 
     public function cetPost(Request $request)
     {
+        //准考证对应的代码，地址：http://cet.neea.edu.cn/cet/js/query.js  第5行
+        $zRule = ["","CET4-D","CET6-D","CJT4-D","CJT6-D","PHS4-D","PHS6-D","CRT4-D","CRT6-D","TFU4-D"];
         $validator = app('validator')->make($request->all(), [
             'number' => 'required|size:15',
             'name' => 'required',
@@ -344,10 +346,41 @@ class FeatureController extends Controller
         $client = new Client(['cookies' => $jar]);
         //获取客户端访问ip
         $client_ip = $this->getip();
+        $dataUrl = "http://cet.neea.edu.cn/cet/js/data.js";
+        $res = $client->request('GET',$dataUrl);
+        if ($res->getStatusCode() != 200) {
+            return $this->response->error('源服务器错误，请联系管理员',$res->getStatusCode());
+        }
+        preg_match("/var dq=([^<>]+);/",$res->getBody(),$dq);
+        $dq = json_decode($dq[1]);
+        //查看准考证类型
+        $idx = -1;
+        $t = $request->number[0];
+        if($t=="F"){
+            $idx = 1;
+        }else if($t=="S"){
+            $idx = 2;
+        }else{
+            $t = $request->number[9];
+            if(is_numeric($t)) {
+                $idx = $t;
+            }
+        }
+        if($idx!=-1){
+            $code = $zRule[$idx];
+        }
+        foreach ($dq->rdsub as $value) {
+            if ($value->code == $code) {
+                $c = $value->tab;
+            }
+        }
+        if (!isset($c)) {
+            throw new StoreResourceFailedException('准考证有误');
+        }
         $cetUrl = "http://cache.neea.edu.cn/cet/query";
         $res = $client->request('POST', $cetUrl, [
             'form_params' => [
-                'data' => 'CET4_181_DANGCI,' . $request->number . ',' . $request->name,
+                'data' => $c.',' . $request->number . ',' . $request->name,
                 'v' => $request->code,
             ],
             'headers' => [
@@ -364,6 +397,7 @@ class FeatureController extends Controller
         if (sizeof($value) < 2) {
             return $this->response->error("服务器错误，请联系管理员",500);
         }
+        //解析非标准json
         $data = $this->ext_json_decode($value[1]);
         if (property_exists($data,"error")) {
             throw new StoreResourceFailedException($data->error);
