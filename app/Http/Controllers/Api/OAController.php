@@ -22,7 +22,8 @@ use Spatie\Permission\Models\Role;
 class OAController extends Controller
 {
     //登录
-    public function login(Request $request){
+    public function login(Request $request)
+    {
         $validator = app('validator')->make($request->all(),[
             'username'=>'required',
             'password'=>'required',
@@ -55,8 +56,9 @@ class OAController extends Controller
     }
 
 
-   //导入用户信息
-    public function importUserInfo(Request $request) {
+    //导入用户信息
+    public function importUserInfo(Request $request)
+    {
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
             return $this->response->error('您没有该权限！', 403);
@@ -125,8 +127,10 @@ class OAController extends Controller
         });
         return $this->response->array(['data'=>'导入成功'])->setStatusCode(200);
     }
+
     //导出用户
-    public function exportUser() {
+    public function exportUser()
+    {
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
             return $this->response->error('您没有该权限！', 403);
@@ -149,15 +153,21 @@ class OAController extends Controller
             }
             $data[$user->sdut_id]['role'] = implode("|",$name);
         }
+
         Excel::create(date('Y-m-d H:i:s').'导出用户数据',function($excel) use($data){
             $excel->sheet('用户数据', function($sheet) use ($data){
                 $sheet->fromArray($data);
             });
         })->export('xls');
     }
-    //卫生成绩导入
-    public function importHygiene(Request $request) {
 
+    //卫生成绩导入
+    public function importHygiene(Request $request)
+    {
+        $user = Auth::guard('api')->user();
+        if (!$user->can('manage_service')) {
+            return $this->response->error("您没有该权限",403);
+        }
         $excel = $request->file('dormitory');
         $file = $excel->store('excel');
         //如果没有数据或者表格的列数不等于8，报错
@@ -189,7 +199,8 @@ class OAController extends Controller
 
 
     //获取所有用户信息
-    public function getUsers(){
+    public function getUsers()
+    {
         $users = OaYouthUser::all();
         return $this->response->array(['data'=>$users->toArray()]);
     }
@@ -197,7 +208,8 @@ class OAController extends Controller
 
 
     //获取当日签到记录
-    public function getSignInLists(){
+    public function getSignInLists()
+    {
         $lists = OaSigninRecord::whereDate('created_at',date('Y-m-d'))->orderBy('updated_at','DESC')->get();
         foreach ($lists as $list){
             $list->user;
@@ -205,7 +217,8 @@ class OAController extends Controller
         return $this->response->array(['data'=>count($lists) > 0 ? $lists->toArray() : $lists])->setStatusCode(200);
     }
     //   签到/签退
-    public function updateSignRecord(Request $request){
+    public function updateSignRecord(Request $request)
+    {
         $sdut_id = $request->sdut_id;
         $user = OaYouthUser::where('sdut_id',$sdut_id)->first();
         if($user){
@@ -285,7 +298,8 @@ class OAController extends Controller
     }
 
     //导出签到记录
-    public function ExportSignRecord(Request $request){
+    public function ExportSignRecord(Request $request)
+    {
         $validator = app('validator')->make($request->all(),[
             'start'=>'required|date',
             'end'=>'required|date|after:start'
@@ -363,7 +377,8 @@ class OAController extends Controller
         })->export('xls');
     }
     //获得当月计划表
-    public function getSchedules(){
+    public function getSchedules()
+    {
         $last = date('Y-m-d H:i:s',strtotime("-1 month"));
         $lists = OaSchedule::whereDate('created_at','>',$last)->orderBy('updated_at','DESC')->get();
         foreach ($lists as $list){
@@ -372,11 +387,13 @@ class OAController extends Controller
         return $this->response->array(['data'=>count($lists) > 0 ? $lists->toArray() : $lists])->setStatusCode(200);
     }
     //通过id获取计划表
-    public function getSchedule(OaSchedule $schedule){
+    public function getSchedule(OaSchedule $schedule)
+    {
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
     }
     //增加计划表
-    public function addSchedule(Request $request){
+    public function addSchedule(Request $request)
+    {
         $validator = app('validator')->make($request->all(),[
             'event_name' => 'required',
             'event_place' => 'required',
@@ -391,7 +408,8 @@ class OAController extends Controller
         return $this->response->array(['data'=>$schedule])->setStatusCode(201);
     }
     //修改计划表
-    public function updateSchedule(Request $request,OaSchedule $schedule){
+    public function updateSchedule(Request $request,OaSchedule $schedule)
+    {
         $validator = app('validator')->make($request->all(),[
             'user'=>'required|exists:oa_youth_users,sdut_id'
         ]);
@@ -403,7 +421,8 @@ class OAController extends Controller
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
     }
     //删除计划表
-    public function deleteSchedule(OaSchedule $schedule){
+    public function deleteSchedule(OaSchedule $schedule)
+    {
         $user = Auth::guard('oa')->user();
         if($user->can('manage_activity')){
 
@@ -415,17 +434,20 @@ class OAController extends Controller
     }
 
     //查询所有设备
-    public function getEquipments(){
+    public function getEquipments()
+    {
         //查所有
         $equipments = OaEquipment::all();
         return $this->response->array(['data'=>$equipments]);
     }
     //通过id获得设备
-    public function getEquipmentById(OaEquipment $equipment){
+    public function getEquipmentById(OaEquipment $equipment)
+    {
         return $this->response->array(['data'=>$equipment]);
     }
     //增加设备
-    public function addEquipment(Request $request){
+    public function addEquipment(Request $request)
+    {
         $validator = app('validator')->make($request->all(),[
             'device_name' => 'required|unique:oa_equipment,device_name',
             'device_type' => 'required',
@@ -437,7 +459,8 @@ class OAController extends Controller
         return $this->response->array(['data'=>$equipment]);
     }
     //删除设备
-    public function deleteEquipment(OaEquipment $equipment){
+    public function deleteEquipment(OaEquipment $equipment)
+    {
         //有token
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_device')) {
@@ -447,7 +470,8 @@ class OAController extends Controller
         return $this->response->noContent();
     }
     //查询最近一个月的设备借用记录
-    public function getEquipmentRecords(){
+    public function getEquipmentRecords()
+    {
         //查一个月
         $last = date('Y-m-d',strtotime("-1 month"));
         $lists = OaEquipmentRecord::whereDate('created_at','>',$last)->orderBy('updated_at','DESC')->get();
@@ -472,7 +496,8 @@ class OAController extends Controller
         return $this->response->array(['data'=>$lists]);
     }
 //    增加设备借用记录
-    public function addEquipmentRecord(Request $request){
+    public function addEquipmentRecord(Request $request)
+    {
         $validator = app('validator')->make($request->all(),[
             'device'=>'required|exists:oa_equipments,id',
             'activity'=>'required',
@@ -531,7 +556,8 @@ class OAController extends Controller
         return $this->response->array(['data'=>$record])->setStatusCode(201);
     }
     //归还设备
-    public function updateEquipmentRecord(Request $request,OaEquipmentRecord $record){
+    public function updateEquipmentRecord(Request $request,OaEquipmentRecord $record)
+    {
         $validator = app('validator')->make($request->all(),[
             'rememo_user' => 'required|exists:oa_youth_users,sdut_id',
         ]);
@@ -555,7 +581,8 @@ class OAController extends Controller
         }
     }
     //删除设备借还记录
-    public function deleteEquipmentRecord(OaEquipmentRecord $record){
+    public function deleteEquipmentRecord(OaEquipmentRecord $record)
+    {
         //有token
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_device')) {
@@ -569,12 +596,14 @@ class OAController extends Controller
     //电话簿管理
 
     //获取全部电话簿
-    public function getPhonebooks() {
+    public function getPhonebooks()
+    {
         $phonebooks = OaPhonebook::all();
         return $this->response->array(['data'=>$phonebooks])->setStatusCode(200);
     }
 //    添加电话簿
-    public function addPhonebook(Request $request) {
+    public function addPhonebook(Request $request)
+    {
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_phone_book')){
             throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("您没有该权限！");
@@ -592,7 +621,8 @@ class OAController extends Controller
         return $this->response->noContent();
     }
 //导入电话簿
-    public function importPhonebook(Request $request) {
+    public function importPhonebook(Request $request)
+    {
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_phone_book')){
             throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("您没有该权限！");
@@ -623,7 +653,8 @@ class OAController extends Controller
         return $this->response->array(['data'=>'导入成功'])->setStatusCode(200);
     }
     //导出电话簿
-    public function exportPhonebook(){
+    public function exportPhonebook()
+    {
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_phone_book')){
             throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("您没有该权限！");
@@ -638,7 +669,8 @@ class OAController extends Controller
     }
 
     //更新电话簿
-    public function updatePhonebook(Request $request,OaPhonebook $phonebook) {
+    public function updatePhonebook(Request $request,OaPhonebook $phonebook)
+    {
         $validator = app('validator')->make($request->all(),[
             'administrative_unit'=>'required',
             'office_location' => 'required',
@@ -657,7 +689,8 @@ class OAController extends Controller
         return $this->response->noContent();
     }
 //    删除电话簿
-    public function deletePhonebook(OaPhonebook $phonebook) {
+    public function deletePhonebook(OaPhonebook $phonebook)
+    {
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_phone_book')){
             throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("您没有该权限！");
@@ -667,7 +700,8 @@ class OAController extends Controller
     }
 
     //获取工作量
-    public function getWorkloads() {
+    public function getWorkloads()
+    {
         $last = date('Y-m-d H:i:s',strtotime("-1 month"));
         $lists = OaWorkload::whereDate('created_at','>',$last)->orderBy('updated_at','DESC')->get();
         foreach ($lists as $list) {
@@ -678,7 +712,8 @@ class OAController extends Controller
     }
 
     //导出工作量
-    public function exportWorkload(Request $request) {
+    public function exportWorkload(Request $request)
+    {
         $validator = app('validator')->make($request->all(),[
             'start'=>'required|date',
             'end'=>'required|date|after:start'
@@ -700,7 +735,8 @@ class OAController extends Controller
     }
 
     //增加工作量
-    public function addWorkload(Request $request){
+    public function addWorkload(Request $request)
+    {
         $user = Auth::guard('oa')->user();
         if (!$user->hasRole('Administrator')) {
             throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("只有管理员才能进行该操作！");
@@ -723,7 +759,8 @@ class OAController extends Controller
     }
 
     //修改工作量
-    public function updateWorkload(Request $request,OaWorkload $workload) {
+    public function updateWorkload(Request $request,OaWorkload $workload)
+    {
         $user = Auth::guard('oa')->user();
         if (!$user->hasRole('Administrator')) {
             throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("只有管理员才能进行该操作！");
@@ -743,12 +780,33 @@ class OAController extends Controller
     }
 
     //删除工作量
-    public function deleteWorkload(OaWorkload $workload) {
+    public function deleteWorkload(OaWorkload $workload)
+    {
         $user = Auth::guard('oa')->user();
         if (!$user->hasRole('Administrator')) {
             throw new \Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException("只有管理员才能进行该操作！");
         }
         $workload->delete();
+        return $this->response->noContent();
+    }
+
+    //获取卫生周次
+    public function getHW() {
+        $weeks = ServiceHygiene::groupBy('week')->get(['week']);
+        return $this->response->array(['data'=>$weeks->toArray()]);
+    }
+
+    //删除周次
+    public function deleteHW($week) {
+        $user = Auth::guard('api')->user();
+        if (!$user->can('manage_service')) {
+            return $this->response->error("您没有该权限",403);
+        }
+        if ($week != 0) {
+            ServiceHygiene::where('week',$week)->delete();
+        }else {
+            ServiceHygiene::truncate();
+        }
         return $this->response->noContent();
     }
 }
