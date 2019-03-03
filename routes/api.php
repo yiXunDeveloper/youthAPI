@@ -107,18 +107,18 @@ $api->version('v1',[
     $api->get('oa/schedule/{schedule}','OAController@getScheduleById');     //获取单个日程
     $api->post('oa/schedule','OAController@addSchedule');        //增加日程
     $api->put('oa/schedule/{schedule}','OAController@updateSchedule');    //更新日程
-    $api->delete('oa/schedule/{schedule}','OAController@deleteSchedule')->middleware('api.auth');         //删除日程!!加权限验证
+    $api->delete('oa/schedule/{schedule}','OAController@deleteSchedule')->middleware('api.auth');         //删除日程
 
     $api->get('oa/equipments','OAController@getEquipments');             //获取全部设备
     $api->get('oa/equipment/{equipment}','OAController@getEquipmentById');               //获取单个设备信息
     $api->post('oa/equipment','OAController@addEquipment');               //增加一个设备
     $api->put('oa/equipment/{equipment}','OAController@updateEquipment');           //更新设备
-    $api->delete('oa/equipment/{equipment}','OAController@deleteEquipment')->middleware('api.auth');       //删除设备   验证
+    $api->delete('oa/equipment/{equipment}','OAController@deleteEquipment')->middleware('api.auth');       //删除设备
 
     $api->get('oa/devices','OAController@getEquipmentRecords');     //获取所有设备借用记录
     $api->post('oa/device','OAController@addEquipmentRecord');  //增加借阅记录
     $api->put('oa/device/{record}','OAController@updateEquipmentRecord');  //更新
-    $api->delete('oa/device/{record}','OAController@deleteEquipmentRecord')->middleware('api.auth');  //删除
+    $api->delete('oa/device/{record}','OAController@deleteEquipmentRecord')->middleware('api.auth');  //删除记录
 
     $api->get('oa/phonebooks','OAController@getPhonebooks');  //获取全部电话簿
     $api->post('oa/phonebook','OAController@addPhonebook')->middleware('api.auth'); // 添加电话簿
@@ -134,7 +134,10 @@ $api->version('v1',[
     $api->put('oa/workload/{workload}','OAController@updateWorkload'); //更新任务量
     $api->delete('oa/workload/{workload}','OAController@deleteWorkload');  //删除任务量
 
+    $api->get('oa/hugiene/weeks','OAController@getHW');  //获取卫生成绩周次
+    $api->delete('oa/hygiene/{week}','OAController@deleteHW')->middleware('api.auth'); //删除对应周次卫生成绩，如果week为0则全部删除
     $api->post('oa/hygiene/import','OAController@importHygiene')->middleware('api.auth');        //宿舍卫生成绩导入
+
     $api->get('oa/signin/export','OAController@exportSignRecord')->middleware('api.auth');      //签到记录导出
 
 //OA办公系统end
