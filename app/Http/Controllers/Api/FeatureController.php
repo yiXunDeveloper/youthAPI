@@ -368,6 +368,8 @@ class FeatureController extends Controller
         }
         if($idx!=-1){
             $code = $zRule[$idx];
+        }else {
+        	throw new StoreResourceFailedException("准考证有误,第10位数为{$idx}");
         }
         foreach ($dq->rdsub as $value) {
             if ($value->code == $code) {

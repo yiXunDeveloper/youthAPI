@@ -88,7 +88,7 @@ $api->version('v1',[
     $api->post('oa/login','OAController@login');    //登录
     $api->get('oa/user','PermissionController@index')->middleware('api.auth');    //获取当前登录用户信息
 
-
+    //用户角色权限管理
     $api->get('oa/permissions','PermissionController@getPermissions');    //获取所有权限
     $api->get('oa/roles','PermissionController@getRoles');                //获取所有角色
     $api->get('oa/permission/{id}','PermissionController@getPermissionById');//根据id获取权限信息
@@ -98,28 +98,36 @@ $api->version('v1',[
     $api->put('oa/user/{id}','PermissionController@updateUser')->middleware('api.auth');   //修改用户信息，为用户分配角色
     $api->put('oa/role/{id}','PermissionController@updateRole')->middleware('api.auth');   //修改角色信息，为角色分配权限
     $api->put('oa/permission/{id}','PermissionController@updatePermission')->middleware('api.auth');   //修改权限名称
-
     $api->get('oa/users','OAController@getUsers');   //获取全部用户
+
+    //签到签退
     $api->get('oa/signin','OAController@getSigninLists');  //获取当天签到列表
     $api->post('oa/signin','OAController@updateSignRecord');  //签到、签退
+    $api->get('oa/signin/export','OAController@exportSignRecord')->middleware('api.auth');      //签到记录导出
 
+
+    //日程管理
     $api->get('oa/schedules','OAController@getSchedules');   //获取日程列表
     $api->get('oa/schedule/{schedule}','OAController@getScheduleById');     //获取单个日程
     $api->post('oa/schedule','OAController@addSchedule');        //增加日程
     $api->put('oa/schedule/{schedule}','OAController@updateSchedule');    //更新日程
     $api->delete('oa/schedule/{schedule}','OAController@deleteSchedule')->middleware('api.auth');         //删除日程
 
+    //设备管理
     $api->get('oa/equipments','OAController@getEquipments');             //获取全部设备
     $api->get('oa/equipment/{equipment}','OAController@getEquipmentById');               //获取单个设备信息
     $api->post('oa/equipment','OAController@addEquipment');               //增加一个设备
     $api->put('oa/equipment/{equipment}','OAController@updateEquipment');           //更新设备
     $api->delete('oa/equipment/{equipment}','OAController@deleteEquipment')->middleware('api.auth');       //删除设备
 
+
+    //设备借用记录管理
     $api->get('oa/devices','OAController@getEquipmentRecords');     //获取所有设备借用记录
     $api->post('oa/device','OAController@addEquipmentRecord');  //增加借阅记录
     $api->put('oa/device/{record}','OAController@updateEquipmentRecord');  //更新
     $api->delete('oa/device/{record}','OAController@deleteEquipmentRecord')->middleware('api.auth');  //删除记录
 
+    //电话簿管理
     $api->get('oa/phonebooks','OAController@getPhonebooks');  //获取全部电话簿
     $api->post('oa/phonebook','OAController@addPhonebook')->middleware('api.auth'); // 添加电话簿
     $api->post('oa/phonebook/import','OAController@importPhonebook')->middleware('api.auth'); // 导入电话簿
@@ -127,6 +135,7 @@ $api->version('v1',[
     $api->put('oa/phonebook/{phonebook}','OAController@updatePhonebook')->middleware('api.auth'); //更新电话簿
     $api->delete('oa/phonebook/{phonebook}','OAController@deletePhonebook')->middleware('api.auth');//删除电话簿
 
+    //工作量管理
     $api->get('oa/workloads','OAController@getWorkloads');   //获取当月的任务量
     $api->post('oa/workload','OAController@addWorkload');      //添加工作量
     $api->get('oa/workload/export','OAController@exportWorkload');//导出工作量
@@ -134,11 +143,11 @@ $api->version('v1',[
     $api->put('oa/workload/{workload}','OAController@updateWorkload'); //更新任务量
     $api->delete('oa/workload/{workload}','OAController@deleteWorkload');  //删除任务量
 
+    //学生服务卫生成绩管理
     $api->get('oa/hugiene/weeks','OAController@getHW');  //获取卫生成绩周次
     $api->delete('oa/hygiene/{week}','OAController@deleteHW')->middleware('api.auth'); //删除对应周次卫生成绩，如果week为0则全部删除
     $api->post('oa/hygiene/import','OAController@importHygiene')->middleware('api.auth');        //宿舍卫生成绩导入
 
-    $api->get('oa/signin/export','OAController@exportSignRecord')->middleware('api.auth');      //签到记录导出
 
 //OA办公系统end
 
