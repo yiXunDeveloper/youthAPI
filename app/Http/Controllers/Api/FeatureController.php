@@ -361,15 +361,15 @@ class FeatureController extends Controller
         }else if($t=="S"){
             $idx = 2;
         }else{
-            $t = $request->number[9];
-            if(is_numeric($t)) {
+            $t = (int)$request->number[9];
+            if($t) {
                 $idx = $t;
             }
         }
         if($idx!=-1){
             $code = $zRule[$idx];
         }else {
-        	throw new StoreResourceFailedException("准考证有误,第10位数为{$idx}");
+        	throw new StoreResourceFailedException("准考证有误");
         }
         foreach ($dq->rdsub as $value) {
             if ($value->code == $code) {
