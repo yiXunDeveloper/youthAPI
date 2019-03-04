@@ -371,14 +371,17 @@ class FeatureController extends Controller
         }else {
         	throw new StoreResourceFailedException("准考证有误");
         }
-        foreach ($dq->rdsub as $value) {
+        $index = -1;
+        foreach ($dq->rdsub as $key => $value) {
             if ($value->code == $code) {
-                $c = $value->tab;
+                $index = $key;
+                break;
             }
         }
-        if (!isset($c)) {
+        if ($index == -1) {
             throw new StoreResourceFailedException('准考证有误');
         }
+        $c = $dq->rdsub[$index]->tab;
         $cetUrl = "http://cache.neea.edu.cn/cet/query";
         $res = $client->request('POST', $cetUrl, [
             'form_params' => [
@@ -404,6 +407,7 @@ class FeatureController extends Controller
         if (property_exists($data,"error")) {
             throw new StoreResourceFailedException($data->error);
         }
+        $data->type = $dq->rdsub[$index]->name;
         return $this->response->array(['data'=>$data]);
     }
 
