@@ -161,10 +161,30 @@ class OAController extends Controller
         })->export('xls');
     }
 
+    //获取卫生周次
+    public function getHW() {
+        $weeks = ServiceHygiene::groupBy('week')->get(['week']);
+        return $this->response->array(['data'=>$weeks->toArray()]);
+    }
+
+    //删除周次
+    public function deleteHW($week) {
+        $user = Auth::guard('oa')->user();
+        if (!$user->can('manage_service')) {
+            return $this->response->error("您没有该权限",403);
+        }
+        if ($week != 0) {
+            ServiceHygiene::where('week',$week)->delete();
+        }else {
+            ServiceHygiene::truncate();
+        }
+        return $this->response->noContent();
+    }
+
     //卫生成绩导入
     public function importHygiene(Request $request)
     {
-        $user = Auth::guard('api')->user();
+        $user = Auth::guard('oa')->user();
         if (!$user->can('manage_service')) {
             return $this->response->error("您没有该权限",403);
         }
@@ -790,23 +810,5 @@ class OAController extends Controller
         return $this->response->noContent();
     }
 
-    //获取卫生周次
-    public function getHW() {
-        $weeks = ServiceHygiene::groupBy('week')->get(['week']);
-        return $this->response->array(['data'=>$weeks->toArray()]);
-    }
 
-    //删除周次
-    public function deleteHW($week) {
-        $user = Auth::guard('api')->user();
-        if (!$user->can('manage_service')) {
-            return $this->response->error("您没有该权限",403);
-        }
-        if ($week != 0) {
-            ServiceHygiene::where('week',$week)->delete();
-        }else {
-            ServiceHygiene::truncate();
-        }
-        return $this->response->noContent();
-    }
 }
