@@ -8,6 +8,7 @@ use App\Models\OaSigninRecord;
 use App\Models\OaUser;
 use App\Models\OaWorkload;
 use App\Models\OaYouthUser;
+use Dingo\Api\Exception\StoreResourceFailedException;
 use Illuminate\Http\Request;
 use Auth;
 use Spatie\Permission\Models\Permission;
@@ -29,14 +30,14 @@ class PermissionController extends Controller
         }
         return $this->response->array(['data' => ['userinfo'=>$youth_user,'roles'=>$user->roles,'permissions'=>$permissions]])->setStatusCode(200);
     }
+
     //根据youth_user id获取用户
-    public function getUserById($id) {
+    public function getUserById(OaYouthUser $youthUser) {
         $us = Auth::guard('oa')->user();
         //没有操作权限
         if (!$us->can('manage_user') || !$us->can('manage_administrator')) {
             return $this->response->error('您没有该权限！', 403);
         }
-        $youthUser = OaYouthUser::find($id);
         if (!$youthUser) {
             return $this->response->errorNotFound('用户未找到！');
         }
@@ -50,6 +51,8 @@ class PermissionController extends Controller
         $youthUser->duty_at = $duty;
         return $this->response->array(['data' => ['userinfo'=>$youthUser,'roles'=>$user->roles,'permissions'=>$permissions]])->setStatusCode(200);
     }
+
+    //获取所有角色和权限
     public function getRoles(){
         $role = Role::all();
         foreach ($role as $item) {
@@ -57,20 +60,24 @@ class PermissionController extends Controller
         }
         return $this->response->array(['data'=>$role->toArray()]);
     }
+
+    //获取所有权限
     public function getPermissions() {
         $permission = Permission::all();
         return $this->response->array(['data'=>$permission->toArray()]);
     }
-    public function getRoleById($id) {
-        $role = Role::findById($id);
+
+    //通过id查找角色
+    public function getRoleById(Role $role) {
         if(!$role) {
             return $this->response->errorNotFound('角色未找到');
         }
         $role->permissions;
         return $this->response->array(['data'=>$role])->setStatusCode(200);
     }
-    public function getPermissionById($id) {
-        $permission = Permission::findById($id);
+
+    //通过id查找权限
+    public function getPermissionById(Permission $permission) {
         if(!$permission) {
             return $this->response->errorNotFound('权限未找到');
         }
@@ -78,7 +85,7 @@ class PermissionController extends Controller
     }
 
     //修改角色/给角色分配权限
-    public function updateRole($id,Request $request)
+    public function updateRole(Role $role,Request $request)
     {
         $user = Auth::guard('oa')->user();
         $validator = app('validator')->make($request->all(), [
@@ -101,7 +108,6 @@ class PermissionController extends Controller
             $permission = Permission::findById($permission_id);
             array_push($permissions,$permission->name);
         }
-        $role = Role::findById($id);
         if(!$role) {
             return $this->response->errorNotFound('角色未找到');
         }
@@ -112,7 +118,7 @@ class PermissionController extends Controller
     }
 
     //修改用户信息/给用户分配角色
-    public function updateUser($id,Request $request)
+    public function updateUser(OaYouthUser $youthUser,Request $request)
     {
         $user = Auth::guard('oa')->user();
         $validator = app('validator')->make($request->all(), [
@@ -132,7 +138,6 @@ class PermissionController extends Controller
         if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
             return $this->response->error('您没有该权限！', 403);
         }
-        $youthUser = OaYouthUser::find($id);
         if(!$youthUser) {
                 return $this->response->errorNotFound('用户未找到');
         }
@@ -218,6 +223,7 @@ class PermissionController extends Controller
 
             $youthUser->sdut_id = $request->sdut_id;
         }
+        //修改其他信息
         $youthUser->name = $request->name;
         $youthUser->grade = $request->grade;
         if ($request->phone) {
@@ -230,6 +236,35 @@ class PermissionController extends Controller
         $youthUser->save();
         return $this->response->noContent();
     }
+
+    public function deleteUser(Request $request,OaYouthUser $youthUser)
+    {
+        $user = Auth::guard('oa')->user();
+        //没有操作权限
+        if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
+            return $this->response->error('您没有该权限！', 403);
+        }
+        if (!$youthUser) {
+            return $this->response->errorNotFound("用户不存在");
+        }
+        $usered = $youthUser->user()->first();
+        $sdut_id = $youthUser->sdut_id;
+        if($usered->hasRole('Admionistrator') && !$user->can('manage_administrator')) {
+            return $this->response->error('您没有权限管理 【管理员】！', 403);
+        }
+        if($usered->hasAnyRole(['Founder','Root']) && !$user->hasRole('Root')) {
+            return $this->response->error('只有超级管理员才能管理【站长】和【超级管理员】！', 403);
+        }
+        //删除关联用户信息
+        $youthUser->delete();  //OaUser表
+        OaSigninDuty::where('sdut_id',$sdut_id)->delete();  //删除对应值班任务
+        OaSigninRecord::where('sdut_id',$sdut_id)->delete();  //删除签到记录
+        OaWorkload::where('sdut_id',$sdut_id)->delete();  //删除工作量
+        $usered->syncRoles([]);
+        $usered->delete();  //删除用户
+        $this->response->noContent();
+    }
+
     public function updatePermission($id,Request $request) {
         $validator = app('validator')->make($request->all(), [
             'display_name'=>'required'

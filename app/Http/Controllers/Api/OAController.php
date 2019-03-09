@@ -44,7 +44,7 @@ class OAController extends Controller
                     'access_token' => $token,
                     'token_type' => 'Bearer',
                     'expires_in' => Auth::guard('oa')->factory()->getTTL() * 60
-                ]])->setStatusCode(200);
+                ]])->setStatusCode(201);
             }else {
                 //账号密码不匹配
                 return $this->response->errorUnauthorized('密码错误');
@@ -55,12 +55,22 @@ class OAController extends Controller
         }
     }
 
+    //刷新token
+    public function refreshToken() {
+        $token = Auth::guard('oa')->fresh();
+        return $this->array(['data'=>[
+            'access_token' => $token,
+            'token_type' => 'Bearer',
+            'expires_in' => Auth::guard('oa')->factory()->getTTL() * 60
+        ]])->setStatusCode(200);
+    }
+
 
     //导入用户信息
     public function importUserInfo(Request $request)
     {
         $user = Auth::guard('oa')->user();
-        if (!$user->can('manage_user') && !$user->can('manage_administrator')) {
+        if (!$user->hasRole('Root')) {
             return $this->response->error('您没有该权限！', 403);
         }
         //获取上传的文件
@@ -71,37 +81,42 @@ class OAController extends Controller
             $reader = $reader->getSheet(0);
             $res = $reader->toArray();
             //如果没有数据或者表格的列数不等于8，报错
-            dd($res);
             if(sizeof($res) <= 1 || sizeof($res[0]) < 8) {
                 return $this->response->error('文件数据不合法',422);
             }
-            $user = OaUser::where('username','youthol')->first();
-            $ps = $user ? $user->password : bcrypt('youth123');
-            OaYouthUser::truncate();
-            OaUser::truncate();
             OaSigninDuty::truncate();
-            DB::table('model_has_roles')->truncate();
-            $user = new OaUser();
-            $user->username = 'youthol';
-            $user->password = $ps;
-            $user->sdut_id = '00000000000';
-            $user->save();
-            if (!$user->hasRole('Root')) {
-                $user->assignRole('Root');
-            }
             unset($res[0]);
             foreach ($res as $key => $value) {
                 $birthday = str_replace('\/','-',$value[5]);
-                OaYouthUser::create([
-                    'sdut_id' => $value[0],
-                    'name' => $value[1],
-                    'department' => $value[2],
-                    'grade' => $value[3],
-                    'phone' => $value[4] ? $value[4] : null,
-                    'birthday' => $birthday ? $birthday : null,
-                ]);
+                $user = OaUser::where('username',$value[0])->first();
+                //如果用户不存在，则创建用户
+                if (!$user) {
+                    $user = OaUser::create([
+                        'username' => $value[0],
+                        'password' => bcrypt($value[0]),
+                        'sdut_id' => $value[0],
+                    ]);
+                    OaYouthUser::create([
+                        'sdut_id' => $value[0],
+                        'name' => $value[1],
+                        'department' => $value[2],
+                        'grade' => $value[3],
+                        'phone' => $value[4] ? $value[4] : null,
+                        'birthday' => $birthday ? $birthday : null,
+                    ]);
+                }else {
+                    //如果用户存在，则修改用户信息
+                    $youthUser = $user->userinfo()->first();
+                    $youthUser->name = $value[1];
+                    $youthUser->department = $value[2];
+                    $youthUser->grade = $value[3];
+                    $youthUser->phone = $value[4];
+                    $youthUser->birthday = $birthday ? $birthday : null;
+                    $youthUser->save();
+                }
+
                 //消除空格
-                $value[6] = trim($value[6]);
+                $value[6] = trim($value[6]);   //值班安排
                 if ($value[6]) {
                     if (preg_match("/[0-6]:[1-5]|[0-6]:[1-5]/",$value[6]) == 0 && preg_match("/[0-6]:[1-5]/",$value[6])==0) {
                         return $this->response->error("{$value[0]}{$value[1]}的duty:{$value[6]}数据不合法",422);
@@ -111,18 +126,16 @@ class OAController extends Controller
                     $user_duty->duty_at = $value[6];
                     $user_duty->save();
                 }
-                $user = OaUser::create([
-                    'username' => $value[0],
-                    'password' => bcrypt($value[0]),
-                    'sdut_id' => $value[0],
-                ]);
+
                 //消除空格
-                $value[7] = trim($value[7]);
+                $value[7] = trim($value[7]);  //身份
                 $roles = explode('|',$value[7]);
                 $roles = Role::whereIn('display_name',$roles)->get(['name']);
+                $newRoles = [];
                 foreach ($roles as $role) {
-                    $user->assignRole($role->name);
+                    $newRoles[] = $role->name;
                 }
+                $user->syncRoles($newRoles);
             }
         });
         return $this->response->array(['data'=>'导入成功'])->setStatusCode(200);
@@ -164,7 +177,11 @@ class OAController extends Controller
     //获取卫生周次
     public function getHW() {
         $weeks = ServiceHygiene::groupBy('week')->get(['week']);
-        return $this->response->array(['data'=>$weeks->toArray()]);
+        $data = [];
+        foreach ($weeks as $value) {
+            $data[] = $value->week;
+        }
+        return $this->response->array(['data'=>$data]);
     }
 
     //删除周次
