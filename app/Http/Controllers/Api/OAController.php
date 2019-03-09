@@ -197,11 +197,7 @@ class OAController extends Controller
         if (!$user->can('manage_service')) {
             return $this->response->error("您没有该权限",403);
         }
-        if ($week != 0) {
-            ServiceHygiene::whereIn('week',$week)->delete();
-        }else {
-            ServiceHygiene::truncate();
-        }
+        ServiceHygiene::where('week',$request->weeks)->delete();
         return $this->response->noContent();
     }
 
