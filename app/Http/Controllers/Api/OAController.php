@@ -188,16 +188,17 @@ class OAController extends Controller
     //删除周次
     public function deleteHW(Request $request) {
         $validator = app('validator')->make($request->all(),[
-            'weeks' => 'required|array'
+            'weeks' => 'required|json'
         ]);
         if ($validator->fails()) {
-            throw new StoreResourceFailedException("参数错误",$request->errors());
+            throw new StoreResourceFailedException("参数错误",$validator->errors());
         }
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_service')) {
             return $this->response->error("您没有该权限",403);
         }
-        ServiceHygiene::where('week',$request->weeks)->delete();
+        $weeks = json_decode($request->weeks);
+        ServiceHygiene::where('week',$weeks)->delete();
         return $this->response->noContent();
     }
 
