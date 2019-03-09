@@ -147,7 +147,7 @@ $api->version('v1',[
 
     //学生服务卫生成绩管理
     $api->get('oa/hygiene/weeks','OAController@getHW');  //获取卫生成绩周次
-    $api->delete('oa/hygiene/{week}','OAController@deleteHW')->middleware('api.auth'); //删除对应周次卫生成绩，如果week为0则全部删除
+    $api->delete('oa/hygiene/weeks','OAController@deleteHW')->middleware('api.auth'); //删除对应周次卫生成绩,接收weeks参数为数组
     $api->post('oa/hygiene/import','OAController@importHygiene')->middleware('api.auth');        //宿舍卫生成绩导入
 
 

@@ -13,6 +13,7 @@ use App\Models\OaWorkload;
 use App\Models\OaYouthUser;
 use App\Models\ServiceHygiene;
 use Auth;
+use Dingo\Api\Exception\StoreResourceFailedException;
 use Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -185,13 +186,19 @@ class OAController extends Controller
     }
 
     //删除周次
-    public function deleteHW($week) {
+    public function deleteHW(Request $request) {
+        $validator = app('validator')->make($request->all(),[
+            'weeks' => 'required|array'
+        ]);
+        if ($validator->fails()) {
+            throw new StoreResourceFailedException("参数错误",$request->errors());
+        }
         $user = Auth::guard('oa')->user();
         if (!$user->can('manage_service')) {
             return $this->response->error("您没有该权限",403);
         }
         if ($week != 0) {
-            ServiceHygiene::where('week',$week)->delete();
+            ServiceHygiene::whereIn('week',$week)->delete();
         }else {
             ServiceHygiene::truncate();
         }
