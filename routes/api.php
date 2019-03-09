@@ -86,18 +86,20 @@ $api->version('v1',[
 
 //OA办公系统start
     $api->post('oa/login','OAController@login');    //登录
+    $api->put('oa/refresh','OAController@refreshToken')->middleware('api.auth');  //刷新token
     $api->get('oa/user','PermissionController@index')->middleware('api.auth');    //获取当前登录用户信息
 
     //用户角色权限管理
     $api->get('oa/permissions','PermissionController@getPermissions');    //获取所有权限
     $api->get('oa/roles','PermissionController@getRoles');                //获取所有角色
-    $api->get('oa/permission/{id}','PermissionController@getPermissionById');//根据id获取权限信息
-    $api->get('oa/role/{id}','PermissionController@getRoleById');              //根据id获取角色及其权限
+    $api->get('oa/permission/{permission}','PermissionController@getPermissionById');//根据id获取权限信息
+    $api->get('oa/role/{role}','PermissionController@getRoleById');              //根据id获取角色及其权限
 
-    $api->get('oa/user/{id}','PermissionController@getUserById')->middleware('api.auth');   //根据id获取用户信息
-    $api->put('oa/user/{id}','PermissionController@updateUser')->middleware('api.auth');   //修改用户信息，为用户分配角色
-    $api->put('oa/role/{id}','PermissionController@updateRole')->middleware('api.auth');   //修改角色信息，为角色分配权限
-    $api->put('oa/permission/{id}','PermissionController@updatePermission')->middleware('api.auth');   //修改权限名称
+    $api->get('oa/user/{youthUser}','PermissionController@getUserById')->middleware('api.auth');   //根据id获取用户信息
+    $api->put('oa/user/{youthUser}','PermissionController@updateUser')->middleware('api.auth');   //修改用户信息，为用户分配角色
+    $api->delete('oa/user/{youthUser}','PermissionController@deleteUser')->middleware('api.auth');   //删除用户信息
+    $api->put('oa/role/{role}','PermissionController@updateRole')->middleware('api.auth');   //修改角色信息，为角色分配权限
+    $api->put('oa/permission/{permission}','PermissionController@updatePermission')->middleware('api.auth');   //修改权限名称
     $api->get('oa/users','OAController@getUsers');   //获取全部用户
 
     //签到签退
@@ -144,7 +146,7 @@ $api->version('v1',[
     $api->delete('oa/workload/{workload}','OAController@deleteWorkload');  //删除任务量
 
     //学生服务卫生成绩管理
-    $api->get('oa/hugiene/weeks','OAController@getHW');  //获取卫生成绩周次
+    $api->get('oa/hygiene/weeks','OAController@getHW');  //获取卫生成绩周次
     $api->delete('oa/hygiene/{week}','OAController@deleteHW')->middleware('api.auth'); //删除对应周次卫生成绩，如果week为0则全部删除
     $api->post('oa/hygiene/import','OAController@importHygiene')->middleware('api.auth');        //宿舍卫生成绩导入
 
