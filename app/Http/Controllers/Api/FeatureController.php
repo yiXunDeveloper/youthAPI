@@ -382,6 +382,8 @@ class FeatureController extends Controller
             throw new StoreResourceFailedException('准考证有误');
         }
         $c = $dq->rdsub[$index]->tab;
+
+
         $cetUrl = "http://cache.neea.edu.cn/cet/query";
         $res = $client->request('POST', $cetUrl, [
             'form_params' => [
@@ -395,6 +397,8 @@ class FeatureController extends Controller
                 'Origin' => "http://cet.neea.edu.cn",
             ]
         ]);
+
+
         if ($res->getStatusCode() != 200) {
             return $this->response->error('源服务器错误，请联系管理员',$res->getStatusCode());
         }
