@@ -14,4 +14,4 @@
 Route::get('/', function () {
     return view('welcome');
 });
-Route::get('preordain/export/{id}','FeatureController@export');
+Route::get('/export/{id}','FeatureController@export');
