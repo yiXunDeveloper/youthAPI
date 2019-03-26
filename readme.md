@@ -60,6 +60,7 @@ $ php artisan jwt:secret
   + [宿舍卫生](https://github.com/yhlchao/wechat_hygiene) **(/service/hygiene)**
   + [考试时间](https://github.com/yhlchao/wechat_exam) **(/service/exam)**
   + [四六级查询](https://github.com/yhlchao/wechat_cet-score) **(/service/cet)**
+  + [新生信息查询](https://github.com/youthol/newStudent) **(/service/cet)**
 
 ## 扩展包描述
 
