@@ -92,11 +92,10 @@ class OAController extends Controller
                 $user = OaUser::where('username',$value[0])->first();
                 //如果用户不存在，则创建用户
                 if (!$user) {
-                    $user = OaUser::create([
-                        'username' => $value[0],
-                        'password' => bcrypt($value[0]),
-                        'sdut_id' => $value[0],
-                    ]);
+                    //如果存在个人信息，则删除掉
+                    if ($youthUser = $user->userinfo()->first()) {
+                        $youthUser->delete();
+                    }
                     OaYouthUser::create([
                         'sdut_id' => $value[0],
                         'name' => $value[1],
@@ -104,6 +103,11 @@ class OAController extends Controller
                         'grade' => $value[3],
                         'phone' => $value[4] ? $value[4] : null,
                         'birthday' => $birthday ? $birthday : null,
+                    ]);
+                    $user = OaUser::create([
+                        'username' => $value[0],
+                        'password' => bcrypt($value[0]),
+                        'sdut_id' => $value[0],
                     ]);
                 }else {
                     //如果用户存在，则修改用户信息
