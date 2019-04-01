@@ -824,6 +824,7 @@ class OAController extends Controller
         return $this->response->noContent();
     }
 
+    
     //删除工作量
     public function deleteWorkload(OaWorkload $workload)
     {
