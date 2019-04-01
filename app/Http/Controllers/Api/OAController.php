@@ -452,6 +452,7 @@ class OAController extends Controller
 
         return $this->response->array(['data'=>$schedule])->setStatusCode(201);
     }
+
     //修改计划表
     public function updateSchedule(Request $request,OaSchedule $schedule)
     {
@@ -461,6 +462,12 @@ class OAController extends Controller
         if ($validator->fails()){
             throw new \Dingo\Api\Exception\StoreResourceFailedException('数据格式错误', $validator->errors());
         }
+        //验证备忘人权限
+        $memo_user = OaUser::where('sdut_id',$request->user)->first();
+        if (!$memo_user->can('manage_memo')) {
+            return $this->response->errorForbidden("对不起，您没有该权限！");
+        }
+
         $schedule->event_status = 1;
         $schedule->save();
         return $this->response->array(['data'=>$schedule])->setStatusCode(200);
@@ -485,11 +492,13 @@ class OAController extends Controller
         $equipments = OaEquipment::all();
         return $this->response->array(['data'=>$equipments]);
     }
+
     //通过id获得设备
     public function getEquipmentById(OaEquipment $equipment)
     {
         return $this->response->array(['data'=>$equipment]);
     }
+
     //增加设备
     public function addEquipment(Request $request)
     {
@@ -561,6 +570,12 @@ class OAController extends Controller
         if($request->lend_user == $request->memo_user){
             return $this->response->error('借用人和借出备忘人不能为同一人！',422);
         }
+        //验证备忘人权限
+        $memo_user = OaUser::where('sdut_id',$request->memo_user)->first();
+        if (!$memo_user->can('manage_memo')) {
+            return $this->response->errorForbidden("对不起，您没有该权限！");
+        }
+
         $sdut_id = $request->lend_user;
         if (strlen((int)$sdut_id) == strlen($sdut_id)){
             //全数字
@@ -600,6 +615,7 @@ class OAController extends Controller
         }
         return $this->response->array(['data'=>$record])->setStatusCode(201);
     }
+
     //归还设备
     public function updateEquipmentRecord(Request $request,OaEquipmentRecord $record)
     {
@@ -613,6 +629,13 @@ class OAController extends Controller
             if ($record->lend_user == $request->rememo_user){
                 return $this->response->error('借用人和归还备忘人不能为同一人！',422);
             }
+
+            //验证归还备忘人权限
+            $rememo_user = OaUser::where('sdut_id',$request->rememo_user)->first();
+            if (!$rememo_user->can('manage_memo')) {
+                return $this->response->errorForbidden("对不起，您没有该权限！");
+            }
+
             $record->return_at = date('Y-m-d H:i:s');
             $record->rememo_user = $request->rememo_user;
             $record->save();
@@ -824,7 +847,6 @@ class OAController extends Controller
         return $this->response->noContent();
     }
 
-    
     //删除工作量
     public function deleteWorkload(OaWorkload $workload)
     {
