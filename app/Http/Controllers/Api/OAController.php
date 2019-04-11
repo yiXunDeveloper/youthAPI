@@ -93,7 +93,7 @@ class OAController extends Controller
                 //如果用户不存在，则创建用户
                 if (!$user) {
                     //如果存在个人信息，则删除掉
-                    if ($youthUser = $user->userinfo()->first()) {
+                    if ($youthUser = OaYouthUser::where('sdut_id',$value[0])->first()) {
                         $youthUser->delete();
                     }
                     OaYouthUser::create([
