@@ -23,13 +23,13 @@ use Excel;
 class QuesController extends Controller
 {
     public function register(Request $request){
-        $validator = app('validator')->make($request->all(),[
-            'username'=>'required|unique:ques_admins',
-            'password'=>'required'
-        ]);
-        if ($validator->fails) {
-            throw new StoreResourceFailedException("数据非法",$validator->errors());
-        }
+//        $validator = app('validator')->make($request->all(),[
+//            'username'=>'required|unique:ques_admins',
+//            'password'=>'required'
+//        ]);
+//        if ($validator->fails) {
+//            throw new StoreResourceFailedException("数据非法",$validator->errors());
+//        }
         $username = $request->username;
         $password = bcrypt($request->password);
         QuesAdmin::create([

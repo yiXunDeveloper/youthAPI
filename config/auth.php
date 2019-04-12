@@ -61,6 +61,10 @@ return [
             'driver' => 'jwt',
             'provider' => 'service_users'
         ],
+        'recruit' => [
+            'driver' => 'jwt',
+            'provider' => 'recruit_users'
+        ],
     ],
 
     /*
@@ -100,6 +104,10 @@ return [
         'service_users' => [
             'driver' => 'eloquent',
             'model' => App\Models\ServiceUser::class,
+        ],
+        'recruit_users'=> [
+            'driver'=>'eloquent',
+            'model'=>\App\Models\Recruit\User::class,
         ],
         // 'users' => [
         //     'driver' => 'database',

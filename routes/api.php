@@ -179,3 +179,36 @@ $api->version('v1',[
     $api->get('test','Featurecontroller@test');
 
 });
+
+// recruit 前台
+
+$api->version('v1', [
+    'namespace' => 'App\Http\Controllers\Api\Recruit',
+    'middleware'=>['bindings'], //添加这个中间件才能使用模型绑定
+], function($api) {
+
+    $api->group([
+        'middleware' => 'api.throttle',
+    ], function($api) {
+        // 注册接口
+        $api->post('/recruit/register', 'UserController@store')
+            ->name('api.recruit.users');
+        // 验证码接口
+        $api->get('/recruit/captchas', 'CaptchasController@store')
+            ->name('api.recruit.captchas');
+        // 登录接口
+        $api->post('/recruit/login', 'UserController@login')
+            ->name('api.recruit.login');
+        // 刷新token
+        $api->put('/recruit/currents', 'UserController@update')
+            ->name('api.recruit.token.update');
+        // 删除token
+        $api->delete('/recruit/currents', 'UserController@destroy')
+            ->name('api.recruit.token.destroy');
+    });
+    $api->group(['middleware' => 'api.auth'], function($api) {
+        // 当前登录用户信息
+        $api->get('/recruit/user', 'UserController@me')
+            ->name('api.recruit.show');
+    });
+});
