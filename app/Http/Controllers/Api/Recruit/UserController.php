@@ -78,6 +78,7 @@ class UserController extends Controller
     }
     public function me()
     {
+
         return $this->response->item(\Auth::guard('recruit')->user(), new UserTransformer());
     }
 }

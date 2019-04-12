@@ -210,5 +210,9 @@ $api->version('v1', [
         // 当前登录用户信息
         $api->get('/recruit/user', 'UserController@me')
             ->name('api.recruit.show');
+        $api->post('/recruit/information','InfoController@infoStore')
+            ->name('api.recruit.information');
+        $api->post('/recruit/photo','ImagesController@store')
+            ->name('api.recruit.uploadPhoto');
     });
 });

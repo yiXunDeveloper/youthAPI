@@ -16,9 +16,16 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->getKey();
     }
-
     public function getJWTCustomClaims()
     {
         return [];
+    }
+    public function information()
+    {
+        return $this->hasOne(Information::class);
+    }
+    public function avatar($id)
+    {
+        return Image::find($id);
     }
 }

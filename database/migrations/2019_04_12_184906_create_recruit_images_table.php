@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateZpUsersTable extends Migration
+class CreateRecruitImagesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,13 +13,11 @@ class CreateZpUsersTable extends Migration
      */
     public function up()
     {
-        Schema::create('zp_users', function (Blueprint $table) {
+        Schema::create('recruit_images', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('id_nb',18)->nullable()->unique();
-            $table->string('name','30')->nullable();
-            $table->string('phone',11);
-            $table->string('email')->unique();
-            $table->string('password',255)->nullable();
+            $table->integer('user_id')->index();
+            $table->enum('type', ['avatar', 'topic'])->index();
+            $table->string('path')->index();
             $table->timestamps();
         });
     }
@@ -31,6 +29,6 @@ class CreateZpUsersTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('zp_users');
+        Schema::dropIfExists('recruit_images');
     }
 }
