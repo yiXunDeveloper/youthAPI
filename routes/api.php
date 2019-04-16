@@ -210,9 +210,20 @@ $api->version('v1', [
         // 当前登录用户信息
         $api->get('/recruit/user', 'UserController@me')
             ->name('api.recruit.show');
-        $api->post('/recruit/information','InfoController@infoStore')
-            ->name('api.recruit.information');
+        $api->post('/recruit/password/change', 'UserController@change')
+            ->name('api.recruit.users');
+        $api->post('/recruit/{info_type}/store','InfoController@store')
+            ->name('api.recruit.information.store');
+        $api->post('/recruit/{info_type}/update/{id}','InfoController@update')
+            ->name('api.recruit.information.update');
+        $api->get('/recruit/{info_type}/delete/{id}','InfoController@delete')
+            ->name('api.recruit.information.delete');
         $api->post('/recruit/photo','ImagesController@store')
             ->name('api.recruit.uploadPhoto');
+        $api->post('/recruit/learn','LearnExpController@store')
+            ->name('api.recruit.learn');
+        $api->get('/recruit/look/{info_type}','InfoController@lookInformation')
+            ->name('api.recruit.information.look');
+
     });
 });
