@@ -52,6 +52,7 @@ class InfoRequest extends FormRequest
                     return [
                         'join_time' => 'required|date',
                         'graduate_time' => 'required|date',
+
                         'graduate_school' => 'required',
                         'major' => 'required|string',
                         'education' => 'required',
@@ -69,6 +70,7 @@ class InfoRequest extends FormRequest
                     return [
                         'begin_time' => 'required|date',
                         'over_time' => 'required|date',
+
                         'witness_name' => 'required',
                         'witness_position' => 'required',
                         'witness_phone' => 'required',
@@ -135,4 +137,5 @@ public function attributes(){
         
         ];
     }
+
 }
