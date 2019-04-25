@@ -29,13 +29,7 @@ class InfoTransformer extends TransformerAbstract
             'learn_subject' => $information->learn_subject,
             'apply_position' => $information->apply_position,
             'is_graduates' => $information->is_graduates,
-            'user_id' => $information->user_id,
-            'name' => $user->name,
-            'email' => $user->email,
-//            'last_actived_at' => $user->last_actived_at->toDateTimeString(),
-            'created_at' => $user->created_at->toDateTimeString(),
-            'updated_at' => $user->updated_at->toDateTimeString(),
-            'avatar' =>$user->avatar($user->avatar_id)->path,
+            'user_id' => $information->user_id
         ];
     }
 }

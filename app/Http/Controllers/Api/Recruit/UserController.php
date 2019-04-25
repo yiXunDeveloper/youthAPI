@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\Recruit;
 
 use App\Http\Requests\LoginRequest;
+use App\Http\Requests\PasswordRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Models\Recruit\User;
 use App\Transformers\Recruit\UserTransformer;
@@ -31,7 +32,19 @@ class UserController extends Controller
         ]);
         return $this->response->array($user)->setStatusCode(201);
     }
+    public function change(PasswordRequest $request){
+        $credentials['phone'] = \Auth::guard('recruit')->user()->phone;
+        $credentials['password'] = $request->password;
 
+        if (!$token = \Auth::guard('recruit')->attempt($credentials)) {
+            return $this->response->errorUnauthorized('原密码错误');
+        }else{
+            $user =\Auth::guard('recruit')->user();
+            $user->password = bcrypt($request->new_password);
+            $user->update();
+            return $user;
+        }
+    }
     public function login(LoginRequest $request)
     {
         $captchaData = \Cache::get($request->captcha_key);
@@ -48,7 +61,6 @@ class UserController extends Controller
         filter_var($username, FILTER_VALIDATE_EMAIL) ?
             $credentials['id_nb'] = $username :
             $credentials['phone'] = $username;
-
         $credentials['password'] = $request->password;
 
         if (!$token = \Auth::guard('recruit')->attempt($credentials)) {

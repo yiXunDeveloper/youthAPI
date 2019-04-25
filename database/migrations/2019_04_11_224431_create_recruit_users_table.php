@@ -20,7 +20,7 @@ class CreateRecruitUsersTable extends Migration
             $table->string('phone',11);
             $table->string('email')->unique();
             $table->string('password',255)->nullable();
-            $table->integer('avatar_id');
+            $table->integer('avatar_id')->default(1);
             $table->timestamps();
         });
     }
