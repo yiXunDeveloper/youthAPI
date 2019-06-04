@@ -213,31 +213,34 @@ class FeatureController extends Controller
         }
     }
 
+    /**
+     * 2019/6/1 修改
+     * 将登陆方式改为统一认证登录
+     *
+     * @param Request $request
+     *
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
     public function elec(Request $request){
         $school = $request->school;
         $dormitory = $request->dormitory;
         $room = $request->room;
-        $jar = new CookieJar();
         $client = new Client();
 
-        $login_url = 'http://hqfw.sdut.edu.cn/login.aspx';  //获取登录参数
         $elec_url = 'http://hqfw.sdut.edu.cn/stu_elc.aspx';  //查询地址
+        $login_url = 'http://authserver.sdut.edu.cn/authserver/login?service=http://hqfw.sdut.edu.cn/login_ehall.aspx'; //统一认证登录
 
-        //获取登录参数
-        $res = $client->request('GET',$login_url,['cookies'=>$jar]);
-        $ql = QueryList::html($res->getBody());
-        $viewstate =$ql->find('#__VIEWSTATE')->val();
-        $event = $ql->find('#__EVENTVALIDATION')->val();
-        $client->request('POST',$login_url,[
-            'cookies'=>$jar,
-            'form_params'=> [
-                '__VIEWSTATE'=>$viewstate,
-                '__EVENTVALIDATION'=>$event,
-                'ctl00$MainContent$txtName'=>'孙骞',
-                'ctl00$MainContent$txtID'=>'15110201098',
-                'ctl00$MainContent$btnTijiao'=>'登录'
-            ],
-        ]);
+        $ehall_user_id = env('EHALL_USER_ID');
+        $ehall_pwd = env('EHALL_PWD');
+        $jar = $this->loginEhall($ehall_user_id, $ehall_pwd, $login_url, $elec_url);
+        if (!$jar) {
+            return $this->response->error('源服务器错误', 500);
+        }
+
+        /**
+         * 登陆成功后，模拟查询用电表单
+         * 这里的$jar，是统一认证登录的cookie
+         */
         $res = $client->request('GET',$elec_url,['cookies'=>$jar]);
         $ql = QueryList::html($res->getBody());
         $viewstate =$ql->find('#__VIEWSTATE')->val();
@@ -469,36 +472,58 @@ class FeatureController extends Controller
         }
     }
 
-    protected function loginEhall($sdut_id,$password) {
+    /**
+     * 2019/6/1 修改
+     * 扩展 $login_url 参数
+     * 默认为网上服务大厅的统一认证登录url
+     *
+     * @param      $sdut_id
+     * @param      $password
+     * @param null $login_url
+     *
+     * @return CookieJar|void|null
+     * @throws \GuzzleHttp\Exception\GuzzleException
+     */
+    protected function loginEhall($sdut_id, $password, $login_url=null, $result_url=null) {
         $jar = new CookieJar();
         $client = new Client(['cookies'=>$jar]);
-        $login_url = "http://authserver.sdut.edu.cn/authserver/login?service=http%3A%2F%2Fehall.sdut.edu.cn%2Flogin%3Fservice%3Dhttp%3A%2F%2Fehall.sdut.edu.cn%2Fnew%2Fehall.html";
+//        部分网站改用统一认证登录，这里链接不能写死
+        if (!$login_url) {
+            $login_url = "http://authserver.sdut.edu.cn/authserver/login?service=http%3A%2F%2Fehall.sdut.edu.cn%2Flogin%3Fservice%3Dhttp%3A%2F%2Fehall.sdut.edu.cn%2Fnew%2Fehall.html";
+        }
+//        第一次访问需要模拟登陆的网站，同时给$jar赋值
         $res = $client->request('GET',$login_url);
         if ($res->getStatusCode()!=200) {
             return $this->response->error('源服务器错误',500);
         }
+//        从返回的页面中获取表单所需要的参数
         $ql = QueryList::html($res->getBody());
         $lt = $ql->find("input[name='lt']")->val();
-        $dtlt = $ql->find("input[name='dllt']")->val();
+        $dllt = $ql->find("input[name='dllt']")->val();
         $execution = $ql->find("input[name='execution']")->val();
         $_evenId = $ql->find("input[name='_eventId']")->val();
         $rmShown = $ql->find("input[name='rmShown']")->val();
+//        模拟请求发送
         $client->request('POST',$login_url,[
             'form_params'=>[
                 'username' => $sdut_id,
                 'password' => $password,
                 'lt' => $lt,
-                'dllt' => $dtlt,
+                'dllt' => $dllt,
                 'execution' => $execution,
                 '_eventId' => $_evenId,
                 'rmShown' => $rmShown,
             ],
             'http_errors'=>false,
         ]);
-        $result = $client->request('GET',"http://ehall.sdut.edu.cn/xsfw/sys/swpubapp/userinfo/getConfigUserInfo.do");
-        //登录成功将返回json字符串，失败返回html文件
-        $data = json_decode($result->getBody());
-        //如果正常解析，证明登录成功，返回jar
+        if (!$result_url) {
+//            这里默认测试结果地址为网上服务大厅
+            $result = $client->request('GET',"http://ehall.sdut.edu.cn/xsfw/sys/swpubapp/userinfo/getConfigUserInfo.do");
+        } else {
+            $result = $client->request('GET', $result_url);
+        }
+//        验证是否登陆成功
+        $data = $result->getBody();
         if (($data && (is_object($data))) || (is_array($data) && !empty($data))) {
             return $jar;
         }else {
