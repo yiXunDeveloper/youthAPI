@@ -1,4 +1,7 @@
 <?php
+/**
+ * 事务中心逻辑
+ */
 
 namespace App\Http\Controllers\Api;
 

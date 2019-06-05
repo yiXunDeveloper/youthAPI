@@ -1,4 +1,7 @@
 <?php
+/**
+ * 办公系统权限相关逻辑
+ */
 
 namespace App\Http\Controllers\Api;
 
