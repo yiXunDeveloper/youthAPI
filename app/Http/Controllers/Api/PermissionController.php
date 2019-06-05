@@ -17,7 +17,8 @@ use Spatie\Permission\Models\Role;
 class PermissionController extends Controller
 {
     //当前登录用户信息
-    public function index(){
+    public function index()
+    {
         $user = Auth::guard('oa')->user();
         $youth_user  = $user->userinfo;
         $permissions = $user->getAllPermissions();
@@ -29,6 +30,64 @@ class PermissionController extends Controller
             $youth_user->duty_at = $duty;
         }
         return $this->response->array(['data' => ['userinfo'=>$youth_user,'roles'=>$user->roles,'permissions'=>$permissions]])->setStatusCode(200);
+    }
+
+    //添加用户
+    public function addUser(Request $request)
+    {
+        $loginUser = Auth::guard('oa')->user();
+        $validator = app('validator')->make($request->all(), [
+            'sdut_id' => 'required|size:11|unique:oa_users,sdut_id',
+            'name' => 'required|between:2,10',
+            'grade' => 'required|size:4',
+            'phone' => 'nullable|size:11',
+            'birthday' => 'nullable|date',
+            'department' => 'required',
+            'roles' => 'required|array',
+            'roles.*' => 'required|exists:roles,id',
+        ]);
+        if ($validator->fails()) {
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('参数错误，添加用户信息失败.', $validator->errors());
+        }
+
+        //没有操作权限
+        if (!$loginUser->can('manage_user') || !$loginUser->can('manage_administrator')) {
+            return $this->response->error('您没有该权限！', 403);
+        }
+
+        $roles = array();
+        foreach ($request->roles as $role_id) {
+            $role = Role::findById($role_id);
+            if ($role->name == 'Administrator' && !$loginUser->can('manage_administrator')) {
+                return $this->response->error('您无法分配 管理员！', 403);
+            }else if(in_array($role->name,['Founder','Root']) && !$loginUser->hasRole('Root')){
+                return $this->response->error('只有超级管理员才能分配站长和超级管理员！', 403);
+            }
+            array_push($roles,$role->name);
+        }
+
+        //创建用户
+        $user = OaUser::create([
+            'username'=>$request->sdut_id,
+            'password'=>bcrypt($request->sdut_id),
+            'sdut_id'=>$request->sdut_id,
+        ]);
+        //创建用户信息
+        OaYouthUser::create($request->except('roles','duty_at'));
+
+        //传来的参数有值班任务，先判断是否合法，如果合法查询就创建值班任务
+        if ($request->duty_at) {
+            if (sizeof(preg_match("/[0-6]:[1-5]|[0-6]:[1-5]/",$request->duty_at))>0 || sizeof(preg_match("/[0-6]:[1-5]/",$request->duty_at))>0) {
+                $duty = new OaSigninDuty();
+                $duty->sdut_id = $request->sdut_id;
+                $duty->duty_at = $request->duty_at;
+                $duty->save();
+            }else{
+                return $this->response->error('值班任务不合法',422);
+            }
+        }
+        //返回201状态码
+        return $this->response->array(array())->setStatusCode(201);
     }
 
     //根据youth_user id获取用户
@@ -84,6 +143,35 @@ class PermissionController extends Controller
         return $this->response->array(['data'=>$permission])->setStatusCode(200);
     }
 
+    public function addRole(Request $request)
+    {
+        $user = Auth::guard('oa')->user();
+        //验证数据
+        $validator = app('validator')->make($request->all(), [
+            'name' => 'required|unique:roles,name',
+            'display_name' => 'required',
+            'permissions' => 'required|array',
+            'permissions.*' => 'required|exists:permissions,id'
+        ]);
+        if ($validator->fails()) {
+            throw new \Dingo\Api\Exception\StoreResourceFailedException('修改角色信息失败.', $validator->errors());
+        }
+        //只有超级管理员才能添加角色
+        if (!$user->hasRole('Root')) {
+            return $this->response->error('您没有该权限！', 403);
+        }
+        //通过permission_id分配权限
+        $permissions = array();
+        foreach ($request->permissions as $permission_id) {
+            $permission = Permission::findById($permission_id);
+            array_push($permissions,$permission->name);
+        }
+        $role = Role::create(['name'=>$request->name,'display_name'=>$request->display_name]);
+        $role->syncPermissions($permissions);
+
+        return $this->response->noContent()->setStatusCode(201);
+    }
+
     //修改角色/给角色分配权限
     public function updateRole(Role $role,Request $request)
     {
@@ -99,15 +187,13 @@ class PermissionController extends Controller
         if (!$user->hasRole('Root')) {
             return $this->response->error('您没有该权限！', 403);
         }
-//        $role = Role::findById($request->role);
+
         $permissions = array();
         foreach ($request->permissions as $permission_id) {
-//            if ($user->can($permission->name) && $user->can('manager_user') && $permission->name != 'manage_user'){
-//
-//            }
             $permission = Permission::findById($permission_id);
             array_push($permissions,$permission->name);
         }
+
         if(!$role) {
             return $this->response->errorNotFound('角色未找到');
         }

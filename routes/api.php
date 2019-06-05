@@ -95,9 +95,11 @@ $api->version('v1',[
     $api->get('oa/permission/{permission}','PermissionController@getPermissionById');//根据id获取权限信息
     $api->get('oa/role/{role}','PermissionController@getRoleById');              //根据id获取角色及其权限
 
+    $api->post('oa/user','PermissionController@addUser')->middleware('api.auth');   //添加用户
     $api->get('oa/user/{youthUser}','PermissionController@getUserById')->middleware('api.auth');   //根据id获取用户信息
     $api->put('oa/user/{youthUser}','PermissionController@updateUser')->middleware('api.auth');   //修改用户信息，为用户分配角色
     $api->delete('oa/user/{youthUser}','PermissionController@deleteUser')->middleware('api.auth');   //删除用户信息
+    $api->post('oa/role','PermissionController@addRole')->middleware('api.auth');   //添加角色
     $api->put('oa/role/{role}','PermissionController@updateRole')->middleware('api.auth');   //修改角色信息，为角色分配权限
     $api->put('oa/permission/{permission}','PermissionController@updatePermission')->middleware('api.auth');   //修改权限名称
     $api->get('oa/users','OAController@getUsers');   //获取全部用户
