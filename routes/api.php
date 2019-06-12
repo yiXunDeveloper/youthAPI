@@ -178,4 +178,10 @@ $api->version('v1',[
 //测试
     $api->get('test','Featurecontroller@test');
 
+//留言板
+    $api->get('messageboard/getdata', 'MessageBoardController@get_MessageBoard');
+    $api->post('messageboard/insertdata', 'MessageBoardController@insert_MessageBoard');
+    $api->get('messageboard/delete/{id}/{key}', 'MessageBoardController@delete_MessageBoard');
+//留言板结束
+
 });

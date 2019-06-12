@@ -70,6 +70,9 @@ class FeatureController extends Controller
 
     }
 
+    /**
+     * 通过token 获得用户信息
+     */
     public function index(){
         $user = Auth::guard('service')->user();
         if ($user == null) {
