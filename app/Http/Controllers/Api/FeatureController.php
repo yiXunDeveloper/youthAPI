@@ -161,10 +161,12 @@ class FeatureController extends Controller
            $sheyou = ServiceNewStudent::where('dormitory',$new_student->dormitory)->where('room',$new_student->room)->where('bed','<>',$new_student->bed)->orderBy('bed','ASC')->get(['name','class','bed']);
            return $this->response->array([
                'name'=>$new_student->name,
+               'same_name'=>ServiceNewStudent::where('name',$new_student->name)->get(['name','college','class']),
                'sdut_id'=>$new_student->sdut_id,
                'college'=>$new_student->college,
-               'sex'=>$new_student->sex,
                'major'=>$new_student->major,
+               'countman'=>count(ServiceNewStudent::where('class',$new_student->class)->where('sex','男')->get()),
+               'countwoman'=>count(ServiceNewStudent::where('class',$new_student->class)->where('sex','女')->get()),
                'class'=>$new_student->class,
                'school'=>$new_student->school,
                'dormitory'=>$new_student->dormitory,
