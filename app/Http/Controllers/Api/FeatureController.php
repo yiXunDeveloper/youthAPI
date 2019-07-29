@@ -163,6 +163,7 @@ class FeatureController extends Controller
                'name'=>$new_student->name,
                'sdut_id'=>$new_student->sdut_id,
                'college'=>$new_student->college,
+               'sex'=>$new_student->sex,
                'major'=>$new_student->major,
                'class'=>$new_student->class,
                'school'=>$new_student->school,
