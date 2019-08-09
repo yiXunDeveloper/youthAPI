@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateMiniProgramDepartmentTable extends Migration
+class CreateMiniProgramDepartmentsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateMiniProgramDepartmentTable extends Migration
      */
     public function up()
     {
-        Schema::create('mini_program_department', function (Blueprint $table) {
+        Schema::create('mini_program_departments', function (Blueprint $table) {
             $table->increments('id');
             $table->string('department', 20)->unique();
             $table->mediumText('intro');
@@ -28,6 +28,6 @@ class CreateMiniProgramDepartmentTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('mini_program_department');
+        Schema::dropIfExists('mini_program_departments');
     }
 }

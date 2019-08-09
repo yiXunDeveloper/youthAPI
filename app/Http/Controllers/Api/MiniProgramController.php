@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers\Api;
 
-use App\Models\MiniProgramFresh;
+use App\Models\MiniProgramDepartment;
 use Illuminate\Http\Request;
 
 class MiniProgramController extends Controller
@@ -10,7 +10,7 @@ class MiniProgramController extends Controller
     public function getDepartmentIntro(Request $request)
     {
         $id = $request->input('id');
-        $data = MiniProgramFresh::where('id', $id)->first();
+        $data = MiniProgramDepartment::where('id', $id)->first();
         if ($data) {
             return $this->response->array([
                 'id' => $data->id,
