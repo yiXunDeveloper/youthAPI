@@ -183,6 +183,9 @@ $api->version('v1',[
     $api->post('messageboard/insertdata', 'MessageBoardController@insert_MessageBoard');
     $api->get('messageboard/delete/{id}/{key}', 'MessageBoardController@delete_MessageBoard');
 //留言板结束
+//网站纳新start
+    $api->post('service/recruit','FeatureController@recruit');
+//网站纳新end
 
 //小程序API
     $api->get('miniProgram/departmentIntro', 'MiniProgramController@getDepartmentIntro');

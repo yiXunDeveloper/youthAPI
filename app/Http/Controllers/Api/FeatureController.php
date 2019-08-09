@@ -5,6 +5,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\YouthRecruitRequest;
 use App\Models\College;
 use App\Models\Dormitory;
 use App\Models\ServiceExamMeta;
@@ -13,12 +14,14 @@ use App\Models\ServiceExamGkl;
 use App\Models\ServiceHygiene;
 use App\Models\ServiceNewStudent;
 use App\Models\ServiceUser;
+use App\Models\YouthRecruit;
 use Auth;
 use Dingo\Api\Exception\StoreResourceFailedException;
 use GuzzleHttp\Client;
 use GuzzleHttp\Cookie\CookieJar;
 use App\Libs\Base64;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Laravel\Socialite\Facades\Socialite;
 use phpseclib\Crypt\RSA;
 use phpseclib\Math\BigInteger;
@@ -158,9 +161,12 @@ class FeatureController extends Controller
            $sheyou = ServiceNewStudent::where('dormitory',$new_student->dormitory)->where('room',$new_student->room)->where('bed','<>',$new_student->bed)->orderBy('bed','ASC')->get(['name','class','bed']);
            return $this->response->array([
                'name'=>$new_student->name,
+               'same_name'=>ServiceNewStudent::where('name',$new_student->name)->get(['name','college','class','sdut_id']),
                'sdut_id'=>$new_student->sdut_id,
                'college'=>$new_student->college,
                'major'=>$new_student->major,
+               'countman'=>count(ServiceNewStudent::where('class',$new_student->class)->where('sex','男')->get()),
+               'countwoman'=>count(ServiceNewStudent::where('class',$new_student->class)->where('sex','女')->get()),
                'class'=>$new_student->class,
                'school'=>$new_student->school,
                'dormitory'=>$new_student->dormitory,
@@ -554,5 +560,23 @@ class FeatureController extends Controller
             $cip = '';
         }
         return $cip;
+    }
+    public function recruit(YouthRecruitRequest $request)
+    {
+        try{
+            $nbs = YouthRecruit::where('nb',$request->nb)->get();
+            if(count($nbs)){
+                $user = $nbs[0]['id'];
+                $data = $request->only('name','sex','nb','phone','email','college','class','part_1','part_2','introduction');
+                $user =DB::table('youth_recruit')->where('id',$user) ->update($data);
+                return $this->response->array(['code'=>2,'msg'=>'信息更新成功！'])->setStatusCode(200);
+            }else{
+                $data = $request->only('name','sex','nb','phone','email','college','class','part_1','part_2','introduction');
+                $reporter = DB::table('youth_recruit')->insert($data);
+                return $this->response->array(['code'=>1,'msg'=>'信息上传成功！'])->setStatusCode(200);
+            }
+        }catch (\Exception $e){
+            return $this->response->array(['code'=>0,'msg'=>'系统错误，请稍后重试！'])->setStatusCode(200);
+        }
     }
 }
