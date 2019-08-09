@@ -186,4 +186,8 @@ $api->version('v1',[
 //网站纳新start
     $api->post('service/recruit','FeatureController@recruit');
 //网站纳新end
+
+//小程序API
+    $api->get('miniProgram/departmentIntro', 'MiniProgramController@getDepartmentIntro');
+
 });
