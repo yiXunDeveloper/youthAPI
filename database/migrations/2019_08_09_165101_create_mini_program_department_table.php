@@ -16,7 +16,7 @@ class CreateMiniProgramDepartmentTable extends Migration
         Schema::create('mini_program_department', function (Blueprint $table) {
             $table->increments('id');
             $table->string('department', 20)->unique();
-            $table->string('intro', 600)->unique();
+            $table->mediumText('intro');
             $table->timestamps();
         });
     }
