@@ -184,4 +184,7 @@ $api->version('v1',[
     $api->get('messageboard/delete/{id}/{key}', 'MessageBoardController@delete_MessageBoard');
 //留言板结束
 
+//小程序API
+    $api->get('miniProgram/departmentIntro', 'MiniProgramController@getDepartmentIntro');
+
 });
