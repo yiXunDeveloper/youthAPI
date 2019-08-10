@@ -3,19 +3,18 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\MiniProgramDepartment;
-use Illuminate\Http\Request;
 
 class MiniProgramController extends Controller
 {
-    public function getDepartmentIntro(Request $request)
+    /**
+     * 2019年纳新，获取各部门简介
+     */
+    public function getDepartmentIntro()
     {
-        $id = $request->input('id');
-        $data = MiniProgramDepartment::where('id', $id)->first();
+        $data = MiniProgramDepartment::all();
         if ($data) {
             return $this->response->array([
-                'id' => $data->id,
-                'department' => $data->department,
-                'intro' => $data->intro
+                'data' => $data
             ])->setStatusCode(200);
         } else {
             return $this->response->errorNotFound('没有找到该部门');
