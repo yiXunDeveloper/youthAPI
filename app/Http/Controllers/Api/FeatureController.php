@@ -680,7 +680,6 @@ class FeatureController extends Controller
     {
         // 查看表里是否有数据
         $user = YouthRecruit::where('nb', $request->nb)->first();
-        echo $user;
         if ($user) {
             // 更新数据
             $data   = $request->only('name', 'sex', 'nb', 'phone', 'email',
