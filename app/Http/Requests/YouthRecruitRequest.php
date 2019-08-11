@@ -25,14 +25,14 @@ class YouthRecruitRequest extends FormRequest
     {
         return [
             'name'=>'required|max:20',
-            'sex'=>'required|max:4',
+            'sex'=>'max:4',
             'nb'=>'required|max:11|min:11',
             'phone'=>'required|max:11|min:11',
-            'email'=>'required|email',
+            'email'=>'email',
             'college'=>'required|max:20',
             'class'=>'required|max:20',
             'part_1'=>'required|max:20',
-            'part_2'=>'required|max:20',
+            'part_2'=>'max:20',
             'introduction'=>'required',
         ];
     }
