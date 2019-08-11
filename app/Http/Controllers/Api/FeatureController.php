@@ -704,13 +704,12 @@ class FeatureController extends Controller
                 ])
                     ->setStatusCode(200);
             }
-
-            return $this->response->array([
-                'code' => 0,
-                'msg'  => '系统错误，请稍后重试！',
-            ])
-                ->setStatusCode(200);
         }
 
+        return $this->response->array([
+            'code' => 0,
+            'msg'  => '系统错误，请稍后重试！',
+        ])
+            ->setStatusCode(200);
     }
 }
