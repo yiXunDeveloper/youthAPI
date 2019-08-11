@@ -24,16 +24,16 @@ class YouthRecruitRequest extends FormRequest
     public function rules()
     {
         return [
-            'name'=>'required|min:2|max:20',
-            'sex'=>'required|max:1',
-            'nb'=>'required|max:11|min:11',
-            'phone'=>'required|max:11|min:11',
-            'email'=>'email',
-            'college'=>'required|max:2',
-            'class'=>'required|max:20',
-            'part_1'=>'required|max:2',
-            'part_2'=>'required|max:2',
-            'introduction'=>'required',
+            'name'         => 'required|min:2|max:20',
+            'sex'          => 'required|max:1',
+            'nb'           => 'required|max:11|min:11',
+            'phone'        => 'required|max:11|min:11',
+            'email'        => 'email',
+            'college'      => 'required|max:2',
+            'class'        => 'required|max:20',
+            'part_1'       => 'required|max:2',
+            'part_2'       => 'required|max:2',
+            'introduction' => 'required',
         ];
     }
 }
