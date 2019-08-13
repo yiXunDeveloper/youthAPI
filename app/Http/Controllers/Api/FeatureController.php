@@ -717,24 +717,19 @@ class FeatureController extends Controller
     public function freshmanNotice()
     {
         $notify = ServiceNewStudentNotice::all();
-        if ($notify[0]->notify) {
-            $res = [
-                'code' => 1,
-                'msg'  => $notify[0]->notify,
-            ];
-
-            return $this->response->array([
-                'data' => $res,
-            ])
-                ->setStatusCode(200);
+        if (count($notify)) {
+            if ($notify[0]->notify) {
+                return $this->response->array([
+                    'code' => 1,
+                    'msg'  => $notify[0]->notify,
+                ])
+                    ->setStatusCode(200);
+            }
         }
-        $res = [
-            'code' => 0,
-            'msg'  => '无',
-        ];
 
         return $this->response->array([
-            'data' => $res,
+            'code' => 0,
+            'msg'  => '无',
         ])
             ->setStatusCode(200);
 
