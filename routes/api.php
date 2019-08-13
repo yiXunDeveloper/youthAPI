@@ -185,6 +185,8 @@ $api->version('v1',[
 //留言板结束
 //网站纳新start
     $api->post('service/recruit','FeatureController@recruit');
+    $api->get('service/freshmanNotice','FeatureController@freshmanNotice');
+
 //网站纳新end
 
 //小程序API

@@ -15,6 +15,7 @@ use App\Models\ServiceHygiene;
 use App\Models\ServiceNewStudent;
 use App\Models\ServiceUser;
 use App\Models\YouthRecruit;
+use App\Models\ServiceNewStudentNotice;
 use Auth;
 use Dingo\Api\Exception\StoreResourceFailedException;
 use GuzzleHttp\Client;
@@ -711,5 +712,31 @@ class FeatureController extends Controller
             'msg'  => '系统错误，请稍后重试！',
         ])
             ->setStatusCode(200);
+    }
+
+    public function freshmanNotice()
+    {
+        $notify = ServiceNewStudentNotice::all();
+        if ($notify[0]->notify) {
+            $res = [
+                'code' => 1,
+                'msg'  => $notify[0]->notify,
+            ];
+
+            return $this->response->array([
+                'data' => $res,
+            ])
+                ->setStatusCode(200);
+        }
+        $res = [
+            'code' => 0,
+            'msg'  => '无',
+        ];
+
+        return $this->response->array([
+            'data' => $res,
+        ])
+            ->setStatusCode(200);
+
     }
 }
