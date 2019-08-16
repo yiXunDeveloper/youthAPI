@@ -48,12 +48,6 @@ $api->version('v1',[
     });
 //问卷调查end
 
-
-//新生查询start
-    $api->get('newstudent','FeatureController@newStudent');
-//新生查询end
-
-
 //事务中心参观start
     //所有人都可以进行的操作
     $api->post('preordain/login','PreordainController@login');  //学院登录
@@ -152,16 +146,14 @@ $api->version('v1',[
     $api->delete('oa/hygiene/weeks','OAController@deleteHW')->middleware('api.auth'); //删除对应周次卫生成绩,接收weeks参数为数组
     $api->post('oa/hygiene/import','OAController@importHygiene')->middleware('api.auth');        //宿舍卫生成绩导入
 
-
-//OA办公系统end
-
-//测试
-    $api->get('service/test','FeatureController@index');
+//OA办公系统结束
 
 //全局数据
     $api->get('dormitory','FeatureController@dormitory');  //所有宿舍
     $api->get('college','FeatureController@college');  //所有学院
-//学生服务功能API
+
+
+//学生服务
     $api->get('service/authorization','FeatureController@authorization'); //登录
     $api->get('service/elec','FeatureController@elec');  //电费查询
     $api->get('service/hygiene','FeatureController@hygiene');  //宿舍卫生
@@ -175,21 +167,26 @@ $api->version('v1',[
     $api->get('service/user','FeatureController@index')->middleware('api.auth');  //通过token获取个人信息
     $api->post('service/user','FeatureController@updateUser')->middleware('api.auth'); //修改个人信息
     $api->delete('service/user','FeatureController@deleteUser')->middleware('api.auth');//删除个人信息
-//测试
-    $api->get('test','Featurecontroller@test');
+
+
+    $api->get('newstudent','FeatureController@newStudent');  // 新生信息查询
+    $api->get('service/freshmanNotice','FeatureController@freshmanNotice');  // 新生信息查询通告
 
 //留言板
     $api->get('messageboard/getdata', 'MessageBoardController@get_MessageBoard');
     $api->post('messageboard/insertdata', 'MessageBoardController@insert_MessageBoard');
     $api->get('messageboard/delete/{id}/{key}', 'MessageBoardController@delete_MessageBoard');
 //留言板结束
-//网站纳新start
-    $api->post('service/recruit','FeatureController@recruit');
-    $api->get('service/freshmanNotice','FeatureController@freshmanNotice');
-
-//网站纳新end
 
 //小程序API
-    $api->get('miniProgram/departmentIntro', 'MiniProgramController@getDepartmentIntro');
 
+    // 纳新
+    $api->get('miniProgram/departmentIntro', 'MiniProgramController@getDepartmentIntro');  // 部门介绍
+    $api->post('miniProgram/recruit','FeatureController@recruit');  // 信息提交
+
+//小程序结束
+
+//测试
+    $api->get('test','Featurecontroller@test');
+    $api->get('service/test','FeatureController@index');
 });

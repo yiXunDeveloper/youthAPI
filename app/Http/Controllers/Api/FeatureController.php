@@ -209,9 +209,12 @@ class FeatureController extends Controller
                 'countwoman' => count(ServiceNewStudent::where('class',
                     $new_student->class)->where('sex', '女')->get()),
                 'class'      => $new_student->class,
-                'school'     => $new_student->school ? $new_student->school : '暂无数据',
-                'dormitory'  => $new_student->dormitory ? $new_student->dormitory : '暂无数据',
-                'room'       => $new_student->room ? $new_student->room : '暂无数据',
+                'school'     => $new_student->school ? $new_student->school
+                    : '暂无数据',
+                'dormitory'  => $new_student->dormitory
+                    ? $new_student->dormitory : '暂无数据',
+                'room'       => $new_student->room ? $new_student->room
+                    : '暂无数据',
                 'bed'        => $new_student->bed ? $new_student->bed : '暂无数据',
                 'roommate'   => $sheyou,
             ])->setStatusCode(200);
