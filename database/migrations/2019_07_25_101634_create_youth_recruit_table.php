@@ -15,15 +15,15 @@ class CreateYouthRecruitTable extends Migration
     {
         Schema::create('youth_recruit', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('name',20)->unique();
-            $table->string('sex',20)->unique();
+            $table->string('name',20);
+            $table->string('sex',20);
             $table->string('nb',20)->unique();
             $table->string('phone',20)->unique();
             $table->string('email',20)->unique();
-            $table->string('college',20)->unique();
-            $table->string('class',20)->unique();
-            $table->string('part_1',20)->unique();
-            $table->string('part_2',20)->unique();
+            $table->string('college',20);
+            $table->string('class',20);
+            $table->string('part_1',20);
+            $table->string('part_2',20);
             $table->text('introduction',600);
             $table->timestamps();
         });

@@ -688,7 +688,7 @@ class FeatureController extends Controller
             // 更新数据
             $data   = $request->only('name', 'sex', 'nb', 'phone', 'email',
                 'college', 'class', 'part_1', 'part_2', 'introduction');
-            $update = YouthRecruit::where('id', $user)->update($data);
+            $update = YouthRecruit::where('id', $user->id)->update($data);
             if ($update) {
                 return $this->response->array([
                     'code' => 2,
@@ -697,10 +697,18 @@ class FeatureController extends Controller
                     ->setStatusCode(200);
             }
         } else {
-            $data   = $request->only('name', 'sex', 'nb', 'phone',
-                'email', 'college', 'class', 'part_1', 'part_2',
-                'introduction');
-            $create = YouthRecruit::create($data);
+            $youth = new YouthRecruit();
+            $youth->name = $request->name;
+            $youth->sex = $request->sex;
+            $youth->nb = $request->nb;
+            $youth->phone = $request->phone;
+            $youth->email = $request->email;
+            $youth->college = $request->college;
+            $youth->class = $request->class;
+            $youth->part_1 = $request->part_1;
+            $youth->part_2 = $request->part_2;
+            $youth->introduction = $request->introduction;
+            $create = $youth->save();
             if ($create) {
                 return $this->response->array([
                     'code' => 1,
