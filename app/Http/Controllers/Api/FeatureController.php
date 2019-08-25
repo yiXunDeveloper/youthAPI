@@ -5,6 +5,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Requests\FormRequestTest;
 use App\Http\Requests\YouthRecruitRequest;
 use App\Models\College;
 use App\Models\Dormitory;
@@ -374,16 +375,6 @@ class FeatureController extends Controller
 
     }
 
-    public function test(Request $request)
-    {
-
-//        $this->loginJWC($request->sdut_id,$request->password_jwc);
-//        echo $this->loginEhall($request->sdut_id,$request->password_jwc);
-        //创建cookie
-//        $nb = YouthRecruit::where('nb', 17110405068)->first();
-//        var_dump($nb);
-    }
-
     public function cetGet(Request $request)
     {
         $validator = app('validator')->make($request->all(), [
@@ -745,4 +736,18 @@ class FeatureController extends Controller
             ->setStatusCode(200);
 
     }
+
+    /**
+     * 测试专用
+     *
+     * @param FormRequestTest $request
+     *
+     * @return array|string
+     */
+    public function test(FormRequestTest $request)
+    {
+        $id = $request -> input('id');
+        return $id;
+    }
 }
+
