@@ -14,17 +14,18 @@ class CreateYouthRecruitTable extends Migration
     public function up()
     {
         Schema::create('youth_recruit', function (Blueprint $table) {
+            $table->collation = 'utf8mb4_general_ci';
             $table->increments('id');
-            $table->string('name',20);
-            $table->string('sex',20);
-            $table->string('nb',20)->unique();
-            $table->string('phone',20)->unique();
-            $table->string('email',20)->unique();
-            $table->string('college',20);
-            $table->string('class',20);
-            $table->string('part_1',20);
-            $table->string('part_2',20);
-            $table->text('introduction',600);
+            $table->string('name',30);
+            $table->integer('sex');
+            $table->string('nb', 11)->unique();
+            $table->string('phone', 11)->unique();
+            $table->string('email',30)->nullable();;
+            $table->integer('college');
+            $table->string('class',40);
+            $table->integer('part_1');
+            $table->integer('part_2');
+            $table->text('introduction');
             $table->timestamps();
         });
     }
