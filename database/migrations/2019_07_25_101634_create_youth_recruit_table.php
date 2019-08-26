@@ -19,7 +19,7 @@ class CreateYouthRecruitTable extends Migration
             $table->string('name',30);
             $table->integer('sex');
             $table->string('nb', 11)->unique();
-            $table->string('phone', 11)->unique();
+            $table->string('phone', 11);
             $table->string('email',30)->nullable();;
             $table->integer('college');
             $table->string('class',40);
