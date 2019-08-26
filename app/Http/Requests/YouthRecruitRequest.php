@@ -28,7 +28,7 @@ class YouthRecruitRequest extends FormRequest
             'sex'          => 'required|max:1',
             'nb'           => 'required|max:11|min:11',
             'phone'        => 'required|max:11|min:11',
-            'email'        => 'email',
+            'email'        => 'nullable|email',
             'college'      => 'required|max:2',
             'class'        => 'required|max:20',
             'part_1'       => 'required|max:2',
