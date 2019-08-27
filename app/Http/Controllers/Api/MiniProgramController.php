@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Models\MiniProgramDepartment;
+use App\Models\MiniRecruitNotice;
+use Dingo\Api\Http\Request;
 
 class MiniProgramController extends Controller
 {
@@ -19,6 +21,27 @@ class MiniProgramController extends Controller
         } else {
             return $this->response->errorNotFound('没有找到该部门');
         }
+
+    }
+
+    public function recruitNotice(Request $request)
+    {
+        $notice = MiniRecruitNotice::all();
+        if (count($notice)) {
+            if ($notice[0]->content) {
+                return $this->response->array([
+                    'code' => 1,
+                    'msg'  => $notice[0]->content,
+                ])
+                    ->setStatusCode(200);
+            }
+        }
+
+        return $this->response->array([
+            'code' => 0,
+            'msg'  => '无',
+        ])
+            ->setStatusCode(200);
 
     }
 }

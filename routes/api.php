@@ -232,7 +232,7 @@ $api->version('v1',[
     $api->get('mini/departmentIntro',
         'MiniProgramController@getDepartmentIntro');  // 部门介绍
     $api->post('mini/recruit', 'FeatureController@recruit');  // 信息提交
-
+    $api->get('mini/recruit/notice', 'MiniProgramController@recruitNotice');
 //小程序结束
 
 //测试
