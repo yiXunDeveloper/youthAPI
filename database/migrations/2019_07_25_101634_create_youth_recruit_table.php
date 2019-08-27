@@ -20,12 +20,13 @@ class CreateYouthRecruitTable extends Migration
             $table->integer('sex');
             $table->string('nb', 11)->unique();
             $table->string('phone', 11);
-            $table->string('email',30)->nullable();;
+            $table->string('email',30)->nullable();
             $table->integer('college');
             $table->string('class',40);
             $table->integer('part_1');
             $table->integer('part_2');
             $table->text('introduction');
+            $table->integer('times');
             $table->timestamps();
         });
     }

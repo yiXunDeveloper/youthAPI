@@ -676,30 +676,45 @@ class FeatureController extends Controller
         // 查看表里是否有数据
         $user = YouthRecruit::where('nb', $request->nb)->first();
         if ($user) {
-            // 更新数据
-            $data   = $request->only('name', 'sex', 'nb', 'phone', 'email',
-                'college', 'class', 'part_1', 'part_2', 'introduction');
-            $update = YouthRecruit::where('id', $user->id)->update($data);
-            if ($update) {
-                return $this->response->array([
-                    'code' => 2,
-                    'msg'  => '信息更新成功！',
-                ])
-                    ->setStatusCode(200);
+            if ($user->times < 3) {
+                // 更新数据
+                $data        = $request->only('name', 'sex', 'nb', 'phone',
+                    'email',
+                    'college', 'class', 'part_1', 'part_2', 'introduction');
+
+                $data['times'] = ++$user->times;
+                $update      = YouthRecruit::where('id', $user->id)
+                    ->update($data);
+                if ($update) {
+                    return $this->response->array([
+                        'code' => 2,
+                        'msg'  => '信息更新成功！',
+                    ])
+                        ->setStatusCode(200);
+                }
             }
+
+            return $this->response->array([
+                'code' => 3,
+                'msg'  => '信息只能更新3次！',
+            ])
+                ->setStatusCode(200);
+
         } else {
-            $youth = new YouthRecruit();
-            $youth->name = $request->name;
-            $youth->sex = $request->sex;
-            $youth->nb = $request->nb;
-            $youth->phone = $request->phone;
-            $youth->email = $request->email;
-            $youth->college = $request->college;
-            $youth->class = $request->class;
-            $youth->part_1 = $request->part_1;
-            $youth->part_2 = $request->part_2;
+            // 第一次插入该条数据
+            $youth               = new YouthRecruit();
+            $youth->name         = $request->name;
+            $youth->sex          = $request->sex;
+            $youth->nb           = $request->nb;
+            $youth->phone        = $request->phone;
+            $youth->email        = $request->email;
+            $youth->college      = $request->college;
+            $youth->class        = $request->class;
+            $youth->part_1       = $request->part_1;
+            $youth->part_2       = $request->part_2;
             $youth->introduction = $request->introduction;
-            $create = $youth->save();
+            $youth->times        = 0;
+            $create              = $youth->save();
             if ($create) {
                 return $this->response->array([
                     'code' => 1,
@@ -746,7 +761,8 @@ class FeatureController extends Controller
      */
     public function test(FormRequestTest $request)
     {
-        $id = $request -> input('id');
+        $id = $request->input('id');
+
         return $id;
     }
 }
