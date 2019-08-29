@@ -16,6 +16,7 @@ class CreateMiniRecruitNoticesTable extends Migration
         Schema::create('mini_recruit_notices', function (Blueprint $table) {
             $table->increments('id');
             $table->mediumText('content');
+            $table->integer('open');
             $table->timestamps();
         });
     }

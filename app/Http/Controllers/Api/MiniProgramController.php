@@ -32,6 +32,7 @@ class MiniProgramController extends Controller
                 return $this->response->array([
                     'code' => 1,
                     'msg'  => $notice[0]->content,
+                    'open' => $notice[0]->open
                 ])
                     ->setStatusCode(200);
             }
