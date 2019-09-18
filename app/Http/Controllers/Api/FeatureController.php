@@ -250,7 +250,7 @@ class FeatureController extends Controller
         $lroom = \request('dormitory');
         $croom = intval(\request('room'));
         $room  = $lroom.$croom;
-        $data  = ServiceHygiene::where('room', '=', $room)
+        $data  = ServiceHygiene::where('dormitory', '=', $room)
             ->orderBy('week', 'asc')->get();
         if (count($data) > 0) {
             return $this->response->array(['data' => $data->toArray()])
