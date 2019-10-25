@@ -262,7 +262,7 @@ class OAController extends Controller
         foreach ($users as $key => $value) {
             $birthday = date_create($value->birthday);
             $birthday1 = date_format($birthday, 'm-d');
-            if ('10-26' == $birthday1) {
+            if ($now == $birthday1) {
                 array_push($boss, $value->name);
             }
         }
