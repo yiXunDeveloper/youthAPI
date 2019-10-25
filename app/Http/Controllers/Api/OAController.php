@@ -260,6 +260,9 @@ class OAController extends Controller
         $boss = [];
         $users = OaYouthUser::all();
         foreach ($users as $key => $value) {
+            if (!$value->birthday) {
+                continue;
+            }
             $birthday = date_create($value->birthday);
             $birthday1 = date_format($birthday, 'm-d');
             if ($now == $birthday1) {
