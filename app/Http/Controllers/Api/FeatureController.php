@@ -761,9 +761,8 @@ class FeatureController extends Controller
      */
     public function test(FormRequestTest $request)
     {
-        $id = $request->input('id');
 
-        return $id;
+        return 1;
     }
 }
 

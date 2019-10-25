@@ -16,6 +16,7 @@ use App\Models\OaWorkload;
 use App\Models\OaYouthUser;
 use App\Models\ServiceHygiene;
 use Auth;
+use Cassandra\Date;
 use Dingo\Api\Exception\StoreResourceFailedException;
 use Excel;
 use Illuminate\Http\Request;
@@ -234,7 +235,7 @@ class OAController extends Controller
                     'date' => $value[0],
                     'week' => $value[1],
                     'dormitory' => $value[2],
-                    'room' =>$value[3],
+                    'room' => $value[3],
                     'score' => $value[4],
                     'academy' => $value[5],
                     'member' => $value[6]
@@ -251,6 +252,50 @@ class OAController extends Controller
     {
         $users = OaYouthUser::all();
         return $this->response->array(['data'=>$users->toArray()]);
+    }
+
+    public function getBirthdayOfPeople()
+    {
+        $now = date('m-d');
+        $boss = [];
+        $users = OaYouthUser::all();
+        foreach ($users as $key => $value) {
+            $birthday = date_create($value->birthday);
+            $birthday1 = date_format($birthday, 'm-d');
+            if ('10-26' == $birthday1) {
+                array_push($boss, $value->name);
+            }
+        }
+
+        if (!count($boss)) {
+            $res = [
+                'code' => 0,
+                'msg' => '今天没有人过生日。'
+            ];
+            return $this->response->array(['data' => $res]);
+        } else if (count($boss) >= 4){
+            $res = [
+                'code' => 2,
+                'msg' => '今天是网站内' . count($boss) . '个小伙伴的阳历生日哦~，祝大家生日快乐！🎉'
+            ];
+            return $this->response->array(['data' => $res]);
+        } else {
+            $str = '';
+            foreach ($boss as $value) {
+                if ($str) {
+                    $str = $str.'、'.$value;
+                } else {
+                    $str = $value;
+                }
+            }
+
+            $res = [
+                'code' => 1,
+                'msg' => '今天是' . $str . '的阳历生日哦~🎉'
+            ];
+
+            return $this->response->array(['data' => $res]);
+        }
     }
 
 

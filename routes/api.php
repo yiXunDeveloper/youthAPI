@@ -118,6 +118,7 @@ $api->version('v1',[
         'PermissionController@updatePermission')
         ->middleware('api.auth');   //修改权限名称
     $api->get('oa/users', 'OAController@getUsers');   //获取全部用户
+    $api->get('oa/birthday', 'OAController@getBirthdayOfPeople');
 
     //签到签退
     $api->get('oa/signin', 'OAController@getSigninLists');  //获取当天签到列表
