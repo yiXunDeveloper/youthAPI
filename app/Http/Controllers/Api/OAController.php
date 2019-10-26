@@ -254,6 +254,7 @@ class OAController extends Controller
         return $this->response->array(['data'=>$users->toArray()]);
     }
 
+    //获取当天过生日的用户
     public function getBirthdayOfPeople()
     {
         $now = date('m-d');
