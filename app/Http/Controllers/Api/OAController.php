@@ -271,9 +271,11 @@ class OAController extends Controller
         }
 
         if (!count($boss)) {
+            $slogan = ['网站是我们的孩子，我们是网站的孩子。', '青春在线，精彩无限！'];
+            $ran = mt_rand(0, 1);
             $res = [
                 'code' => 0,
-                'msg' => '今天没有人过生日。'
+                'msg' => $slogan[$ran]
             ];
             return $this->response->array(['data' => $res]);
         } else if (count($boss) >= 4){
