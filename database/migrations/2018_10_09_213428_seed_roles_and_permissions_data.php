@@ -68,7 +68,7 @@ class SeedRolesAndPermissionsData extends Migration
         $user_infos = \App\Models\OaYouthUser::all();
         $user = new \App\Models\OaUser();
         $user->username = 'youthol';
-        $user->password = bcrypt('youth123');
+        $user->password = bcrypt(env('YOUTHOL_PASSWORD'));
         $user->sdut_id = '00000000000';
         $user->save();
         $user->assignRole('Root');

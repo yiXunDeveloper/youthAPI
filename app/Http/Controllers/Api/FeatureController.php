@@ -141,7 +141,7 @@ class FeatureController extends Controller
         }
         $client    = new Client(['cookies' => $jar]);
         $res       = $client->request('GET',
-            'http://210.44.191.124/jwglxt/xtgl/index_cxYhxxIndex.html');
+            env('JWGLXT_API'));
         $queryList = QueryList::html($res->getBody());
         $name      = $queryList->find('.media-heading')->text();
 
