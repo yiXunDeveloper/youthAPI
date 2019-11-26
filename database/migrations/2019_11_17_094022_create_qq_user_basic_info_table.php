@@ -24,7 +24,7 @@ class CreateQqUserBasicInfoTable extends Migration
             $table->string('city')->nullable();
             $table->string('province')->nullable();
             $table->string('country')->nullable();
-            $table->string('name', 20)->nullable();
+            $table->string('name')->nullable();
             $table->string('school')->nullable();
             $table->integer('offical')->nullable();
             $table->text('des')->nullable();

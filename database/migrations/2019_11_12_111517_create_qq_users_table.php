@@ -27,7 +27,7 @@ class CreateQqUsersTable extends Migration
                 // $table->text('des')->nullable();
                 // $table->string('tags')->nullable();
                 // $table->integer('level')->nullable();
-                $table->date('last_actived_at');
+                $table->date('last_actived_at')->nullable();
                 $table->timestamps();
         });
     }

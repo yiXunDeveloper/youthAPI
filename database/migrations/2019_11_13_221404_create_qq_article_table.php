@@ -17,7 +17,7 @@ class CreateQqArticleTable extends Migration
             $table->increments('id');
             $table->string('content')->notNull();
             $table->integer('user_id')->notNull();
-            $table->string('type')->default('1');//测试的时候为1
+            $table->string('type')->nullable();//测试的时候为1
             $table->string('tag')->nullable();
             $table->text('pictures')->nullable();
             $table->integer('visible')->notNull()->default(1);//默认可见值为1
