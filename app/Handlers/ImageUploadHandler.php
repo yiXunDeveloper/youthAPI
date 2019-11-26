@@ -6,7 +6,7 @@ use Image;
 
 class ImageUploadHandler
 {
-    protected $allowed_ext = ["png", "jpg", "gif", 'jpeg'];
+    protected $allowed_ext = ["png", "jpg", "gif", 'jpeg','webp'];
 
     public function save($file, $folder, $file_prefix, $max_width = false)
     {

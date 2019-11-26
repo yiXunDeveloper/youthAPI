@@ -25,7 +25,7 @@ class UserRequest extends FormRequest
     {
 
         return [
-            'pictures' => 'mimes:jpeg,bmp,png,gif|dimensions:min_width=200,min_height=200',
+            'pictures' => 'mimes:jpg,png,jpeg,gif,webp|max:6144',
             'type'=>'required'
         ];
     }
@@ -33,7 +33,7 @@ class UserRequest extends FormRequest
     {
         return [
             'pictures.mimes' =>'头像必须是 jpeg, bmp, png, gif 格式的图片',
-            'pictures.dimensions' => '图片的清晰度不够，宽和高需要 200px 以上',
+            'pictures.max' => '图片最大可上传 6M ',
         ];
     }
 }

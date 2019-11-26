@@ -113,22 +113,17 @@ class Comment extends Controller
      */
     public function destroy($id)
     {
-        //找到操作对应的用户
-        $operating_user = $this->user()->id;
-        //根据约束条件评论id 获取评论
         $data = QqComment::find($id);
-        if (is_null($data)) {
-            return response()->json(["messg" => "Record not found"], 404);
-        }
-        //获取当前评论的发布者id  判断是否允许删除
-        $cur_com_pub = $data->user_id;
-        //获取当前文章的发布者id  判断是否允许删除
-        $cur_art_pbu = $data->QqUser->id;
-        if (($operating_user == $cur_com_pub) || ($operating_user == $cur_art_pbu)) {
-            $data->delete();
-            return response()->json(null, 204);
-        } else {
-            return response()->json(['errmessg' => 'Forbidden'], 403);
+        $author = QqArticle::where('article_id',$data->article_id)->first();
+        if ($data) {
+            if ($data->user_id == $this->user()->id ||$author->user_id==$this->user()->id) {
+                $data = $data->delete();
+                if ($data) {
+                    return $this->respond(1, '删除成功')->setStatusCode(200);
+                }
+            } else {
+                return $this->respond(0, '无权限修改')->setStatusCode(200);
+            }
         }
     }
 }
