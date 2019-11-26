@@ -1,0 +1,16 @@
+/node_modules
+/public/hot
+/public/storage
+/public/app
+/storage/*.key
+/vendor
+/.idea
+/.vagrant
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+.env
+/database/seeds/*
+!/database/seeds/DatabaseSeeder.php
+/database/migrations/2018_10_09_213428_seed_roles_and_permissions_data.php
