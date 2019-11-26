@@ -1,5 +1,6 @@
 {
-    "name": "apzentral/ink",
+
+    "name": "youthAPI",
     "description": "The Laravel Framework.",
     "keywords": ["framework", "laravel"],
     "license": "MIT",
@@ -67,7 +68,9 @@
         "preferred-install": "dist",
         "sort-packages": true,
         "optimize-autoloader": true
+
     },
     "repositories": {
+
     }
 }

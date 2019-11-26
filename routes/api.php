@@ -366,7 +366,7 @@ $api->version(
                 ->name('api.user.attention');
             $api->get('qq/me/article/list/{id}', 'Article@meArticle')
                 ->name('api.user.attention');
-            $api->get('qq/article/collect/{article_id}', 'CollectController@collectOrNot')
+            $api->get('qq/article/collect', 'CollectController@collectOrNot')
                 ->name('api.article.collection.show');
             $api->get('qq/article/collection/list', 'CollectController@collectionList')
                 ->name('api.article.collection.show');

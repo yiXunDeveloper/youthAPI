@@ -60,6 +60,7 @@ return [
             'driver' => 'jwt',
             'provider' => 'service_users'
         ],
+
         'qq' => [
             'driver' => 'jwt',
             'provider' => 'qq_users'
@@ -104,6 +105,7 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\ServiceUser::class,
         ],
+
         'qq_users' => [
             'driver' => 'eloquent',
             'model' => \App\Models\QqUser::class,

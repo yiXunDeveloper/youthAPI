@@ -140,8 +140,7 @@ class FeatureController extends Controller
             throw new StoreResourceFailedException("学号或教务处密码错误");
         }
         $client    = new Client(['cookies' => $jar]);
-        $res       = $client->request('GET',
-            'http://210.44.191.124/jwglxt/xtgl/index_cxYhxxIndex.html');
+        $res       = $client->request('GET', env('JWGLXT_API'));
         $queryList = QueryList::html($res->getBody());
         $name      = $queryList->find('.media-heading')->text();
 

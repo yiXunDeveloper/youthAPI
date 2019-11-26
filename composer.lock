@@ -4,7 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "ffeb68ed8ba29bec6526e45553723947",
+
+    "content-hash": "e686d94d4a07f80aeafb686352d80c41",
     "packages": [
         {
             "name": "barryvdh/laravel-debugbar",
@@ -960,6 +961,7 @@
             "time": "2017-03-20T17:10:46+00:00"
         },
         {
+<<<<<<< HEAD
             "name": "intervention/image",
             "version": "2.5.1",
             "source": {
@@ -1030,6 +1032,8 @@
             "time": "2019-11-02T09:15:47+00:00"
         },
         {
+=======
+>>>>>>> 2f68a753d58a5183465f63afe97b46bead0d5c3d
             "name": "jaeger/g-http",
             "version": "V1.6.0",
             "source": {
