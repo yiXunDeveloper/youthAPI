@@ -9,9 +9,9 @@ use App\Models\Artical;
 use App\Models\Image;
 use App\Models\Picture;
 use Auth;
+use Illuminate\Http\Request;
 use App\Models\QqComment;
 use App\Transformers\ArticleTransformer;
-use Illuminate\Http\Request;
 use App\Models\QqArticle;
 use App\Models\QqArticleGood;
 use App\Models\QqUserBasic;
@@ -82,14 +82,8 @@ class Article extends Controller
     }
     public function store(Request $request)
     {
-        $rules = [
-            'content' => 'required|min:3'
-        ];
-
-        $validator = Validator::make($request->all(), $rules);
-
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 400);
+        if ($request->content) {
+            $data['content'] = $request->content;
         }
         $data = $request->only(['content']);
         if ($request->type) {
