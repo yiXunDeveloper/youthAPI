@@ -9,7 +9,7 @@ use App\Models\Artical;
 use App\Models\Image;
 use App\Models\Picture;
 use Auth;
-use DB;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\QqComment;
 use App\Transformers\ArticleTransformer;
