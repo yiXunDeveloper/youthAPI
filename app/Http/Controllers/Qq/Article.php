@@ -74,10 +74,10 @@ class Article extends Controller
 //        dd($array);
         $zans = array_column($array,'article_zan');
         array_multisort($zans,SORT_DESC,$array);
-        dd($array);
+//        dd($array);
         $article = QqArticle::whereIn('id',$zans)
             ->select('id')
-            ->orderBy(QqArticle::raw('FIND_IN_SET(id, "' . implode(",", $zans) . '"' . ")"))
+            ->orderBy(DB::raw('FIND_IN_SET(id, "' . implode(",", $zans) . '"' . ")"))
             ->orderBy('created_at', 'DESC')->paginate(10);
         return $this->response->paginator($article, new ArticleTransformer());
     }
