@@ -9,6 +9,7 @@ use App\Models\Artical;
 use App\Models\Image;
 use App\Models\Picture;
 use Auth;
+use DB;
 use Illuminate\Http\Request;
 use App\Models\QqComment;
 use App\Transformers\ArticleTransformer;
@@ -77,7 +78,7 @@ class Article extends Controller
         $arr2 = array_column($zans, 'article_id');
         $article = QqArticle::whereIn('id',$arr2)
             ->select('id')
-            ->orderBy(QqArticle::raw('FIND_IN_SET(id, "' . implode(",", $arr2) . '"' . ")"))
+            ->orderBy(DB::raw('FIND_IN_SET(id, "' . implode(",", $arr2) . '"' . ")"))
             ->orderBy('created_at', 'DESC')->paginate(10);
         return $this->response->paginator($article, new ArticleTransformer());
     }
