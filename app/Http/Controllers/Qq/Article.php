@@ -68,7 +68,7 @@ class Article extends Controller
         $article = new QqArticle();
         $article = $article->pluck('id')->toArray();
         foreach ($article as $key=>$item){
-            $array[$key]['article_id'] = $article;
+            $array[$key]['article_id'] = $item;
             $array[$key]['article_zan'] = is_null(count(QqArticleGood::where('article_id',$article)->get()))?0:count(QqArticleGood::where('article_id',$article));
         }
         dd($array[3]);
