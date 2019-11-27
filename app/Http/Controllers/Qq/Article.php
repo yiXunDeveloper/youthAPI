@@ -71,14 +71,13 @@ class Article extends Controller
             $array[$key]['article_id'] = $item;
             $array[$key]['article_zan'] = count(QqArticleGood::where('article_id',$item)->get());
         }
-//        dd($array);
+
         $zans = array_column($array,'article_zan');
         array_multisort($zans,SORT_DESC,$array);
-//        dd($array);
         $arr2 = array_column($zans, 'article_id');
         $article = QqArticle::whereIn('id',$arr2)
             ->select('id')
-            ->orderBy(DB::raw('FIND_IN_SET(id, "' . implode(",", $arr2) . '"' . ")"))
+            ->orderBy(QqArticle::raw('FIND_IN_SET(id, "' . implode(",", $arr2) . '"' . ")"))
             ->orderBy('created_at', 'DESC')->paginate(10);
         return $this->response->paginator($article, new ArticleTransformer());
     }
