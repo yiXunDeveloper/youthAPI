@@ -77,7 +77,7 @@ class Article extends Controller
         array_multisort($zans,SORT_DESC,$array);
         $arr2 = array_column($zans, 'article_id');
         $article = QqArticle::whereIn('id',$arr2)
-            ->select('id')
+//            ->select('id')
 //            ->orderBy(DB::raw('FIND_IN_SET(id, "' . implode(",", $arr2) . '"' . ")"))
             ->orderBy('created_at', 'DESC')->paginate(10);
         return $this->response->paginator($article, new ArticleTransformer());
