@@ -74,6 +74,7 @@ class Article extends Controller
 //        dd($array);
         $zans = array_column($array,'article_zan');
         array_multisort($zans,SORT_DESC,$array);
+        dd($array);
         $article = QqArticle::whereIn('id',$zans)
             ->select('id')
             ->orderBy(QqArticle::raw('FIND_IN_SET(id, "' . implode(",", $zans) . '"' . ")"))
