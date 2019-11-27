@@ -62,6 +62,23 @@ class Article extends Controller
         $article = $article->whereIn('id', $zans)->orderBy('created_at', 'DESC')->paginate(10);
         return $this->response->paginator($article, new ArticleTransformer());
     }
+    public function hotArticle()
+    {
+//        $zans = QqArticleGood::where('article_id', $this->user()->id)->pluck('article_id')->toArray();
+        $article = new QqArticle();
+        $article = $article->pluck('id')->toArray();
+        foreach ($article as $key=>$item){
+            $array[$key]['article_id'] = $article;
+            $array[$key]['article_zan'] = count(QqArticleGood::where('article_id',$article));
+        }
+        $zans = array_column($array,'article_zan');
+        array_multisort($zans,SORT_DESC,$array);
+        $article = QqArticle::whereIn('id',$zans)
+            ->select('id')
+            ->orderBy(QqArticle::raw('FIND_IN_SET(id, "' . implode(",", $zans) . '"' . ")"))
+            ->orderBy('created_at', 'DESC')->paginate(10);
+        return $this->response->paginator($article, new ArticleTransformer());
+    }
     public function typeArticleList(Request $request)
     {
 

@@ -354,6 +354,8 @@ $api->version(
                 ->name('api.user.show');
             $api->post('qq/article/type/list', 'Article@typeArticleList')
                 ->name('api.user.show');
+            $api->post('qq/article/hot/list', 'Article@hotArticleList')
+                ->name('api.user.show');
             $api->get('qq/article/delete/{id}', 'Article@delete')
                 ->name('api.user.show');
             $api->get('qq/article/zan/{id}', 'ArticleGoodController@zan')
