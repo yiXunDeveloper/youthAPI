@@ -75,7 +75,7 @@ class Article extends Controller
 
         $zans = array_column($array,'article_zan');
         array_multisort($zans,SORT_DESC,$array);
-        $arr2 = array_column($zans, 'article_id');
+        $arr2 = array_column($array, 'article_id');
         dd($arr2);
         $article = QqArticle::whereIn('id',$arr2)
 //            ->select('id')
