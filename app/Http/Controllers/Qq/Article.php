@@ -71,7 +71,7 @@ class Article extends Controller
             $array[$key]['article_id'] = $item;
             $array[$key]['article_zan'] = is_null(count(QqArticleGood::where('article_id',$article)->get()))?0:count(QqArticleGood::where('article_id',$article));
         }
-//        dd($array[3]);
+        dd($array);
         $zans = array_column($array,'article_zan');
         array_multisort($zans,SORT_DESC,$array);
         $article = QqArticle::whereIn('id',$zans)
