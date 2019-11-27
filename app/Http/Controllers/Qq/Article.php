@@ -9,6 +9,7 @@ use App\Models\Artical;
 use App\Models\Image;
 use App\Models\Picture;
 use Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Http\Request;
 use App\Models\QqComment;
 use App\Transformers\ArticleTransformer;
@@ -68,14 +69,17 @@ class Article extends Controller
         $article = new QqArticle();
         $article = $article->pluck('id')->toArray();
         foreach ($article as $key=>$item){
-            $array[$key]['article_id'] = $article;
-            $array[$key]['article_zan'] = count(QqArticleGood::where('article_id',$article));
+            $array[$key]['article_id'] = $item;
+            $array[$key]['article_zan'] = count(QqArticleGood::where('article_id',$item)->get());
         }
+
         $zans = array_column($array,'article_zan');
         array_multisort($zans,SORT_DESC,$array);
-        $article = QqArticle::whereIn('id',$zans)
-            ->select('id')
-            ->orderBy(QqArticle::raw('FIND_IN_SET(id, "' . implode(",", $zans) . '"' . ")"))
+        $arr2 = array_column($array, 'article_id');
+//        dd($arr2);
+        $article = QqArticle::whereIn('id',$arr2)
+//            ->select('id')
+            ->orderBy(DB::raw('FIND_IN_SET(id, "' . implode(",", $arr2) . '"' . ")"))
             ->orderBy('created_at', 'DESC')->paginate(10);
         return $this->response->paginator($article, new ArticleTransformer());
     }
