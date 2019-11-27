@@ -69,7 +69,7 @@ class Article extends Controller
         $article = $article->pluck('id')->toArray();
         foreach ($article as $key=>$item){
             $array[$key]['article_id'] = $item;
-            $array[$key]['article_zan'] = is_null(count(QqArticleGood::where('article_id',$article)->get()))?0:count(QqArticleGood::where('article_id',$article));
+            $array[$key]['article_zan'] = is_null(count(QqArticleGood::where('article_id',$article)))?0:count(QqArticleGood::where('article_id',$article));
         }
         dd($array);
         $zans = array_column($array,'article_zan');
