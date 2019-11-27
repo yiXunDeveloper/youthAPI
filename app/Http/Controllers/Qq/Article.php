@@ -78,7 +78,7 @@ class Article extends Controller
         $arr2 = array_column($array, 'article_id');
 //        dd($arr2);
         $article = QqArticle::whereIn('id',$arr2)
-            ->select('id')
+//            ->select('id')
             ->orderBy(DB::raw('FIND_IN_SET(id, "' . implode(",", $arr2) . '"' . ")"))
             ->orderBy('created_at', 'DESC')->paginate(10);
         return $this->response->paginator($article, new ArticleTransformer());
