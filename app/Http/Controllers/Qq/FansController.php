@@ -15,11 +15,7 @@ class FansController extends Controller
         /**
          * user_id 为当前被关注者id   fan_id为当前操作者的id
          */
-        //传过来的参数为当前文章作者id
-        //找到操作对应的用户
         $operating_user = $this->user()->id;
-        //检查fans表中有无信息
-        // $user_id = $request->user_id;
         $data = QqFans::where('user_id', $user_id)
             ->where('fans_id', $operating_user)
             ->first();

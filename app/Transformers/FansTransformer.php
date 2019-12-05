@@ -21,12 +21,12 @@ class FansTransformer extends TransformerAbstract
             'fanedList' => $this->users($fans->fans_id),
             ];
     }
-    public function users($imga){
-        $imga = QqUser::find($imga);
+    public function users($user_id){
+        $user_info = QqUser::find($user_id);
         return [
-            'user_id'=>$imga->id,
-            'nickname'=>$imga->nickName,
-            'avatarUrl'=>$imga->avatarUrl
+            'user_id'=>$user_info->id,
+            'nickname'=>$user_info->nickName,
+            'avatarUrl'=>$user_info->avatarUrl
         ];
     }
 

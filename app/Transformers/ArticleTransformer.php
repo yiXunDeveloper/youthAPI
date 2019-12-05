@@ -2,15 +2,16 @@
 
 namespace App\Transformers;
 
-use App\Http\Controllers\Qq\Article;
+use Auth;
+
+use App\Models\QqUser;
 use App\Models\Picture;
 use App\Models\QqArticle;
-use App\Models\QqArticleGood;
 use App\Models\QqComment;
-use App\Models\QqUser;
 use App\Models\QqUserBasic;
-use Auth;
+use App\Models\QqArticleGood;
 use Doctrine\DBAL\Schema\Schema;
+use App\Http\Controllers\Qq\Article;
 use League\Fractal\TransformerAbstract;
 
 class ArticleTransformer extends TransformerAbstract
@@ -29,22 +30,22 @@ class ArticleTransformer extends TransformerAbstract
             'type' => $article->type,
         ];
     }
-    public function users($imga)
+    public function users($user_id)
     {
-        $imga = QqUser::find($imga);
-         $imgas = QqUserBasic::where('user_id',$imga->id)->first();
+        $user_info = QqUser::find($user_id);
+        $user_basic_info = QqUserBasic::where('user_id',$user_info->id)->first();
         return [
-            'user_id' => $imga->id,
-            'nickName' => $imga->nickName,
-            'avatarUrl' => $imga->avatarUrl,
-            'gender' => $imgas->gender,
+            'user_id' => $user_basic_info->id,
+            'nickName' => $user_basic_info->nickName,
+            'avatarUrl' => $user_basic_info->avatarUrl,
+            'gender' => $user_basic_info->gender,
         ];
     }
-    public function ImgTransformer($imga)
+    public function ImgTransformer($image)
     {
         $array = [];
-        if (!is_null($imga)) {
-            foreach (json_decode($imga) as $key => $item) {
+        if (!is_null($image)) {
+            foreach (json_decode($image) as $key => $item) {
                 $img = Picture::find($item);
                 $array[$key] = $img->path;
             }
