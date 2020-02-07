@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -41,8 +42,8 @@ $api->version('v1', [
     //限制访问频率  1分钟1次
     $api->group([
         'middleware' => 'api.throttle',
-        'limit'      => config('api.rate_limits.sign.limit'),
-        'expires'    => config('api.rate_limits.sign.expires'),
+        'limit' => config('api.rate_limits.sign.limit'),
+        'expires' => config('api.rate_limits.sign.expires'),
     ], function ($api) {
         $api->post('ques/{id}', 'QuesController@quesStore');
     });
@@ -292,6 +293,9 @@ $api->version('v1', [
     $api->post('mini/recruit', 'FeatureController@recruit');  // 信息提交
     $api->get('mini/recruit/notice', 'MiniProgramController@recruitNotice');
     //小程序结束
+
+    //    getData2019nCoV 2019新型冠状病毒
+    $api->get('getData2019nCoV', 'MiniProgramController@getData2019nCoV');
 
     //测试
     $api->post('test', 'Featurecontroller@test');
