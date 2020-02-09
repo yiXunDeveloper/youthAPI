@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Http\Request;
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -41,8 +42,8 @@ $api->version('v1', [
     //限制访问频率  1分钟1次
     $api->group([
         'middleware' => 'api.throttle',
-        'limit'      => config('api.rate_limits.sign.limit'),
-        'expires'    => config('api.rate_limits.sign.expires'),
+        'limit' => config('api.rate_limits.sign.limit'),
+        'expires' => config('api.rate_limits.sign.expires'),
     ], function ($api) {
         $api->post('ques/{id}', 'QuesController@quesStore');
     });
@@ -293,6 +294,9 @@ $api->version('v1', [
     $api->get('mini/recruit/notice', 'MiniProgramController@recruitNotice');
     //小程序结束
 
+    //    getData2019nCoV 2019新型冠状病毒
+    $api->get('getData2019nCoV', 'MiniProgramController@getData2019nCoV');
+
     //测试
     $api->post('test', 'Featurecontroller@test');
     $api->get('service/test', 'FeatureController@index');
@@ -313,26 +317,13 @@ $api->version(
         $api->delete('qq/authorizations/current', 'LoginController@destroy')
             ->name('qq.authorizations.destroy');
 
-        //首页热点基础功能
-        //首页文章基本信息(文章信息+作者信息+点赞数+评论数)
-        $api->get('qq/home/basic', 'GeneralPurposeController@getHomeArticleListBasicInfo')
-            ->name('qq.home.basic');
-        //获取根据Type分类后的文章列表 返回信息上同
-        $api->get('qq/home/basic/{type}', 'GeneralPurposeController@getHomeArticleListBasicInfoByType')
-            ->name('qq.home.basic.type');
-        //单个文章评论详情信息获取(所有评论内容+发布评论内容的评论者)
-        $api->get('qq/article/comment/{articleId}', 'GeneralPurposeController@getArticleCommentMainInfo')
-            ->name('qq.article.comment');
-        //获取热点文章点赞的相关信息
-        $api->get('qq/article/good/{articleId}', 'GeneralPurposeController@getArticleGoodMainInfo')
-            ->name('qq.article.good');
-
         $api->group(['middleware' => 'auth:qq'], function ($api) {
             // 当前登录用户信息
             $api->get('qq/user', 'LoginController@me')
                 ->name('api.user.show');
             $api->post('qq/user/update', 'LoginController@meUpdate')
                 ->name('api.user.show');
+<<<<<<< HEAD
             $api->post('qq/article/create', 'Article@store')
                 ->name('api.user.show');
             $api->post('qq/article/update', 'Article@update')
@@ -400,6 +391,32 @@ $api->version(
             //点赞者信息
             $api->get('qq/good/about/info/{articleId}', 'UserBasicShowController@getGoodAboutInfo')
                 ->name('qq.good.about.info');
+=======
+            //文章
+            $api->post('qq/article/create', 'ArticleController@store');
+            $api->put('qq/article/update', 'ArticleController@update');
+            $api->post('qq/picture', 'ArticleController@pictStore');
+            $api->get('qq/article/show/{id}', 'ArticleController@show');
+            $api->get('qq/article/list/show', 'ArticleController@articleList');
+            $api->get('qq/good/article/list', 'ArticleController@zanArticle');
+            $api->post('qq/article/type/list', 'ArticleController@typeArticleList');
+            $api->post('qq/article/hot/list', 'ArticleController@hotArticleList');
+            $api->delete('qq/article/delete/{id}', 'ArticleController@delete');
+            $api->get('qq/me/article/list/{id}', 'ArticleController@meArticle');
+            //评论
+            $api->post('qq/article/comment', 'CommentController@store');
+            $api->put('qq/article/comment/updata', 'CommentController@update');
+            $api->delete('qq/article/comment/delete/{id}', 'CommentController@destroy');
+            //点赞
+            $api->post('qq/article/zan/{id}', 'ArticleGoodController@zan');
+            //粉丝
+            $api->post('qq/personal/attention/{user_id}', 'FansController@fan');
+            $api->get('qq/fans', 'FansController@fansList');
+            $api->get('qq/faned', 'FansController@fanedList');
+            //收藏
+            $api->post('qq/article/collect/{article_id}', 'CollectController@collectOrNot');
+            $api->get('qq/article/collection/list', 'CollectController@collectionList');
+>>>>>>> 317c3bbc5d2e118cc69044f7b49e9c71ae17da21
         });
     }
 );
