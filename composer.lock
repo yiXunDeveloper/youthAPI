@@ -961,7 +961,6 @@
             "time": "2017-03-20T17:10:46+00:00"
         },
         {
-<<<<<<< HEAD
             "name": "intervention/image",
             "version": "2.5.1",
             "source": {
@@ -1032,8 +1031,6 @@
             "time": "2019-11-02T09:15:47+00:00"
         },
         {
-=======
->>>>>>> 2f68a753d58a5183465f63afe97b46bead0d5c3d
             "name": "jaeger/g-http",
             "version": "V1.6.0",
             "source": {
