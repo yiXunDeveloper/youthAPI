@@ -295,7 +295,9 @@ $api->version('v1', [
     //小程序结束
 
     //    getData2019nCoV 2019新型冠状病毒
-    $api->get('getData2019nCoV', 'MiniProgramController@getData2019nCoV');
+    $api->get('getCountryData2019nCoV', 'MiniProgramController@getCountryData2019nCoV');
+    $api->get('getAllProvinceData2019nCoV', 'MiniProgramController@getAllProvinceData2019nCoV');
+    $api->get('getProvinceData2019nCoV/{provinceName}', 'MiniProgramController@getProvinceData2019nCoV');
 
     //测试
     $api->post('test', 'Featurecontroller@test');
