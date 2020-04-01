@@ -136,7 +136,5 @@ $api->version('v1',[
 
 //权限管理
     $api->get('test','Featurecontroller@test');
-
-
-
 });
+

@@ -40,7 +40,6 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
-
         'api' => [
             'driver' => 'token',
             'provider' => 'users',
@@ -63,7 +62,10 @@ return [
         ],
         'recruit' => [
             'driver' => 'jwt',
-            'provider' => 'recruit_users'
+            'provider' => 'recruit_users'],
+        'qq' => [
+            'driver' => 'jwt',
+            'provider' => 'qq_users'
         ],
     ],
 
@@ -108,6 +110,10 @@ return [
         'recruit_users'=> [
             'driver'=>'eloquent',
             'model'=>\App\Models\Recruit\User::class,
+        ],
+        'qq_users' => [
+            'driver' => 'eloquent',
+            'model' => \App\Models\QqUser::class,
         ],
         // 'users' => [
         //     'driver' => 'database',

@@ -6,7 +6,7 @@ use Image;
 
 class ImageUploadHandler
 {
-    protected $allowed_ext = ["png", "jpg", "gif", 'jpeg'];
+    protected $allowed_ext = ["png", "jpg", "gif", 'jpeg','webp'];
 
     public function save($file, $folder, $file_prefix, $max_width = false)
     {
@@ -19,12 +19,14 @@ class ImageUploadHandler
         $upload_path = public_path() . '/' . $folder_name;
 
         // 获取文件的后缀名，因图片从剪贴板里黏贴时后缀名为空，所以此处确保后缀一直存在
-        $extension = strtolower($file->getClientOriginalExtension()) ?: 'png';
+        //$extension = strtolower($file->getClientOriginalExtension()) ?: 'png';
+        //merge时不确定该保留那一条
+        $extension = 'jpeg';
 
         // 拼接文件名，加前缀是为了增加辨析度，前缀可以是相关数据模型的 ID
         // 值如：1_1493521050_7BVc9v9ujP.png
         $filename = $file_prefix . '_' . time() . '_' . str_random(10) . '.' . $extension;
-
+        $filename_1= $file_prefix . '_' . time() . '_' . str_random(10) . '_origin.' . $extension;
         // 如果上传的不是图片将终止操作
         if ( ! in_array($extension, $this->allowed_ext)) {
             return false;
@@ -33,6 +35,11 @@ class ImageUploadHandler
         // 将图片移动到我们的目标存储路径中
         $file->move($upload_path, $filename);
 
+        $file_orig = $file;
+//        $file_orig->move($upload_path.'/orig',$filename);
+        // 将图片移动到我们的目标存储路径中
+        $file->move($upload_path, $filename);
+//        $copy = copy($upload_path.'/'.$filename,$upload_path.'/'.$filename_1);
         // 如果限制了图片宽度，就进行裁剪
         if ($max_width && $extension != 'gif') {
 
@@ -41,7 +48,8 @@ class ImageUploadHandler
         }
 
         return [
-            'path' => config('app.url') . "/$folder_name/$filename"
+            'path' => config('app.url') . "/$folder_name/$filename",
+//            'path' => config('app.url') . "/$folder_name/$filename_1"
         ];
     }
 

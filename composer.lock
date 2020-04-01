@@ -4,7 +4,12 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
+<<<<<<< HEAD
     "content-hash": "e5c626522764747eaf8ad9b06b519d20",
+=======
+
+    "content-hash": "e686d94d4a07f80aeafb686352d80c41",
+>>>>>>> e6e825ecde97068660be2bccd911082001226ed1
     "packages": [
         {
             "name": "barryvdh/laravel-debugbar",
@@ -1165,6 +1170,7 @@
         },
         {
             "name": "intervention/image",
+<<<<<<< HEAD
             "version": "2.4.2",
             "source": {
                 "type": "git",
@@ -1182,6 +1188,19 @@
                         "preferred": true
                     }
                 ]
+=======
+            "version": "2.5.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Intervention/image.git",
+                "reference": "abbf18d5ab8367f96b3205ca3c89fb2fa598c69e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Intervention/image/zipball/abbf18d5ab8367f96b3205ca3c89fb2fa598c69e",
+                "reference": "abbf18d5ab8367f96b3205ca3c89fb2fa598c69e",
+                "shasum": ""
+>>>>>>> e6e825ecde97068660be2bccd911082001226ed1
             },
             "require": {
                 "ext-fileinfo": "*",
@@ -1237,7 +1256,11 @@
                 "thumbnail",
                 "watermark"
             ],
+<<<<<<< HEAD
             "time": "2018-05-29T14:19:03+00:00"
+=======
+            "time": "2019-11-02T09:15:47+00:00"
+>>>>>>> e6e825ecde97068660be2bccd911082001226ed1
         },
         {
             "name": "jaeger/g-http",

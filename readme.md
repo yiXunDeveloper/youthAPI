@@ -1,11 +1,11 @@
-<p align="center"><img src="https://lab.youthol.cn/default/static/media/youthol_logo_md@300x300.9309bfce.png" width="80px;"></p>
+<p align="center"><img src="https://youthlab.sdut.edu.cn/default/static/media/youthol_logo_md@300x300.9309bfce.png" width="80px;"></p>
 
 
 ## 项目概述
 
 + 项目名称：youthAPI
 + 项目介绍：随着互联网的发展，前后端分离已是大势所趋。青春在线API是为青春在线各功能提供服务的一个API，它整合了青春在线的几乎所有后端程序。
-+ 官方地址：https://api.youthol.cn/
++ 官方地址：https://youthapi.sdut.edu.cn/
 
 ## 运行环境
 
