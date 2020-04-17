@@ -18,29 +18,26 @@ use Illuminate\Support\Facades\Storage;
 
 class LostAndFoundController extends Controller
 {
-
     //web.php  里有一条测测试路由   测试页面  action 要手动修改
-
-
-
-
     public $tablelost = 'lf_lost';    //数据库表名
     public $tablefound = 'lf_found';   //数据库表名
 
+// method == 1 lost
     /**
-     * 返回数据
+     * 返回数据列表
      * 接收 $method
      * 判断 $method
      * 返回 所有数据 分页 +
      */
+
     public function gainFinderOrTheOwnerReleaseInfor(request $Request, $method)
     {
         //验证
-        if (!$this->check($Request['id'], $Request['key'])) {
+        if (!$this->check($Request['verify'], $Request['verify_key'])) {
             return response()->json([
                 'error' => '非法访问'
             ], 200);
-        };
+        }
 
         //执行
         if ($method == 1) {
@@ -49,7 +46,6 @@ class LostAndFoundController extends Controller
             if ($method == 2) {
                 $data = DB::table($this->tablefound)->orderBy('id', 'desc')->paginate(6);
             }
-
         //返回数据
         return response()->json([$data], 200);
     }
@@ -57,53 +53,33 @@ class LostAndFoundController extends Controller
     /**
      * 更新状态码
      */
+
     public function updateReleaseStatus($method, request $Request)
     {
-
         //验证
-        if (!$this->check($Request['id'], $Request['key'])) {
+        if (!$this->check($Request['verify'], $Request['verify_key'])) {
             return response()->json([
                 'error' => '非法访问'
             ], 200);
+        } else {
+            // dd('success');
         };
 
-        //执行
-        $pwd = $Request->input('pwd');
+        // dd((int)date('j') - (int)date("G"));
+
+
         $id = $Request->input('id');
-
-
-        if ($method == 1) {
-            $verify = DB::table($this->tablelost)
-                ->select(DB::raw('lost_verify'))
-                ->where('id', '=', $id)
-                ->get();
-        } else {
-            $verify = DB::table($this->tablefound)
-                ->select(DB::raw('found_verify'))
-                ->where('id', '=', $id)
-                ->get();
-        }
-
-        if (isset($verify[0]->lost_verify)) {
-            $verify = $verify[0]->lost_verify;
-        } else {
-            $verify = $verify[0]->found_verify;
-        }
-        if ($pwd != $verify) {
-            return response()->json(
-                ['error' => "身份验证未通过"], 200
-            );
-        }
-
-
+        $status = $Request['status'];
+        //执行
+        $return_at = time();
         if ($method == 1) {
             $res = DB::table($this->tablelost)
                 ->where('id', $id)
-                ->update(['lost_status' => 1]);
-        } else {
+                ->update(['lost_status' => $status, 'found_at' => $return_at]);
+        } else if ($method == 2) {
             $res = DB::table($this->tablefound)
                 ->where('id', $id)
-                ->update(['found_status' => 1]);
+                ->update(['found_status' => $status, 'return_at' => $return_at]);
         }
         if ($res) {
             return response()->json([
@@ -114,33 +90,152 @@ class LostAndFoundController extends Controller
                 'error' => '操作失败'
             ], 200);
         }
-
-
     }
 
+    // 修改数据
+    public function updateData($method, request $Request)
+    {
+        //验证
+        if (!$this->check($Request['verify'], $Request['verify_key'])) {
+            return response()->json([
+                'error' => '非法访问'
+            ], 200);
+        } else {
+            // dd('success');
+        };
+
+
+        $someThing = isset($Request['someThing']) ? $Request['someThing'] : null;
+        $time = isset($Request['time']) ? $Request['time'] : null;
+        $place = isset($Request['place']) ? $Request['place'] : null;
+        $detail = isset($Request['detail']) ? $Request['detail'] : null;
+        $status = isset($Request['status']) ? $Request['status'] : null;// 1信息已发布 2已经找回/领取
+        $thingImg = null;
+        $hasData = false;
+        // var_dump(strlen($someThing), strlen($time), strlen($place), strlen($detail), (integer)$status);
+        if (strlen($someThing) >= 0 || strlen($time) > 0 || strlen($place) > 0 || strlen($detail) > 0 || (integer)$status == (1 || 2)) {
+            $hasData = true;
+        }
+//        var_dump($hasData);
+
+        if(!isset($Request['id']))
+        {
+            return response()->json([
+                'error' => '字段缺失'
+            ], 200);
+        }
+        $id = $Request->input('id');
+        if ($method == 1 && $hasData) {
+            if ($someThing) {
+                $updateData['lost_name'] = $someThing;
+            }
+            if ($time) {
+                $updateData['lost_time'] = $time;
+            }
+            if ($place) {
+                $updateData['lost_place'] = $place;
+
+            }
+
+            if ($detail) {
+                $updateData['lost_detail'] = $detail;
+
+            }
+            if ($status) {
+                $updateData['lost_status'] = $status;
+            }
+
+            var_dump('if');
+        } else
+            if ($method == 2 && $hasData)
+        {
+
+            if ($someThing) {
+                $updateData['found_name'] = $someThing;
+            }
+            if ($time) {
+                $updateData['found_time'] = $time;
+            }
+            if ($place) {
+                $updateData['found_place'] = $place;
+
+            }
+            if ($detail) {
+                $updateData['found_detail'] = $detail;
+            }
+            if ($status) {
+                $updateData['found_status'] = $status;
+
+                // var_dump('staus t');
+            } else {
+                // var_dump('staus f');
+            }
+
+        }
+            else {
+            return response()->json([
+                'error' => '无效数据'
+            ], 200);
+        }
+
+//        $updateData.length;
+        if ( !isset($updateData)||!sizeof($updateData )) {
+            return response()->json([
+                'error' => '无效数据'
+            ], 200);
+        }
+        //执行7
+//        $return_at = time();
+        $updateData['updated_at'] = time();
+
+        if ($method == 1) {
+            $res = DB::table($this->tablelost)
+                ->where('id', $id)
+                ->update($updateData);
+        } else if ($method == 2) {
+            $res = DB::table($this->tablefound)
+                ->where('id', $id)
+                ->update($updateData);
+        }
+        if ($res) {
+            return response()->json([
+                'status' => '修改成功'
+            ], 201);
+        } else {
+            return response()->json([
+                'error' => '操作失败'
+            ], 200);
+        }
+    }
 
     /**
      * 发布 寻物 找主 信息
      */
     public function finderOrTheOwnerRelease(Request $Request, $method)
     {
-        //验证
-        if (!$this->check($Request['id'], $Request['key'])) {
-            return response()->json([
-                'error' => '非法访问'
-            ], 200);
-        };
 
+//        // dd($Request->file());
+//        // dd($Request->input());
+        //验证
+//        if (!$this->check($Request['id'], $Request['key'])) {
+//            return response()->json([
+//                'error' => '非法访问'
+//            ], 200);
+//        };
         //执行
-        $manName = $Request->input('manName');
-        $verify = $Request->input('verify');
-        $phoneNumber = $Request->input('phoneNumber');
-        $someThing = $Request->input('someThing');
+        // 获取数据
+        $thingName = $Request->input('thingName');
         $time = $Request->input('time');
         $place = $Request->input('place');
-        $holder = $Request->input('holder');
         $detail = $Request->input('detail');
-        $status = $Request->input('status');
+        $personName = $Request->input('personName');
+//        $verify = $Request->input('verify');
+        $phoneNumber = $Request->input('phoneNumber');
+        $status = 1;// 1信息已发布 2已经找回/领取
+        $thingImg = null;
+//        $holder = $Request->input('holder') ;
+
+        //数据验证
         if ($place == null) //数据库中place字段不能为null
         {
             return response()->json([
@@ -156,6 +251,7 @@ class LostAndFoundController extends Controller
                 'warning' => '请输入正确手机号码'
             ], 412);
         }
+
         /**$error=$_FILES['thingImg']['error'];//上传后系统返回的值
          * 1,上传的文件超过了 php.ini 中 upload_max_filesize选项限制的值。
          * 2,上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值。
@@ -164,55 +260,78 @@ class LostAndFoundController extends Controller
          * 6，找不到临时文件夹。
          * 7,文件写入失败。
          */
-        switch ($_FILES['thingImg']['error']) {
-            case 0:
-                break;
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 6:
-            case 7:
-                return response()->json(['error' => '图片上传失败'], 200);
-        }
-        $upfile = $_FILES["thingImg"];
-        $type = $upfile["type"]; //上传文件的类型
-        $tmp_name = $upfile["tmp_name"]; //上传文件的临时存放路径
-        //判断是否为图片
-        $okType = false;
-        switch ($type) {
-            case 'image/pjpeg':
-            case 'image/gif':
-            case 'image/jpeg':
-            case 'image/png':
-                $okType = true;
-                break;
-        }
-        if ($okType) {
-            $nowTime = preg_replace('/\:/', '-', preg_replace('/\ /', '-', Carbon::now())); //将Carbon::now()函数返回的时间串中的空格替换为'-',':'替换为'-',注:图片名称的命名不能包含'\/:*<>|',否则会打不开文件;
-            $returnType = trim(strrchr($type, '/'), '/'); //将type类型截取后几位格式字符;
-            $storageImgName = $nowTime . "." . $returnType; //完善储存图片的名称 拼接字符小数点'.';
-            if ($method == 1) {
-                $result = move_uploaded_file($tmp_name, '../public/lostImg/' . $storageImgName);
-                $thingImg = "../lostImg/" . $storageImgName;
-            } else {
-                $result = move_uploaded_file($tmp_name, '../public/foundImg/' . $storageImgName);
-                $thingImg = "../founderImg/" . $storageImgName;
+        if (isset($_FILES['thingImg'])) {
+
+
+            switch ($_FILES['thingImg']['error']) {
+                case 0:
+                    break;
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 6:
+                case 7:
+                    return response()->json(['error' => '图片上传失败'], 200);
+            }
+            $upfile = $_FILES["thingImg"];
+            $type = $upfile["type"]; //上传文件的类型
+            $tmp_name = $upfile["tmp_name"]; //上传文件的临时存放路径
+            //判断是否为图片
+            $okType = false;
+            switch ($type) {
+                case 'image/pjpeg':
+                case 'image/gif':
+                case 'image/jpeg':
+                case 'image/png':
+                    $okType = true;
+                    break;
+            }
+            if ($okType) {
+                $nowTime = preg_replace('/\:/', '-', preg_replace('/\ /', '-', Carbon::now())); //将Carbon::now()函数返回的时间串中的空格替换为'-',':'替换为'-',注:图片名称的命名不能包含'\/:*<>|',否则会打不开文件;
+                $returnType = trim(strrchr($type, '/'), '/'); //将type类型截取后几位格式字符;
+                $storageImgName = $nowTime . "." . $returnType; //完善储存图片的名称 拼接字符小数点'.';
+                if ($method == 1) {
+
+                    $result = move_uploaded_file($tmp_name, '../public/lostImg/' . $storageImgName);
+                    $thingImg = "/lostImg/" . $storageImgName;
+                } else {
+                    $result = move_uploaded_file($tmp_name, '../public/foundImg/' . $storageImgName);
+                    $thingImg = "/founderImg/" . $storageImgName;
+                }
             }
         }
-        if ($verify == "")//如果用户不填写验证字段，则默认为"000";
-        {
-            $verify = "000";
-        }
+
         if ($method == 1) { //判断是寻宝还是寻主，选择DB插入语句，数据库中字段名不同。注:寻宝传值为1，寻主为2
             $insertResult = DB::table($this->tablelost)->insert(
-                ['lost_man' => $manName, 'lost_verify' => $verify, 'lost_phone' => $phoneNumber, 'lost_thing' => $someThing, 'lost_time' => $time, 'lost_place' => $place, 'lost_detail' => $detail, 'lost_img' => $thingImg, 'lost_status' => $status, 'created_at' => date(now())]
+                [
+                    'lost_name' => (string)$thingName,
+                    'lost_time' => $time,
+                    'lost_place' => $place,
+                    'lost_detail' => $detail,
+                    'lost_img' => $thingImg,
+                    'lost_person' => $personName,
+                    'lost_phone' => $phoneNumber,
+                    'lost_status' => $status,
+                    'created_at' => date(now()),
+
+                ]
             );
-        } else {
-            // dump($manName, $verify, $phoneNumber, $someThing, $time, $place, $holder, $detail, $thingImg, $status);
+
+        } else if ($method == 2) {
+
             $insertResult = DB::table($this->tablefound)->insert(
-                ['found_man' => $manName, 'found_verify' => $verify, 'found_phone' => $phoneNumber, 'found_thing' => $someThing, 'found_time' => $time, 'found_place' => $place, 'found_holder' => $holder, 'found_detail' => $detail, 'found_img' => $thingImg, 'found_status' => $status, 'created_at' => date(now())]
-            );
+                [
+                    'found_name' => $thingName,
+                    'found_time' => $time,
+                    'found_place' => $place,
+                    'found_detail' => $detail,
+                    'found_img' => $thingImg,
+                    'found_person' => $personName,
+                    'found_phone' => $phoneNumber,
+                    'found_status' => $status,
+                    'created_at' => date(now())
+                ]);
         }
         if ($insertResult) {
             return response()->json([
@@ -227,54 +346,117 @@ class LostAndFoundController extends Controller
 
     /**
      * 删除一条数据
+     *
      * @param $id
      * @return \Illuminate\Http\JsonResponse
      */
-    //http://youthol.com/api/laf/deletedata/88/1?confirm=1
-
     public function deleteOneData(request $Request, $id, $method)
     {
         //验证
-        if (!$this->check($Request['id'], $Request['key'])) {
+        if (!$this->check($Request['verify'], $Request['verify_key'])) {
             return response()->json([
                 'error' => '非法访问'
             ], 200);
+        } else {
+            // dd('success');
         };
 
         if ($method == 1) {
             $deleteresults = DB::delete("delete from $this->tablelost where id = ?", [$id]);
-
         } else if ($method == 2) {
             $deleteresults = DB::delete("delete from $this->tablefound where id = ?", [$id]);
-
         } else {
             $deleteresults = 0;
         }
-
-
         if ($deleteresults) {
             return response()->json(['status' => '删除成功'], 201);
         }
         return response()->json(['error' => '删除失败'], 200);
     }
 
+    // 搜索信息
+    public function getDataBy(Request $Request, $method = 1)
+    {
+        if (!$this->check($Request['verify'], $Request['verify_key'])) {
+            return response()->json([
+                'error' => '非法访问'
+            ], 200);
+        }
+
+        $keyWord = $Request['keyWord'];
+        $startTime = isset($Request['startTime']) ? $Request['startTime'] : 0;
+        $endTime = isset($Request['endTime']) ? $Request['endTime'] : time();
+        $status = $Request['status'] ? $Request['status'] : 1;
+        $searchKey = isset($Request['searchKey'])?$Request['searchKey']:1;
+//var_dump($searchKey);
+        switch (isset($searchKey)?$searchKey:1)
+        {
+            case 1:$searchKey = 'name';break;
+            case 2:$searchKey = 'place';break;
+            case 3:$searchKey = 'detail';break;
+            default : $searchKey = 'name';
+        }
+//        dd($searchKey);
+//        dd($searchKey);
+//        if (isset($Request['searchKey'])) {
+//
+//            if ($Request['searchKey'] == 1) {
+//
+//                $searchKey = 'name';
+//            } else
+//                if ($Request['searchKey'] == 2) {
+//                    $searchKey = 'place';
+//                } else if($Request['searchKey']== 3){
+//                    $searchKey = 'detail';
+//                }
+//                else
+//                {
+//                    $searchKey = 'name';
+//                }
+//        } else {
+//            $searchKey = 'name';
+//        }
+
+
+        if ($method == 1) {
+            // var_dump('method = 1');
+
+            $data = DB::table($this->tablelost)->whereBetween('lost_time', array((integer)$startTime, (integer)$endTime))->where("lost_{$searchKey}", 'like', "%$keyWord%")->where('lost_status', $status)->paginate(6);
+            // dd($data, $status);
+        } else
+            if ($method == 2) {
+                // var_dump('method = 2');
+
+                $data = DB::table($this->tablefound)->whereBetween('found_time', array((integer)$startTime, (integer)$endTime))->where("found_{$searchKey}", 'like', "%$keyWord%")->where('found_status', $status)->paginate(6);
+                // dd($data);
+            } else {
+                return response()->json(['error' => '查询失败'], 201);
+            }
+
+
+        if ($data) {
+            return response()->json([$data], 200);
+        }
+    }
+
     /**
      * 操作权限验证
-     * @param $id // 比对字段
+     *
+     * @param $id  // 比对字段
      * @param $key // 验证字段
      * @return string
      */
     public function check($id, $key)
     {
         $signal = $key - (int)date('j') - (int)date("G"); //验证数据还原
+        //      j - 一个月中的第几天，不带前导零（1 到 31）
+        //      G - 24 小时制，不带前导零（0 到 23）
+
         if ($id == $signal) {
             return true;
         } else
-            if (
-                (
-                    $id - $signal == -1 //发送数据与接受数据跨越 一般整点
-                    ||
-                    $id - $signal == 23 //发送数据与接收数据跨越 零点
+            if (($id - $signal == -1 /*发送数据与接受数据跨越 一般整点*/ ||
+                    $id - $signal == 23 /*发送数据与接收数据跨越 零点*/
                 )
                 &&
                 (
@@ -289,22 +471,17 @@ class LostAndFoundController extends Controller
             } else {
                 return false;
             }
-
     }
 
     /**
      * 定时删除数据 正在测试
      */
-
-    public function  deleteImg()
+    public function deleteImg()
     {
         //定时删除图片
         //待开发
     }
-
-
 // 以下为测试代码
-
 
     /**
      * 测试密码加密验证
@@ -327,16 +504,16 @@ class LostAndFoundController extends Controller
 
     /**
      * 为指定用户显示详情
+     *
      * @param int $id
      * @return Response
      * @author LaravelAcademy.org
      */
+    //这是个无用函数
     public function laf()
-        //这是个无用函数
     {
         return 0;
     }
-
 
     public function test()
     {
@@ -359,8 +536,6 @@ class LostAndFoundController extends Controller
 //            if ($a == 2 || $a == 1) {
 //            }
 //        }
-
-
 //
 //        $disk = Storage::disk('local');
 //        // 创建一个文件
@@ -375,39 +550,29 @@ class LostAndFoundController extends Controller
 //        $size = Storage::size('app/file1.txt');
 //        dump($file,$size);
 // 取到磁盘实例
-
         $disk = Storage::disk('local');
         $directory = '/lostImg/';
         $lostImgDirection = '/lostImg/';
         $foundImgDirection = '/foundImg/';
         $i = 0;
-
         // 获取目录下的文件
         $files = $disk->files($directory);
         $lostImgs = $disk->files($lostImgDirection);
         $foundImgs = $disk->files($foundImgDirection);
         $max = count($lostImgDirection);
-
 //        for($i = 0;$i < $max; $i ++ )
 //        {
 //            $name =  $files["$i"];
 //            $name = explode('-'|| '/', $name);
 //
 //        }
-
-
         //  $max = count($lostImgDirection);
-
-
         echo count($files);
         $i = 0;
         $a = $files["$i"];// echo $a; 分隔符可以是斜线，点，或横线
         $dat = explode('-', $a);
         dump($dat);
         dump($files["$i"]);
-
         return 123;
-
-
     }
 }

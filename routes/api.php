@@ -273,14 +273,14 @@ $api->version('v1', [
         'MessageBoardController@delete_MessageBoard'
     );
     //留言板结束
-
     //失物招领 Lost and found 取首字母 laf
     //  $api->get('laf/getdata','LostAndFoundController@laf');//测试路由
     $api->get('laf/getdata/{method}/', 'LostAndFoundController@gainFinderOrTheOwnerReleaseInfor'); //获取数据
     $api->post('laf/insertdata/{method}', 'LostAndFoundController@finderOrTheOwnerRelease'); //添加数据
     $api->get('laf/deletedata/{id}/{method}', 'LostAndFoundController@deleteOneData'); //删除数据
-    $api->post('laf/updatedata/{method}', 'LostAndFoundController@updateReleaseStatus'); //修改数据（状态码）
-
+    $api->post('laf/updatedata/{method}', 'LostAndFoundController@updateData'); //修改状态码updateReleaseStatus
+    $api->post('laf/updatestatus/{method}', 'LostAndFoundController@updateReleaseStatus'); //修改数据 状态码updateReleaseStatus
+    $api->get('laf/searchdata/{method}', 'LostAndFoundController@getDataBy'); //修改数据（状态码）
     //失物招领结束
 
     //小程序API
