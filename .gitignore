@@ -15,3 +15,11 @@ yarn-error.log
 /database/seeds/*
 !/database/seeds/DatabaseSeeder.php
 /database/migrations/2018_10_09_213428_seed_roles_and_permissions_data.php
+
+
+
+vendor.7z
+/public/lafImg/
+*.bac
+
+public/index.php

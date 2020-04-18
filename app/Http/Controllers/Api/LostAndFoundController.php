@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use Alert;
 use http\Env\Response;
+use http\Message;
 use Redirect;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -21,6 +22,7 @@ class LostAndFoundController extends Controller
     //web.php  里有一条测测试路由   测试页面  action 要手动修改
     public $tablelost = 'lf_lost';    //数据库表名
     public $tablefound = 'lf_found';   //数据库表名
+    public $tableimage = 'lf_img';   //数据库表名
 
 // method == 1 lost
     /**
@@ -40,14 +42,40 @@ class LostAndFoundController extends Controller
         }
 
         //执行
-        if ($method == 1) {
-            $data = DB::table($this->tablelost)->orderBy('id', 'desc')->paginate(6);
-        } else
-            if ($method == 2) {
-                $data = DB::table($this->tablefound)->orderBy('id', 'desc')->paginate(6);
-            }
+        $dataImg = [];
+        switch ($method) {
+            case 2:
+                {
+                    $datas = DB::table($this->tablefound)->orderBy('id', 'desc')->paginate(6);
+                    foreach ($datas as $data) {
+                        $img = explode("|", $data->found_img);
+                        foreach ($img as $data) {
+                            $dataImg[] = $data;
+                        }
+                    }
+                    $dataImgId = array_unique($dataImg);
+                    $dataImgAll = DB::table($this->tableimage)->orderBy('id', 'desc')->wherein('id', $dataImgId)->get();
+                    break;
+                }
+            default :
+                {
+                    $datas = DB::table($this->tablelost)->orderBy('id', 'desc')->paginate(6);
+
+                    foreach ($datas as $data) {
+                        $img = explode("|", $data->lost_img);
+                        foreach ($img as $data) {
+                            $dataImg[] = $data;
+                        }
+                    }
+                    $dataImgId = array_unique($dataImg);
+                    $dataImgAll = DB::table($this->tableimage)->orderBy('id', 'desc')->wherein('id', $dataImgId)->get();
+//                    dd($dataImgAll);
+
+                }
+        }
+
         //返回数据
-        return response()->json([$data], 200);
+        return response()->json([$datas, 'imgs' => $dataImgAll], 200);
     }
 
     /**
@@ -110,6 +138,12 @@ class LostAndFoundController extends Controller
         $place = isset($Request['place']) ? $Request['place'] : null;
         $detail = isset($Request['detail']) ? $Request['detail'] : null;
         $status = isset($Request['status']) ? $Request['status'] : null;// 1信息已发布 2已经找回/领取
+        $imgs = isset($Request['imgs']) ? $Request['imgs'] : null;// 字符串  | 分割各个id
+        $imgsDel = isset($Request['imgsDel']) ? $Request['imgsDel'] : null;// 字符串  | 分割各个id
+//echo ('imgs');
+//var_dump($imgsDel);
+//return ($Request->input());
+//die();
         $thingImg = null;
         $hasData = false;
         // var_dump(strlen($someThing), strlen($time), strlen($place), strlen($detail), (integer)$status);
@@ -118,8 +152,7 @@ class LostAndFoundController extends Controller
         }
 //        var_dump($hasData);
 
-        if(!isset($Request['id']))
-        {
+        if (!isset($Request['id'])) {
             return response()->json([
                 'error' => '字段缺失'
             ], 200);
@@ -145,57 +178,78 @@ class LostAndFoundController extends Controller
                 $updateData['lost_status'] = $status;
             }
 
-            var_dump('if');
+            if($imgs)
+            {
+                $updateData['lost_img'] = $imgs;
+            }
+
+//            var_dump('if');
         } else
-            if ($method == 2 && $hasData)
-        {
+            if ($method == 2 && $hasData) {
 
-            if ($someThing) {
-                $updateData['found_name'] = $someThing;
-            }
-            if ($time) {
-                $updateData['found_time'] = $time;
-            }
-            if ($place) {
-                $updateData['found_place'] = $place;
+                if ($someThing) {
+                    $updateData['found_name'] = $someThing;
+                }
+                if ($time) {
+                    $updateData['found_time'] = $time;
+                }
+                if ($place) {
+                    $updateData['found_place'] = $place;
 
-            }
-            if ($detail) {
-                $updateData['found_detail'] = $detail;
-            }
-            if ($status) {
-                $updateData['found_status'] = $status;
+                }
+                if ($detail) {
+                    $updateData['found_detail'] = $detail;
+                }
+                if ($status) {
+                    $updateData['found_status'] = $status;
+                }
 
-                // var_dump('staus t');
+                if($imgs)
+                {
+                    $updateData['found_img'] = $imgs;
+                }
+
             } else {
-                // var_dump('staus f');
+                return response()->json([
+                    'error' => '无效数据'
+                ], 200);
             }
-
-        }
-            else {
-            return response()->json([
-                'error' => '无效数据'
-            ], 200);
-        }
 
 //        $updateData.length;
-        if ( !isset($updateData)||!sizeof($updateData )) {
+        if (!isset($updateData) || !sizeof($updateData)) {
             return response()->json([
                 'error' => '无效数据'
             ], 200);
         }
         //执行7
 //        $return_at = time();
-        $updateData['updated_at'] = time();
+        $updateData['updated_at'] = date(now());
+//        DB::beginTransaction(); //开启事务
+//
+//        $imgStatus = true;
+//        $imgDelStatus = true;
+//        $imgAddStatus = true;
+//        var_dump($imgsDel);
+//        if ($imgsDel) {
+//            $imgId = explode('|', $imgsDel);
+//            $imgId[0] = isset($imgId[0]) ? $imgId[0] : 0;
+//            $imgId[1] = isset($imgId[1]) ? $imgId[1] : 0;
+//            $imgId[2] = isset($imgId[2]) ? $imgId[2] : 0;
+//            $imgDelStatus = DB::update('update lf_img set is_used = 0 where id in (?,?,?)', $imgId);
+//            echo ('imgdel:'.$imgDelStatus);
+//        }
+//        if ($imgs) {
+//            $imgId = explode('|', $imgs);
+//            $imgId[0] = isset($imgId[0]) ? $imgId[0] : 0;
+//            $imgId[1] = isset($imgId[1]) ? $imgId[1] : 0;
+//            $imgId[2] = isset($imgId[2]) ? $imgId[2] : 0;
+//            $imgAddStatus = DB::update('update lf_img set is_used = 1 where id in (?,?,?)', $imgId);
+//        }
 
         if ($method == 1) {
-            $res = DB::table($this->tablelost)
-                ->where('id', $id)
-                ->update($updateData);
+            $res = DB::table($this->tablelost)->where('id', $id)->update($updateData);
         } else if ($method == 2) {
-            $res = DB::table($this->tablefound)
-                ->where('id', $id)
-                ->update($updateData);
+            $res = DB::table($this->tablefound)->where('id', $id)->update($updateData);
         }
         if ($res) {
             return response()->json([
@@ -203,7 +257,7 @@ class LostAndFoundController extends Controller
             ], 201);
         } else {
             return response()->json([
-                'error' => '操作失败'
+                'error' => '修改失败'
             ], 200);
         }
     }
@@ -232,7 +286,7 @@ class LostAndFoundController extends Controller
 //        $verify = $Request->input('verify');
         $phoneNumber = $Request->input('phoneNumber');
         $status = 1;// 1信息已发布 2已经找回/领取
-        $thingImg = null;
+        $thingImg = isset($Request['imgs']) ? $Request['imgs'] : null;// 字符串  | 分割各个id
 //        $holder = $Request->input('holder') ;
 
         //数据验证
@@ -252,56 +306,7 @@ class LostAndFoundController extends Controller
             ], 412);
         }
 
-        /**$error=$_FILES['thingImg']['error'];//上传后系统返回的值
-         * 1,上传的文件超过了 php.ini 中 upload_max_filesize选项限制的值。
-         * 2,上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值。
-         * 3,文件只有部分被上传。
-         * 4,没有文件被上传。
-         * 6，找不到临时文件夹。
-         * 7,文件写入失败。
-         */
-        if (isset($_FILES['thingImg'])) {
-
-
-            switch ($_FILES['thingImg']['error']) {
-                case 0:
-                    break;
-                case 1:
-                case 2:
-                case 3:
-                case 4:
-                case 6:
-                case 7:
-                    return response()->json(['error' => '图片上传失败'], 200);
-            }
-            $upfile = $_FILES["thingImg"];
-            $type = $upfile["type"]; //上传文件的类型
-            $tmp_name = $upfile["tmp_name"]; //上传文件的临时存放路径
-            //判断是否为图片
-            $okType = false;
-            switch ($type) {
-                case 'image/pjpeg':
-                case 'image/gif':
-                case 'image/jpeg':
-                case 'image/png':
-                    $okType = true;
-                    break;
-            }
-            if ($okType) {
-                $nowTime = preg_replace('/\:/', '-', preg_replace('/\ /', '-', Carbon::now())); //将Carbon::now()函数返回的时间串中的空格替换为'-',':'替换为'-',注:图片名称的命名不能包含'\/:*<>|',否则会打不开文件;
-                $returnType = trim(strrchr($type, '/'), '/'); //将type类型截取后几位格式字符;
-                $storageImgName = $nowTime . "." . $returnType; //完善储存图片的名称 拼接字符小数点'.';
-                if ($method == 1) {
-
-                    $result = move_uploaded_file($tmp_name, '../public/lostImg/' . $storageImgName);
-                    $thingImg = "/lostImg/" . $storageImgName;
-                } else {
-                    $result = move_uploaded_file($tmp_name, '../public/foundImg/' . $storageImgName);
-                    $thingImg = "/founderImg/" . $storageImgName;
-                }
-            }
-        }
-
+        DB::beginTransaction(); //开启事务
         if ($method == 1) { //判断是寻宝还是寻主，选择DB插入语句，数据库中字段名不同。注:寻宝传值为1，寻主为2
             $insertResult = DB::table($this->tablelost)->insert(
                 [
@@ -333,16 +338,32 @@ class LostAndFoundController extends Controller
                     'created_at' => date(now())
                 ]);
         }
-        if ($insertResult) {
+
+        if ($thingImg) {
+            $imgId = explode('|', $thingImg);
+            $imgId[0] = isset($imgId[0]) ? $imgId[0] : 0;
+            $imgId[1] = isset($imgId[1]) ? $imgId[1] : 0;
+            $imgId[2] = isset($imgId[2]) ? $imgId[2] : 0;
+            $imgStatus = DB::update('update lf_img set is_used = 1 where id in (?,?,?)', $imgId);
+        }
+
+        if ($insertResult && $imgStatus) { //判断两条同时执行成功
+            DB::commit(); //提交
             return response()->json([
                 'status' => '发布成功'
             ], 201);
         } else {
+
+            DB::rollback();
+            //回滚
             return response()->json([
                 'error' => '发布失败'
             ], 200);
         }
+
+
     }
+
 
     /**
      * 删除一条数据
@@ -368,6 +389,7 @@ class LostAndFoundController extends Controller
         } else {
             $deleteresults = 0;
         }
+
         if ($deleteresults) {
             return response()->json(['status' => '删除成功'], 201);
         }
@@ -382,19 +404,31 @@ class LostAndFoundController extends Controller
                 'error' => '非法访问'
             ], 200);
         }
+        $imgId = [];
+        $imgId[0] = isset($imgId[0]) ? $imgId[0] : 0;
+        $imgId[1] = isset($imgId[1]) ? $imgId[1] : 0;
+        $imgId[2] = isset($imgId[2]) ? $imgId[2] : 0;
+        $imgStatus = DB::update('update lf_img set is_used = 0 where id in (?,?,?)', $imgId);
 
+        die();
         $keyWord = $Request['keyWord'];
         $startTime = isset($Request['startTime']) ? $Request['startTime'] : 0;
         $endTime = isset($Request['endTime']) ? $Request['endTime'] : time();
         $status = $Request['status'] ? $Request['status'] : 1;
-        $searchKey = isset($Request['searchKey'])?$Request['searchKey']:1;
+        $searchKey = isset($Request['searchKey']) ? $Request['searchKey'] : 1;
 //var_dump($searchKey);
-        switch (isset($searchKey)?$searchKey:1)
-        {
-            case 1:$searchKey = 'name';break;
-            case 2:$searchKey = 'place';break;
-            case 3:$searchKey = 'detail';break;
-            default : $searchKey = 'name';
+        switch (isset($searchKey) ? $searchKey : 1) {
+            case 1:
+                $searchKey = 'name';
+                break;
+            case 2:
+                $searchKey = 'place';
+                break;
+            case 3:
+                $searchKey = 'detail';
+                break;
+            default :
+                $searchKey = 'name';
         }
 //        dd($searchKey);
 //        dd($searchKey);
@@ -432,12 +466,11 @@ class LostAndFoundController extends Controller
             } else {
                 return response()->json(['error' => '查询失败'], 201);
             }
-
-
         if ($data) {
             return response()->json([$data], 200);
         }
     }
+
 
     /**
      * 操作权限验证
@@ -510,10 +543,7 @@ class LostAndFoundController extends Controller
      * @author LaravelAcademy.org
      */
     //这是个无用函数
-    public function laf()
-    {
-        return 0;
-    }
+
 
     public function test()
     {
@@ -574,5 +604,96 @@ class LostAndFoundController extends Controller
         dump($dat);
         dump($files["$i"]);
         return 123;
+    }
+
+    public function uploadImg(Request $request)
+    {
+        /**$error=$_FILES['thingImg']['error'];//上传后系统返回的值
+         * 1,上传的文件超过了 php.ini 中 upload_max_filesize选项限制的值。
+         * 2,上传文件的大小超过了 HTML 表单中 MAX_FILE_SIZE 选项指定的值。
+         * 3,文件只有部分被上传。
+         * 4,没有文件被上传。
+         * 6，找不到临时文件夹。
+         * 7,文件写入失败。
+         */
+
+        $strs = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm";
+        $randString = substr(str_shuffle($strs), mt_rand(0, strlen($strs) - 11), 5);
+//        var_dump($randString);
+        if (isset($_FILES['fileImage'])) {
+//dd($_FILES);
+
+            switch ($_FILES['fileImage']['error']) {
+                case 0:
+                    break;
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 6:
+                case 7:
+                    return response()->json(['error' => '图片上传失败'], 200);
+            }
+            $upfile = $_FILES["fileImage"];
+            $type = $upfile["type"]; //上传文件的类型
+            $tmp_name = $upfile["tmp_name"]; //上传文件的临时存放路径
+            //判断是否为图片
+            $okType = false;
+            switch ($type) {
+                case 'image/pjpeg':
+                case 'image/gif':
+                case 'image/jpeg':
+                case 'image/png':
+                    $okType = true;
+                    break;
+            }
+            if ($okType) {
+                $nowTime = preg_replace('/\:/', '', preg_replace('/\ /', '', preg_replace('/\-/', '', Carbon::now()))); //将Carbon::now()函数返回的时间串中的空格替换为'-',':'替换为'-',注:图片名称的命名不能包含'\/:*<>|',否则会打不开文件;
+                $returnType = trim(strrchr($type, '/'), '/'); //将type类型截取后几位格式字符;
+                $storageImgName = $randString . $nowTime . "." . $returnType; //完善储存图片的名称 拼接字符小数点'.';
+                $result = move_uploaded_file($tmp_name, '../public/lafImg/' . $storageImgName);
+//                return $storageImgName;
+                $thingImg = "/lafImg/" . $storageImgName;
+                if ($result) {
+                    $insertResult = DB::table($this->tableimage)->insert(
+                        [
+                            'img_name' => $thingImg,
+                            'is_used' => 0,
+                            'created_at' => date(now()),
+                        ]
+                    );
+                    if (!$insertResult) {
+                        return response()->json([
+                            'status' => 'error',
+                            'msg' => '图片保存失败',
+                        ], 201);
+                    } else {
+                        $imgData = DB::table($this->tableimage)->where("img_name", '=', $thingImg)->where('is_used', 0)->get();
+                        return response()->json([
+                            'status' => 'OK',
+                            'msg' => '图片上传成功',
+                            'data' => $imgData,
+                        ], 201);
+                    }
+                } else {
+                    return response()->json([
+                        'status' => 'error',
+                        'msg' => '图片上传失败',
+                    ], 201);
+                }
+
+            }
+        }
+
+    }
+
+    public function getImages($imgName)
+    {
+//        dd(123132);
+        $strs = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm";
+        $name = substr(str_shuffle($strs), mt_rand(0, strlen($strs) - 11), 5);
+        echo $name;
+        die();
+        return asset('/foundImg/' . $imgName);
     }
 }

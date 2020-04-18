@@ -15,7 +15,7 @@ class CreateLfLostTable extends Migration
     {
         Schema::create('lf_lost', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('lost_thing',100);
+            $table->string('lost_name',100);
             $table->string('lost_time',10);
             $table->string('lost_place',100);
             $table->string('lost_detail',255);

@@ -281,6 +281,7 @@ $api->version('v1', [
     $api->post('laf/updatedata/{method}', 'LostAndFoundController@updateData'); //修改状态码updateReleaseStatus
     $api->post('laf/updatestatus/{method}', 'LostAndFoundController@updateReleaseStatus'); //修改数据 状态码updateReleaseStatus
     $api->get('laf/searchdata/{method}', 'LostAndFoundController@getDataBy'); //修改数据（状态码）
+    $api->post('laf/upload/Image', 'LostAndFoundController@uploadImg'); //展示图片
     //失物招领结束
 
     //小程序API
