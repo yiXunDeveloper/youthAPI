@@ -15,17 +15,18 @@ class CreateLfFoundTable extends Migration
     {
         Schema::create('lf_found', function (Blueprint $table) {
             $table->increments('id');
-            $table->string('found_man',100);
-            $table->string('found_verify',100);
-            $table->string('found_phone',11);
-            $table->string('found_thing',100);
-            $table->string('found_time',100);
-            $table->string('found_place',100);
-            $table->string('found_holder',100);
-            $table->string('found_detail',255);
-            $table->string('found_img',100);
-            $table->integer('found_status')->defaoult(0);
-            $table->timestamps();
+            $table->string('found_name', 36);      // 名称
+            $table->string('found_time', 10);      // 时间
+            $table->string('found_place', 64);     // 地点
+            $table->string('found_detail', 255);    // 描述/细节
+            $table->string('found_img', 100);       // 图片id
+            $table->string('found_person', 36);    // 找到物品的人
+            $table->string('found_phone', 15);      // 俩你方式
+//            $table->string('found_holder', 49);    // 物品存放处
+            $table->integer('found_status')->defaoult(1);  // 物品状态 // 是否被领取
+            $table->timestamps();                                  // 发布时间/修改时间
+            $table->time('return_at')->nullable();// 归还时间
+
         });
     }
 
