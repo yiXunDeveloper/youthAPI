@@ -21,7 +21,6 @@ use Illuminate\Support\Facades\Storage;
 
 class LostAndFoundController extends Controller
 {
-
     private $tablelost = 'lf_lost';
     private $tablefound = 'lf_found';
     private $tableimage = 'lf_img';
@@ -36,14 +35,6 @@ class LostAndFoundController extends Controller
      */
     public function finderOrTheOwnerRelease(Request $Request, $method)
     {
-        if (!$this->check($Request['verify'], $Request['verify_key'])) {
-            return response()->json([
-                'status' => 'error',
-                'msg' => '非法访问'
-            ], 200);
-        };
-
-
         $thingName = $Request->input('thingName');
         $time = $Request->input('time');
         $place = $Request->input('place');
@@ -52,7 +43,6 @@ class LostAndFoundController extends Controller
         $phoneNumber = $Request->input('phoneNumber');
         $status = 1;
         $thingImg = isset($Request['imgs']) ? $Request['imgs'] : 0;
-
         if ($place == null) {
             return response()->json([
                 'status' => 'warning',
@@ -118,13 +108,6 @@ class LostAndFoundController extends Controller
      */
     public function deleteOneData(request $Request, $id, $method)
     {
-
-        if (!$this->check($Request['verify'], $Request['verify_key'])) {
-            return response()->json([
-                'status' => 'error',
-                'msg' => '非法访问'
-            ], 200);
-        }
         if (!$this->checkAdmin($Request->input('randKey'), $Request->input('uName'), true)) {
             return response()->json([
                 'status' => 'warning',
@@ -159,13 +142,6 @@ class LostAndFoundController extends Controller
      */
     public function updateReleaseStatus($method, request $Request)
     {
-
-        if (!$this->check($Request['verify'], $Request['verify_key'])) {
-            return response()->json([
-                'status' => 'error',
-                'msg' => '非法访问'
-            ], 200);
-        }
         if (!isset($Request['checkUser']) || !isset($Request['checkPhone'])) {
             return response()->json([
                 'status' => 'error',
@@ -220,13 +196,6 @@ class LostAndFoundController extends Controller
      */
     public function updateData($method, request $Request)
     {
-
-        if (!$this->check($Request['verify'], $Request['verify_key'])) {
-            return response()->json([
-                'status' => 'error',
-                'msg' => '非法访问'
-            ], 200);
-        }
         if (!$this->checkAdmin($Request->input('randKey'), $Request->input('uName'), true)) {
             return response()->json([
                 'status' => 'warning',
@@ -241,7 +210,6 @@ class LostAndFoundController extends Controller
         $imgs = isset($Request['imgs']) ? $Request['imgs'] : null;
         $thingImg = null;
         $hasData = false;
-
         if (strlen($someThing) >= 0 || strlen($time) > 0 || strlen($place) > 0 || strlen($detail) > 0 || (integer)$status == (1 || 2)) {
             $hasData = true;
         }
@@ -303,7 +271,6 @@ class LostAndFoundController extends Controller
                 'msg' => '无效数据'
             ], 200);
         }
-
         $updateData['updated_at'] = date(now());
         if ($method == 1) {
             $res = DB::table($this->tablelost)->where('id', $id)->update($updateData);
@@ -332,14 +299,6 @@ class LostAndFoundController extends Controller
      */
     public function gainFinderOrTheOwnerReleaseInfor(request $Request, $method)
     {
-
-        if (!$this->check($Request['verify'], $Request['verify_key'])) {
-            return response()->json([
-                'status' => 'error',
-                'msg' => '非法访问'
-            ], 200);
-        }
-
         $dataImg = [];
         switch ($method) {
             case 2:
@@ -368,7 +327,6 @@ class LostAndFoundController extends Controller
                     $dataImgAll = DB::table($this->tableimage)->orderBy('id', 'desc')->wherein('id', $dataImgId)->get();
                 }
         }
-
         return response()->json([$datas, 'imgs' => $dataImgAll], 200);
     }
 
@@ -381,12 +339,6 @@ class LostAndFoundController extends Controller
      */
     public function getDataBy(Request $Request, $method = 1)
     {
-        if (!$this->check($Request['verify'], $Request['verify_key'])) {
-            return response()->json([
-                'status' => 'error',
-                'msg' => '非法访问'
-            ], 200);
-        }
         $imgId = [];
         $imgId[0] = isset($imgId[0]) ? $imgId[0] : 0;
         $imgId[1] = isset($imgId[1]) ? $imgId[1] : 0;
@@ -411,7 +363,6 @@ class LostAndFoundController extends Controller
                 $searchKey = 'name';
         }
         if ($method == 1) {
-
             $datas = DB::table($this->tablelost)->whereBetween('lost_time', array((integer)$startTime, (integer)$endTime))->where("lost_{$searchKey}", 'like', "%$keyWord%")->where('lost_status', $status)->paginate(6);
             foreach ($datas as $data) {
                 $img = explode("|", $data->lost_img);
@@ -423,7 +374,6 @@ class LostAndFoundController extends Controller
             $dataImgAll = DB::table($this->tableimage)->orderBy('id', 'desc')->wherein('id', $dataImgId)->get();
         } else
             if ($method == 2) {
-
                 $datas = DB::table($this->tablefound)->whereBetween('found_time', array((integer)$startTime, (integer)$endTime))->where("found_{$searchKey}", 'like', "%$keyWord%")->where('found_status', $status)->paginate(6);
                 foreach ($datas as $data) {
                     $img = explode("|", $data->found_img);
@@ -449,12 +399,6 @@ class LostAndFoundController extends Controller
      */
     public function uploadImg(Request $Request)
     {
-        if (!$this->check($Request['verify'], $Request['verify_key'])) {
-            return response()->json([
-                'status' => 'error',
-                'msg' => '非法访问'
-            ], 200);
-        };
         $strs = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm";
         $randString = substr(str_shuffle($strs), mt_rand(0, strlen($strs) - 11), 5);
         if (isset($_FILES['fileImage'])) {
@@ -472,7 +416,6 @@ class LostAndFoundController extends Controller
             $upfile = $_FILES["fileImage"];
             $type = $upfile["type"];
             $tmp_name = $upfile["tmp_name"];
-
             $okType = false;
             switch ($type) {
                 case 'image/pjpeg':
@@ -482,7 +425,6 @@ class LostAndFoundController extends Controller
                     $okType = true;
                     break;
             }
-
             if ($okType) {
                 $nowTime = preg_replace('/\:/', '', preg_replace('/\ /', '', preg_replace('/\-/', '', Carbon::now())));
                 $returnType = trim(strrchr($type, '/'), '/');
@@ -528,38 +470,6 @@ class LostAndFoundController extends Controller
                 'msg' => '图片上传失败',
             ]);
         }
-    }
-
-    /**
-     * 操作权限验证
-     *
-     * @param $id
-     * @param $key
-     * @return string
-     */
-    private function check($id, $key)
-    {
-        $signal = $key - (int)date('j') - (int)date("G");
-
-        if ($id == $signal) {
-            return true;
-        } else
-            if (($id - $signal == -1 /*发送数据与接受数据跨越 一般整点*/ ||
-                    $id - $signal == 23 /*发送数据与接收数据跨越 零点*/
-                )
-                &&
-                (
-                    (int)date("i") < 35
-                )
-                &&
-                (
-                    (int)date("s") < 30
-                )
-            ) {
-                return true;
-            } else {
-                return false;
-            }
     }
 
     /**
@@ -616,13 +526,6 @@ class LostAndFoundController extends Controller
      */
     public function delImg($img, Request $Request)
     {
-        if (!$this->check($Request['verify'], $Request['verify_key'])) {
-            return response()->json([
-                'status' => 'error',
-                'msg' => '非法访问'
-            ], 200);
-        };
-
         if (!$this->checkAdmin($Request->input('randKey'), $Request->input('uName'), true)) {
             return response()->json([
                 'status' => 'warning',
@@ -661,13 +564,6 @@ class LostAndFoundController extends Controller
      */
     public function login(Request $Request, $login_key = null)
     {
-
-        if (!$this->check($Request['verify'], $Request['verify_key'])) {
-            return response()->json([
-                'status' => 'error',
-                'msg' => '非法访问'
-            ], 200);
-        }
         if (!isset($Request['name']) || (!isset($Request['pass']))) {
             return 0;
         }
