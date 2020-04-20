@@ -339,10 +339,6 @@ class LostAndFoundController extends Controller
      */
     public function getDataBy(Request $Request, $method = 1)
     {
-<<<<<<< HEAD
-=======
-
->>>>>>> merge
         $imgId = [];
         $imgId[0] = isset($imgId[0]) ? $imgId[0] : 0;
         $imgId[1] = isset($imgId[1]) ? $imgId[1] : 0;
@@ -403,10 +399,6 @@ class LostAndFoundController extends Controller
      */
     public function uploadImg(Request $Request)
     {
-<<<<<<< HEAD
-=======
-
->>>>>>> merge
         $strs = "QWERTYUIOPASDFGHJKLZXCVBNMqwertyuiopasdfghjklzxcvbnm";
         $randString = substr(str_shuffle($strs), mt_rand(0, strlen($strs) - 11), 5);
         if (isset($_FILES['fileImage'])) {
